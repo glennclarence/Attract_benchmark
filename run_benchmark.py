@@ -22,6 +22,18 @@ class ProteinPair:
 num_modes = 5
 index_chain = 4
 
+# running a benchmark is divided in four steps:
+
+#                   Identifying -------------> configuring -------------> computing -------------> analysis
+#
+# 1.step: use load_fromFolder() from load_pdbs to indentify all the pdbs that match a scheme. This function returns a list of type ProteinEsemble 's containing the folder and the filename of the receptor and the ligand
+# 2.step: by using the filenames of te proteinensembles you can create a protein configuration for each protein.
+# By doing that for the ligand , the receptor and by creating a file with the starting dof with ProteinConfiguration.create_StartingPositions() you can create a pair.
+#3.step: create an object of type run_computation.Worker for the docking and the scoring step and add all the pairs to the worker via worker.add_ensembleToQueue() and start computation via worker.comput_serial().
+# There is multithreaded version available also using worker.start_workers() and worker.run()
+# 4. step: run analysis via run_analysis.run_analysis()
+
+
 
 
 def run_benchmark( path_folder, filename_scheme, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0):
@@ -52,7 +64,7 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
         receptor = protconf.ProteinConfiguration( filename_pdb_protein=filename_receptor, name_protein=name_receptor)
         receptor.set_path_inputFolder( path_inputFolder=os.path.join(ensemble.get_pathEnsemble(), 'input'))
         receptor.set_path_outputFolder( path_outputFolder=os.path.join(ensemble.get_pathEnsemble(), 'output'))
-        #receptor.set_filename( filename_reduce= filename_receptor)
+        receptor.set_filename( filename_reduce= filename_receptor)
         receptor.set_chain(chain_receptor)
         receptor.set_num_modes(num_modes)
 
@@ -62,14 +74,14 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
         ligand = protconf.ProteinConfiguration( filename_pdb_protein=filename_ligand, name_protein=name_ligand)
         ligand.set_path_inputFolder( path_inputFolder=os.path.join(ensemble.get_pathEnsemble(), 'input'))
         ligand.set_path_outputFolder( path_outputFolder=os.path.join(ensemble.get_pathEnsemble(), 'output'))
-       # ligand.set_filename( filename_reduce=filename_ligand)
+        ligand.set_filename( filename_reduce=filename_ligand)
         ligand.set_chain(chain_ligand)
         ligand.set_num_modes(num_modes)
 
         if create_reduce:
             benchmark.timer_start("Create_reducepdb")
-            ligand.reduce( overwrite=False)
-            receptor.reduce( overwrite=False )
+            #ligand.reduce( overwrite=False)
+            #receptor.reduce( overwrite=False )
             benchmark.timer_appendStop("Create_reducepdb")
         if create_grid:
 
@@ -88,13 +100,13 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
         filename_dof = os.path.join(os.path.join(ensemble.get_pathEnsemble(), 'input'), "dofs.dat")
         if create_dofs:
             benchmark.timer_start("Create_dofs")
-            protconf.create_StartingPositions("/home/glenn/Documents/Masterthesis/attract_unchanged/rotation.dat",  receptor.get_filenamePdbReduced(), ligand.get_filenamePdbReduced(),filename_dof)
+            protconf.create_StartingPositions("/home/glenn/Documents/attract/rotation.dat",  receptor.get_filenamePdbReduced(), ligand.get_filenamePdbReduced(),filename_dof)
             benchmark.timer_appendStop("Create_dofs")
 
         pair = ProteinPair(receptor, ligand, filename_dof )
         pairs.append( pair )
 
-    dock = compute.Worker(path_attract="/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0",do_minimization= True)
+    dock = compute.Worker(path_attract="/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0",do_minimization= True)
     filename_extension_dock = "_dock.result"
     filename_extension_scoring ="_scoring.result"
     parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
@@ -129,7 +141,7 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
     dock.compute_serial()
     benchmark.timer_appendStop("Minimization")
 
-    score = compute.Worker(path_attract="/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0",do_scoring= True)
+    score = compute.Worker(path_attract="/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0",do_scoring= True)
     parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
     print "Run Scoring"
     for pair in pairs:
@@ -171,7 +183,7 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
 
     benchmark.save_benchmark("/home/glenn/Documents/benchmark3/benchmark_times.dat")
 
-run_benchmark( "/home/glenn/Documents/benchmark3", "_original.pdb", create_grid = True, create_modes = True, create_dofs = False, create_reduce = True, num_modes= num_modes)
+run_benchmark( "/home/glenn/Documents/Attract_benchmark", "-unboundr.pdb", create_grid = True, create_modes = True, create_dofs = False, create_reduce = True, num_modes= num_modes)
 
 
 #$ATTRACTDIR/attract /home/glenn/Documents/benchmark3/1AVX/input/dofs.dat $ATTRACTDIR/../attract.par /home/glenn/Documents/benchmark3/1AVX/input/receptor_original_reduce.pdb /home/glenn/Documents/benchmark3/1AVX/input/ligand_original_reduce.pdb --fix-receptor --modes /home/glenn/Documents/benchmark3/1AVX/input/hm-all.dat --grid 1 /home/glenn/Documents/benchmark3/1AVX/input/receptor_originalgrid.grid --grid 2 /home/glenn/Documents/benchmark3/1AVX/input/ligand_originalgrid.grid --vmax 1000 > /home/glenn/Documents/benchmark3/1AVX/output/ORIG.dock
