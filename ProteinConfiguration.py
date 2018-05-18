@@ -201,8 +201,8 @@ class ProteinConfiguration:
         if path.isfile(self.filename_alphabet ) is False or (path.isfile(self.filename_alphabet ) and overwrite is True):
             os.system(bash_command )
 
-        bash_command = "{}/make-grid-omp {} {}/../attract.par".format( self.path_attract, os.path.join(self.path_inputFolder, self.filename_reduce), self.path_attract,)
-        bash_command += " 10.0 12.0 {} --alphabet {}".format( os.path.join(self.path_inputFolder, self.filename_grid), os.path.join(self.path_inputFolder, self.filename_alphabet) )
+        bash_command = "{}/make-grid-omp {} {}/../attract.par".format( self.path_attract, os.path.join(self.path_inputFolder, self.filename_reduce), self.path_attract);
+        bash_command += " 10.0 12.0 {} --alphabet {} 2>/dev/null".format( os.path.join(self.path_inputFolder, self.filename_grid), os.path.join(self.path_inputFolder, self.filename_alphabet) );
         if path.isfile(self.filename_grid) is False or (path.isfile(self.filename_grid) and overwrite is True):
             os.system(bash_command)
         return  path.filename(self.filename_grid),  path.filename(self.filename_alphabet)

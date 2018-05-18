@@ -42,7 +42,7 @@ class Worker:
     def compute_serial(self):
         while not self.queue.empty():
             args_ensemble = self.queue.get()
-            print args_ensemble
+            #print args_ensemble
             if self.do_minimization:
                 args_ensemble.insert(0, " em ")
                 run_program(self.filename_attract, args_ensemble, shell=True)
@@ -108,17 +108,17 @@ def run_program( filename_binary, arguments, shell = False ):
     args.append( filename_binary )
     for element  in arguments:
         args.append(element)
-    print ''.join(args)
+    #print ''.join(args)
     #os.chdir()
     process = subprocess.Popen( shlex.split(''.join(args)), stdout=subprocess.PIPE )
-    while True:
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            print output.strip()
+    #while True:
+        #output = process.stdout.readline()
+        #if output == '' and process.poll() is not None:
+        #    break
+        #if output:
+            #print output.strip()
 
-    #process.wait()
+    process.wait()
 
 #test_worker = Worker(path_attract="/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0", do_minimization= True)
 #test_worker.start_Worker()
