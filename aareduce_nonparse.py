@@ -4,7 +4,7 @@ This reduced PDB is what is understood by ATTRACT.
 These atoms are parsed from the trans files and topology files derived from the OPLS forcefield
 """
 import sys, os
-sys.path.append('/home/glenn/Documents/Masterthesis/attract_unchanged/allatom')
+sys.path.append(os.environ['ATTRACTDIR']+'/../allatom')
 import parse_cns_top
 import pdbcomplete
 from pdbcomplete import run_pdb2pqr, run_whatif, pdbfix, update_patches, pdb_lastresort
