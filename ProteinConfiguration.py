@@ -208,16 +208,20 @@ class ProteinConfiguration:
         return  path.filename(self.filename_grid),  path.filename(self.filename_alphabet)
 
 
-def create_StartingPositions( file_input_rotation, file_input_pdbReducedReceptor, file_input_pdbReducedLigand, file_output_DOFs):
+def create_StartingPositions( file_input_rotation, file_input_pdbReducedReceptor, file_input_pdbReducedLigand, file_output_DOFs, overwrite = False):
     """Creates the starting positions according to the coarse grain pdbs."""
+
     path_attract = os.environ[ 'ATTRACTDIR']
     path_output = os.path.split(file_output_DOFs)[0]
-    bash_command = "cp {} {}/{}".format(file_input_rotation, path_output, "rotation.dat")
-    os.system( bash_command )
-    bash_command = "{}/translate {} {} > {}/translate.dat".format( path_attract, file_input_pdbReducedReceptor, file_input_pdbReducedLigand, path_output)
-    os.system(bash_command)
-    bash_command = "{}/systsearch {}/rotation.dat {}/translate.dat> {}".format( path_attract,path_output,path_output, file_output_DOFs )
-    os.system( bash_command )
+
+
+    if os.path.isfile(file_output_DOFs ) is False or (os.path.isfile(file_output_DOFs ) and overwrite is True):
+        bash_command = "cp {} {}/{}".format(file_input_rotation, path_output, "rotation.dat")
+        os.system( bash_command )
+        bash_command = "{}/translate {} {} > {}/translate.dat".format( path_attract, file_input_pdbReducedReceptor, file_input_pdbReducedLigand, path_output)
+        os.system(bash_command)
+        bash_command = "{}/systsearch {}/rotation.dat {}/translate.dat> {}".format( path_attract,path_output,path_output, file_output_DOFs )
+        os.system( bash_command )
 
 
 def get_chainfromName(name, index):

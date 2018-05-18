@@ -52,9 +52,9 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
     protein_ensembles = lpdb.load_fromFolder(path_folder= path_folder,
                                              filename_sheme=filename_scheme)
 
-    print 'detected',len(protein_ensembles) , "protein ensembles"
+    print 'detected',len(protein_ensembles) , "protein ensembles\n"
 
-    print "Create Protein Configurations"
+    print "Create Protein Configurations\n"
     for ensemble in protein_ensembles:
         lpdb.set_receptorBySize(ensemble)
         name_receptor = ensemble.get_receptor()
@@ -79,12 +79,13 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
         ligand.set_num_modes(num_modes)
 
         if create_reduce:
+            print "\t--Create reduced pdbs for protein ", name_receptor, " and ", name_ligand
             benchmark.timer_start("Create_reducepdb")
             #ligand.reduce( overwrite=False)
             #receptor.reduce( overwrite=False )
             benchmark.timer_appendStop("Create_reducepdb")
         if create_grid:
-
+            print "\t--Create modefile for protein ", name_receptor, " and ", name_ligand
             ligand.set_partner( receptor.get_filenamePdbReduced() )
             receptor.set_partner(ligand.get_filenamePdbReduced())
             benchmark.timer_start("Create_grid")
@@ -92,6 +93,7 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
             ligand.create_grid(overwrite=False)
             benchmark.timer_appendStop("Create_grid")
         if create_modes:
+            print "\t--Create modefile for protein ", name_receptor, " and ", name_ligand
             benchmark.timer_start("Create_modes")
             receptor.create_modes(overwrite=False)
             ligand.create_modes(overwrite=False)
@@ -111,7 +113,7 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
     filename_extension_scoring ="_scoring.result"
     parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
 
-    print "Run Minimization"
+    print "Run Minimization\n"
     for pair in pairs:
         receptor = pair.get_receptor()
         ligand = pair.get_ligand()
@@ -143,7 +145,7 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
 
     score = compute.Worker(path_attract="/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0",do_scoring= True)
     parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
-    print "Run Scoring"
+    print "Run Scoring\n"
     for pair in pairs:
         receptor = pair.get_receptor()
         ligand = pair.get_ligand()
@@ -181,9 +183,9 @@ def run_benchmark( path_folder, filename_scheme, create_grid = False, create_mod
                  num_modesReceptor=5, num_modesLigand=5,
                  path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'])
 
-    benchmark.save_benchmark("/home/glenn/Documents/benchmark3/benchmark_times.dat")
+    benchmark.save_benchmark( os.path.join(path_folder, 'benchmark.dat'))
 
-run_benchmark( "/home/glenn/Documents/Attract_benchmark", "-unboundr.pdb", create_grid = True, create_modes = True, create_dofs = False, create_reduce = True, num_modes= num_modes)
+run_benchmark( "/home/glenn/Documents/bench1", "-unboundr.pdb", create_grid = True, create_modes = True, create_dofs = True, create_reduce = True, num_modes= num_modes)
 
 
 #$ATTRACTDIR/attract /home/glenn/Documents/benchmark3/1AVX/input/dofs.dat $ATTRACTDIR/../attract.par /home/glenn/Documents/benchmark3/1AVX/input/receptor_original_reduce.pdb /home/glenn/Documents/benchmark3/1AVX/input/ligand_original_reduce.pdb --fix-receptor --modes /home/glenn/Documents/benchmark3/1AVX/input/hm-all.dat --grid 1 /home/glenn/Documents/benchmark3/1AVX/input/receptor_originalgrid.grid --grid 2 /home/glenn/Documents/benchmark3/1AVX/input/ligand_originalgrid.grid --vmax 1000 > /home/glenn/Documents/benchmark3/1AVX/output/ORIG.dock
