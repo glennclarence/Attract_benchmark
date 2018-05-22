@@ -40,9 +40,11 @@ class Worker:
             queue.task_done()
 
     def compute_serial(self):
+        count = 0
         while not self.queue.empty():
             args_ensemble = self.queue.get()
-            #print args_ensemble
+            count += 1
+            print count
             if self.do_minimization:
                 args_ensemble.insert(0, " em ")
                 run_program(self.filename_attract, args_ensemble, shell=True)
@@ -108,7 +110,7 @@ def run_program( filename_binary, arguments, shell = False ):
     args.append( filename_binary )
     for element  in arguments:
         args.append(element)
-    #print ''.join(args)
+    print ''.join(args)
     #os.chdir()
     process = subprocess.Popen( shlex.split(''.join(args)), stdout=subprocess.PIPE )
     #while True:

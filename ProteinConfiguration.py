@@ -220,7 +220,7 @@ def create_StartingPositions( file_input_rotation, file_input_pdbReducedReceptor
         os.system( bash_command )
         bash_command = "{}/translate {} {} > {}/translate.dat".format( path_attract, file_input_pdbReducedReceptor, file_input_pdbReducedLigand, path_output)
         os.system(bash_command)
-        bash_command = "{}/systsearch {}/rotation.dat {}/translate.dat> {}".format( path_attract,path_output,path_output, file_output_DOFs )
+        bash_command = "{}/tools/systsearch {}/rotation.dat {}/translate.dat> {}".format( os.path.dirname(os.path.abspath(__file__)),path_output,path_output, file_output_DOFs )
         os.system( bash_command )
 
 

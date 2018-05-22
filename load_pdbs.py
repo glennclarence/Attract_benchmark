@@ -5,15 +5,27 @@ import os
 class ProteinEsemble:
     def __init__(self, path_Ensemble):
         self.path_ensemble = path_Ensemble
-        self.list_proteins={}
+        self.list_PDB ={}
         self.receptor = None
         self.ligand= None
 
-    def add_Protein(self, filename_protein, name_protein ):
-        self.list_proteins[ name_protein ] = filename_protein
+    def add_Protein(self,  name_protein, filename_PDB ):
+        self.list_PDB[ name_protein ] = filename_PDB
+
+    #def set_PDB(self, name_protein, filename_PDB ):
+    #    self.list_PDB[ name_protein ] = filename_PDB
+
+    #def set_PDB_reduced(self, name_protein, filename_PDB_reduced ):
+    #    self.list_PDB_reduced[ name_protein ] = filename_PDB_reduced
+
+   # def set_PDB_allatom(self, name_protein, filename_PDB_allatom ):
+   #     self.list_PDB_allatom[name_protein] = filename_PDB_allatom
 
     def delete_Protein(self, name_protein ):
-        del self.list_proteins[ name_protein ]
+        del self.list_PDB[name_protein]
+       # del self.list_PDB_reduced[name_protein]
+        #del self.list_PDB_allatom[name_protein]
+
 
     def make_Receptor(self, name_protein):
         if self.list_proteins[name_protein]:
@@ -51,31 +63,26 @@ class ProteinEsemble:
     def get_pathEnsemble(self):
         return self.path_ensemble
 
-    def get_filenameProtein(self, name_protein):
-        return self.list_proteins[name_protein]
+    def get_filenamePDB(self, name_protein):
+        return self.list_PDB[name_protein]
 
-    def get_filenameAll(self):
-        return [value for key, value in self.list_proteins.iteritems()]
+    #def get_filenamePDBreduced(self, name_protein):
+    #    return self.list_PDB_reduced[name_protein]
 
-    def get_proteinNameAll(self):
-        return [key for key, value in self.list_proteins.iteritems()]
+    #def get_filenamePDBallatom(self, name_protein):
+    #    return self.list_PDB_allatom[name_protein]
 
-    def get_filenameReceptor(self):
-        return self.list_proteins[self.receptor]
+    def get_ensemblePDB(self):
+        return self.list_PDB
 
-    def get_receptor(self):
-        return self.receptor
+    #def get_ensemblePDBreduced(self):
+    #    return self.list_PDB_reduced
 
-    def get_ligand(self):
-        return self.ligand
+    #def get_ensemblePDBallatom(self):
+    #    return self.list_PDB_allatom
 
-    def get_filenameLigand(self):
-        return self.list_proteins[self.ligand]
 
-    def get_ensemble(self):
-        return self.list_proteins
-
-def load_fromFolder( path_folder, filename_sheme):
+def load_fromFolder( path_folder, filename_sheme_pdb  ):
     ensembleList = list()
     for root, dirs, files in os.walk( path_folder ):
         protein_ensemble = ProteinEsemble(root)
@@ -83,16 +90,49 @@ def load_fromFolder( path_folder, filename_sheme):
             continue
         count = 0;
         for name in files:
-            if name.endswith( filename_sheme ):
-                count +=1
-                filename_protein = os.path.join( root, name )
-                protein_ensemble.add_Protein( filename_protein, name.split('.')[0] )
+            if name.endswith( filename_sheme_pdb ) and filename_sheme_pdb is not None:
+                count += 1
+                filename_pdb = os.path.join( root, name )
+                name_protein = name.split('.')[0]
+                protein_ensemble.add_Protein(name_protein, filename_pdb)
+
         if count > 0:
             ensembleList.append( protein_ensemble )
     return ensembleList
 
-def set_receptorBySize( protein_ensemble ):
-    receptorName = protein_ensemble.get_proteinMaxSize()
-    protein_ensemble.make_Receptor(receptorName)
+def get_receptorBySize( protein_ensemble ):
+    receptorName = get_proteinMaxSize(protein_ensemble)
+    return receptorName
+
+def get_ligandBySize(protein_ensemble):
+    ligandName = get_proteinMinSize(protein_ensemble)
+    return ligandName
 
 
+def get_proteinSize(self, name_protein):
+    pdb = open( self.list_proteins[ name_protein])
+    count_lines = len(pdb.readlines())
+    return count_lines
+
+def get_proteinMaxSize( protein_list):
+    print protein_list
+    count_lines = 0
+    maxKey = None
+    for key, value in protein_list.iteritems():
+        pdb = open( protein_list[ key ])
+        length_pdb = len(pdb.readlines())
+        if length_pdb > count_lines:
+            count_lines = length_pdb
+            maxKey  =  key
+    return maxKey
+
+def get_proteinMinSize( protein_list):
+    count_lines = 10000000
+    maxKey = None
+    for key, value in protein_list.iteritems():
+        pdb = open( protein_list[ key ])
+        length_pdb = len(pdb.readlines())
+        if length_pdb < count_lines:
+            count_lines = length_pdb
+            maxKey  =  key
+    return maxKey

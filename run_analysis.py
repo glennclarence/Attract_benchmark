@@ -1,6 +1,6 @@
 import sys,os
 
-def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,filename_pdbReceptor, filename_pdbLigand, num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'], path_attractTools = os.environ['ATTRACTTOOLS']):
+def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,filename_pdbReceptor, filename_pdbLigand,  filename_pdbReference,filename_modesReceptor =None, filename_modesLigand = None,  num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'], path_attractTools = os.environ['ATTRACTTOOLS']):
 
 
     filename_filled =       os.path.join(path_analysis , name_analysis + "-score.dat")
@@ -8,7 +8,10 @@ def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_sc
     filename_deredundant =  os.path.join(path_analysis ,name_analysis + "-dr.dat")
     filename_top =          os.path.join(path_analysis ,name_analysis + "-top.dat")
     filename_demode =       os.path.join(path_analysis ,name_analysis + "-demode.dat")
-    filename_pdbFinal =     os.path.join(path_analysis ,name_analysis + "result.pdb")
+    filename_pdbFinal =     os.path.join(path_analysis ,name_analysis + "-result.pdb")
+    filename_joinedModes =  os.path.join(path_analysis ,name_analysis + "-joinedModes.dat")
+    filename_rmsd = os.path.join(path_analysis, name_analysis + "-rmsd.result")
+
 
     analysis_fillEnergies(path_python, path_attractTools, filename_dockResult, filename_scoreResult, filename_filled )
     bash_command = "{} {}/sort.py {} > {}".format(path_python, path_attractTools, filename_filled, filename_sorted)
@@ -22,6 +25,10 @@ def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_sc
 
     analysis_collect(path_attract, filename_demode, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
 
+    join_modefiles(filename_modesReceptor, filename_modesLigand, filename_joinedModes)
+
+    calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand, filename_pdbReference, filename_joinedModes,
+                   filename_pdbReceptor,  filename_rmsd)
 
 
 
@@ -50,6 +57,20 @@ def analysis_collect( path_attract, filename_demode, filename_pdbReceptor, filen
     bash_command = "{}/collect {} {} {} > {}".format(path_attract, filename_demode, filename_pdbReceptor,
                                                      filename_pdbLigand, filename_pdbFinal)
     os.system( bash_command )
+
+def join_modefiles( filename_modesReceptor, filename_modesLigand, filename_output):
+    bash_command = "cat /dev/null > {}".format( filename_output)
+    os.system( bash_command )
+    bash_command = "cat {}  >> {}".format(filename_modesReceptor, filename_output)
+    os.system(bash_command)
+    bash_command = "cat {}  >> {}".format(filename_modesLigand, filename_output)
+    os.system(bash_command)
+
+def calculate_rmsd(path_attract, filename_deredundant , filename_pdbLigandAllAtom, filename_pdbLigandrmsd, modefile,filename_pdbRceptorAllAtom, rmsd_output):
+    bash_command = "python2 {}/lrmsd.py {} {} {} --modes  {} --receptor {} > {}".format(path_attract, filename_deredundant , filename_pdbLigandAllAtom, filename_pdbLigandrmsd, modefile,filename_pdbRceptorAllAtom
+                                                    , rmsd_output)
+    print bash_command
+    os.system(bash_command)
 
 
 # bash_command = "{} {}/sort.py {} > {}".format(path_python, path_attractTools, filename_filled, filename_sorted)
