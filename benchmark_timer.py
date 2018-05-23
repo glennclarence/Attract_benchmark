@@ -1,15 +1,21 @@
 import time
+from threading import Lock
 
 class timer:
     def __init__(self, start= 0 ):
         self.start = start
         self.stop = 0
         self.elapsed = 0
+        self.lock = Lock()
     def set_start(self, time_start):
+        self.lock.acquire()
         self.start= time_start
+        self.lock.release()
     def set_stop(self, time_stop):
+        self.lock.acquire()
         self.stop = time_stop
         self.elapsed = self.stop - self.start
+        self.lock.release()
     def set_stopAppend(self, time_stop):
         self.stop = time_stop
         self.elapsed += self.stop - self.start
