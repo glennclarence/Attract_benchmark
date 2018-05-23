@@ -65,7 +65,6 @@ class Worker:
 
         args = list()
         if not self.use_origAttract:
-
             if self.do_minimization:
                 args.append( " em ")
             elif self.do_scoring:
@@ -101,9 +100,6 @@ class Worker:
             args.append(" --output ")
             args.append( filename_output )
         else:
-    #def add_ensembleToQueue_orig( self, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
-     #                       filename_gridReceptor,  filename_output,
-     #                       filename_gridLigand = None, filename_modesJoined = None ):
             safeAppend( args, filename_dofs )
             safeAppend( args, filename_parameter )
             safeAppend( args, filename_pdbReceptor )
@@ -125,8 +121,6 @@ class Worker:
 
         self.producer.add( args )
 
-        #def get_queue(self):
-    #    return self.queue
 
 def run_program( filename_binary, arguments, shell = False ):
     args = list()
@@ -134,7 +128,6 @@ def run_program( filename_binary, arguments, shell = False ):
     for element  in arguments:
         args.append(element)
     print ' '.join(args)
-    #shlex.split(' '.join(args))
     #shlex.split(' '.join(args))
     os.system( ' '.join(args))
    # process = subprocess.Popen( split(args), stdout=subprocess.PIPE )
@@ -144,49 +137,6 @@ def run_program( filename_binary, arguments, shell = False ):
         #    break
         #if output:
             #print output.strip()
-
-    #process.wait()
-
-#test_worker = Worker(path_attract="/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0", do_minimization= True)
-#test_worker.start_Worker()
-#test_worker.run()
-
-
-
-#parameter_dir= os.environ['ATTRACTDIR']+"/../attract.par"
-#test_worker.add_ensembleToQueue("/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/dofs.dat",
- #                               parameter_dir,
-  #                              "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_reduce.pdb",
-   #                             "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_reduce.pdb",
-    #                            "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptorgrid.grid",
-     #                           "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_grid.alphabet",
-      #                          "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/output/output",
-       #                         "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligandgrid.grid",
-        #                        "/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_grid.alphabet",
-
-#num_modesReceptor = 5, num_modesLigand = 5, filename_modesReceptor="/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_modes.dat",
-#filename_modesLigand ="/home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_modes.dat")
-
-
-#"--solver"," VA13 ",
-
-#/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0/AttractServer em
-# --dof /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/dofs.dat
-# -p /home/glenn/Documents/Masterthesis/attract_unchanged/attract.par
-# --alphabetrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_grid.alphabet
-# --alphabetlig /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_grid.alphabet
-# --gridrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptorgrid.grid
-# --gridlig /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligandgrid.grid
-# -r /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_reduce.pdb
-# -l /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_reduce.pdb
-# --numModesRec 5 --modesr /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_modes.dat
-# --numModesLig 5 --modesl /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_modes.dat
-# > /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/output/output
-
-#/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0/AttractServer em  --dof /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/dofs.dat -p /home/glenn/Documents/Masterthesis/attract_unchanged/attract.par --alphabetrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_grid.alphabet --alphabetlig /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_grid.alphabet --gridrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptorgrid.grid --gridlig /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligandgrid.grid -r /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_reduce.pdb -l /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_reduce.pdb --numModesRec 5 --modesr /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_modes.dat --numModesLig 5 --modesl /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_modes.dat > /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/output/output
-#p=subprocess.call("/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0/AttractServer em  --dof /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/dofs.dat -p /home/glenn/Documents/Masterthesis/attract_unchanged/attract.par --alphabetrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_grid.alphabet --alphabetlig /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_grid.alphabet --gridrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptorgrid.grid --gridlig /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligandgrid.grid -r /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_reduce.pdb -l /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_reduce.pdb --numModesRec 0 --modesr /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_modes.dat --numModesLig 0 --modesl /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_modes.dat > /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/output/output", shell= True)
-#p=subprocess.call("/home/glenn/Documents/Masterthesis/gpuATTRACT_2.0/AttractServer sc  --dof /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/dofs.dat -p /home/glenn/Documents/Masterthesis/attract_unchanged/bin/../attract.par --alphabetrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_grid.alphabet  --gridrec /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptorgrid.grid  -r /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/receptor_reduce.pdb -l /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/input/ligand_reduce.pdb  > /home/glenn/Documents/Masterthesis/testfolder/benchmark_test/output/output", shell= True)
-
 
 
 

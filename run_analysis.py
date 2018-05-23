@@ -1,6 +1,6 @@
 import sys,os
 
-def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,filename_pdbReceptor, filename_pdbLigand,  filename_pdbReference,filename_modesReceptor =None, filename_modesLigand = None,  num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'], path_attractTools = os.environ['ATTRACTTOOLS']):
+def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,filename_pdbReceptor, filename_pdbLigand,  filename_pdbReference, filename_modesReceptor = None, filename_modesLigand = None,  num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'], path_attractTools = os.environ['ATTRACTTOOLS'], filename_modesJoined = None):
 
 
     filename_filled =       os.path.join(path_analysis , name_analysis + "-score.dat")
@@ -9,7 +9,6 @@ def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_sc
     filename_top =          os.path.join(path_analysis ,name_analysis + "-top.dat")
     filename_demode =       os.path.join(path_analysis ,name_analysis + "-demode.dat")
     filename_pdbFinal =     os.path.join(path_analysis ,name_analysis + "-result.pdb")
-    filename_joinedModes =  os.path.join(path_analysis ,name_analysis + "-joinedModes.dat")
     filename_rmsd = os.path.join(path_analysis, name_analysis + "-rmsd.result")
 
 
@@ -25,9 +24,7 @@ def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_sc
 
     analysis_collect(path_attract, filename_demode, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
 
-    join_modefiles(filename_modesReceptor, filename_modesLigand, filename_joinedModes)
-
-    calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand, filename_pdbReference, filename_joinedModes,
+    calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand, filename_pdbReference, filename_modesJoined,
                    filename_pdbReceptor,  filename_rmsd)
 
 

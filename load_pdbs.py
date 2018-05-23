@@ -12,20 +12,8 @@ class ProteinEsemble:
     def add_Protein(self,  name_protein, filename_PDB ):
         self.list_PDB[ name_protein ] = filename_PDB
 
-    #def set_PDB(self, name_protein, filename_PDB ):
-    #    self.list_PDB[ name_protein ] = filename_PDB
-
-    #def set_PDB_reduced(self, name_protein, filename_PDB_reduced ):
-    #    self.list_PDB_reduced[ name_protein ] = filename_PDB_reduced
-
-   # def set_PDB_allatom(self, name_protein, filename_PDB_allatom ):
-   #     self.list_PDB_allatom[name_protein] = filename_PDB_allatom
-
     def delete_Protein(self, name_protein ):
         del self.list_PDB[name_protein]
-       # del self.list_PDB_reduced[name_protein]
-        #del self.list_PDB_allatom[name_protein]
-
 
     def make_Receptor(self, name_protein):
         if self.list_proteins[name_protein]:
@@ -66,20 +54,8 @@ class ProteinEsemble:
     def get_filenamePDB(self, name_protein):
         return self.list_PDB[name_protein]
 
-    #def get_filenamePDBreduced(self, name_protein):
-    #    return self.list_PDB_reduced[name_protein]
-
-    #def get_filenamePDBallatom(self, name_protein):
-    #    return self.list_PDB_allatom[name_protein]
-
     def get_ensemblePDB(self):
         return self.list_PDB
-
-    #def get_ensemblePDBreduced(self):
-    #    return self.list_PDB_reduced
-
-    #def get_ensemblePDBallatom(self):
-    #    return self.list_PDB_allatom
 
 
 def load_fromFolder( path_folder, filename_sheme_pdb  ):
@@ -107,7 +83,6 @@ def get_receptorBySize( protein_ensemble ):
 def get_ligandBySize(protein_ensemble):
     ligandName = get_proteinMinSize(protein_ensemble)
     return ligandName
-
 
 def get_proteinSize(self, name_protein):
     pdb = open( self.list_proteins[ name_protein])

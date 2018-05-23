@@ -6,16 +6,11 @@ class timer:
         self.start = start
         self.stop = 0
         self.elapsed = 0
-        self.lock = Lock()
     def set_start(self, time_start):
-        self.lock.acquire()
         self.start= time_start
-        self.lock.release()
     def set_stop(self, time_stop):
-        self.lock.acquire()
         self.stop = time_stop
         self.elapsed = self.stop - self.start
-        self.lock.release()
     def set_stopAppend(self, time_stop):
         self.stop = time_stop
         self.elapsed += self.stop - self.start
@@ -52,7 +47,6 @@ class measure_benchmark:
     def save_benchmark(self, filename_benchmark):
         file = open( filename_benchmark, "w")
         file.write("{:25} \t{}\n\n".format("Timername","Elapsed Time (s)"))
-        #for name_timer in sorted(self.timers, key=self.timers.get, reverse=True):
         for name_timer in self.timers:
             line="{:25} \t{:04f}\n".format( name_timer, self.timers[name_timer].get_elapsedTime())
             file.write( line )
