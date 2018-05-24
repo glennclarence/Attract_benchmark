@@ -21,10 +21,19 @@ class timer:
 class measure_benchmark:
     def __init__(self):
         self.timers={}
+        self.lock = Lock()
     def timer_add(self, name, start= False):
+        self.lock.acquire()
         self.timers[name]=timer()
         if start:
             self.timers[name].set_start( time.time() )
+        self.lock.release()
+
+    def timer_addTimer(self, name, timer):
+        self.lock.acquire()
+        self.timers[name]=timer
+        self.lock.release()
+
     def timer_start(self, name):
         start = time.time()
         self.timers[name].set_start( start )
@@ -41,8 +50,17 @@ class measure_benchmark:
 
     def get_elapsedTime(self, name_timer ):
         return self.timers[name_timer].get_elapsedTime()
+
     def get_timers(self):
         return self.timers
+
+    def sumup_and_getTimer(self):
+        totaltime = 0
+        for key, temptimer in self.timers.iteritems():
+            totaltime += temptimer.get_elapsedTime()
+        newTimer = timer()
+        newTimer.elapsed = totaltime
+        return newTimer
 
     def save_benchmark(self, filename_benchmark):
         file = open( filename_benchmark, "w")

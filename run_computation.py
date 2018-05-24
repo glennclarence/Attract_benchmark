@@ -3,6 +3,7 @@ from Queue import Queue
 from threading import Thread
 import os
 import shlex
+import time
 
 import consumer_producer as conpro
 
@@ -14,7 +15,6 @@ def safeAppend( list, filename):
     else:
         return False
 def filecheck(  filename):
-    #print filename
     if filename is not None and os.path.isfile(filename):
         return True
     else:
@@ -39,12 +39,24 @@ class Worker:
         self.producer.start()
 
     def consumer_compute(self, queue_item, threadId, args = None):
-            args_ensemble = queue_item
-            string = "{}  \n".format(threadId)
-            print string
+            task_id = queue_item[0]
+            task = queue_item[1]
+            #string = "{}  \n".format(threadId)
+            #print string
+            name_timer = ""
+            if self.do_scoring:
+                name_timer += "Scoring - "
+            elif self.do_minimization:
+                name_timer += "Minimize - "
+            name_timer += str( task_id )
+            #print name_timer
+            args[0].timer_add( name_timer, start= True)
+            run_program( self.filename_attract, task, shell=True)
+            args[0].timer_stop( name_timer )
+            args[1].put(task_id)
 
-            run_program( self.filename_attract, args_ensemble, shell=True)
-
+    def get_sizeTask(self):
+        return self.queue.qsize()
 
     def start_threads(self):
         for i in range( self.num_threads ):
@@ -58,10 +70,10 @@ class Worker:
         for i in range( self.num_threads ):
             self.consumer[i].stop_if_done()
 
-    def add_ensembleToQueue( self, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
+    def add_ensembleToQueue( self, id, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
                             filename_gridReceptor, filename_alphabetReceptor, filename_output,
                             filename_gridLigand=None, filename_alphabetLigand=None,  num_modesReceptor=0, num_modesLigand=0,
-                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None,  ):
+                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None  ):
 
         args = list()
         if not self.use_origAttract:
@@ -105,7 +117,7 @@ class Worker:
             safeAppend( args, filename_pdbReceptor )
             safeAppend( args, filename_pdbLigand )
             args.append( " --fix-receptor ")
-            if filename_modesJoined is not None:
+            if filename_modesJoined is not None and (num_modesLigand > 0 or num_modesReceptor > 0):
                 args.append(" --modes  ")
                 safeAppend( args, filename_modesJoined )
             args.append( " --grid 1  ")
@@ -119,7 +131,7 @@ class Worker:
             args.append( "> "+filename_output )
 
 
-        self.producer.add( args )
+        self.producer.add( (id,args) )
 
 
 def run_program( filename_binary, arguments, shell = False ):

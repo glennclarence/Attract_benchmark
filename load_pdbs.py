@@ -90,7 +90,6 @@ def get_proteinSize(self, name_protein):
     return count_lines
 
 def get_proteinMaxSize( protein_list):
-    print protein_list
     count_lines = 0
     maxKey = None
     for key, value in protein_list.iteritems():

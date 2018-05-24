@@ -18,16 +18,19 @@ class ProducerThread(threading.Thread):
         self.target = target
         self.name = name
         self.queue = queue
+        self.signal = True
 
-    #def run(self):
-        #while True:
-            #if not  self.queue.full():
-                #item = random.randint(1, 10)
-                #self.queue.put(item)
-                #logging.debug('Putting ' + str(item)
-                 #             + ' : ' + str(q.qsize()) + ' items in queue')
-                #time.sleep(0.08)
-        return
+
+    # def run(self):
+    #     while self.Signal is True:
+    #         if not  self.queue.full():
+    #             if not self.feeder.empty():
+    #                 item = self.feeder.get()
+    #                 self.queue.put(item)
+    #             #logging.debug('Putting ' + str(item)
+    #              #             + ' : ' + str(q.qsize()) + ' items in queue')
+    #             #time.sleep(0.08)
+    #     return
 
     def add(self, item):
         self.queue.put(item)
@@ -59,37 +62,5 @@ class ConsumerThread(threading.Thread):
         self.kill = True
 
     def stop_if_done(self):
-        self.Signal = False
-
-def compute( queue_item, threadId, args = None):
-        string = "thread {} item {}".format(threadId, queue_item)
-        print string
-        #logging.debug(self.name + ' is Getting ' + str(item)
-        #              + ' : ' + str(queue.qsize()) + ' items in queue')
-        #time.sleep(random.random())
-
-
-
-#
-# if __name__ == '__main__':
-#     p = ProducerThread(quq, name='producer')
-#     c = []
-#
-#     for i in range(8):
-#         c.append( ConsumerThread( quq, name='consumer'+str(i) , target = compute, args=quq) )
-#
-#     p.start()
-#     time.sleep(2)
-#     for i in range(5):
-#         c[i].start()
-#     time.sleep(2)
-#     p.add( 1 )
-#     p.add(2)
-#     p.add(3)
-#     p.add(4 )
-#     p.add(5)
-#     p.add(6)
-#     p.add(7)
-#     p.add(8 )
-
+        self.signal = False
 
