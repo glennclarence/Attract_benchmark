@@ -94,13 +94,12 @@ def reduce(pdb, path_output, name_output, dna=False, rna=False, compat=False, ch
             assert os.path.exists(f), f
         outfiles = read_filelist(name_output)
         for pdb, outfile in zip(infiles, outfiles):
-            outfile = path_output + outfile
+            outfile = os.path.join(path_output , outfile)
             outp = open(outfile, "w")
             run(pdb,outp,ff,  startres, startatom, dna, rna, compat,mapping=False)
             print_res(outp,ff, chain,compat, mapping=False)
             outp.close()
     else:
-
         assert os.path.exists(pdb)
         if name_output is None:
             outfile = os.path.splitext(pdb)[0] + "r.pdb"
@@ -157,7 +156,7 @@ def print_res(outp,ff,chain,  compat, mapping=True ):
     global rescounter, atomcounter, rescoor
     if not len(rescoor): return
     rescounter += 1
-    if mapping: print res[1:].strip(), rescounter
+    #if mapping: print res[1:].strip(), rescounter
     for l in ff[resname]:
         if (l[0], l[1]) not in rescoor: continue
         c = rescoor[(l[0], l[1])]

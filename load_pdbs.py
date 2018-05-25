@@ -69,7 +69,8 @@ def load_fromFolder( path_folder, filename_sheme_pdb  ):
             if name.endswith( filename_sheme_pdb ) and filename_sheme_pdb is not None:
                 count += 1
                 filename_pdb = os.path.join( root, name )
-                name_protein = name.split('.')[0]
+
+                name_protein = os.path.split(root)[-1] + "-" + name.split('.')[0]
                 protein_ensemble.add_Protein(name_protein, filename_pdb)
 
         if count > 0:

@@ -30,6 +30,7 @@ class ProteinPair:
 def configure_protein( path_inputFolder, path_outputFolder, name_protein, filename_pdb_protein, chain = None, num_modes = 0):
     protein = protconf.ProteinConfiguration(filename_pdb_protein= filename_pdb_protein, name_protein=name_protein)
     protein.set_path_inputFolder( path_inputFolder = path_inputFolder )
+    print path_outputFolder
     protein.set_path_outputFolder( path_outputFolder = path_outputFolder )
     protein.set_chain( chain )
     protein.set_num_modes( num_modes = num_modes )
@@ -80,13 +81,13 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
 
     if do_minimization:
-        dock = compute.Worker(path_attract=os.environ['ATTRACTDIR'], name_attractBinary = "attract", do_minimization=True,
+        dock = compute.Worker(path_attract="/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0", name_attractBinary = "AttractServer", do_minimization=True,
                           num_threads=num_threads, args=(benchmark_minimization,finisheditems_docking,), use_OrigAttract=use_orig)
 
 
         dock.start_threads()
     if do_scoring:
-        score = compute.Worker(path_attract=os.environ['ATTRACTDIR'], name_attractBinary="attract",
+        score = compute.Worker(path_attract="/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0", name_attractBinary="AttractServer",
                                do_scoring=True,
                                num_threads=num_threads, args=(benchmark_scoring, finisheditems_scoring,),
                                use_OrigAttract=use_orig)
@@ -116,19 +117,19 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
         filename_receptor = proteins[ name_receptor]
         chain_receptor = protconf.get_chainfromName(name_receptor, index_chain)
         receptor = configure_protein(path_inputFolder = path_input,     path_outputFolder = path_output, name_protein = name_receptor,
-                                     filename_pdb_protein = None,       chain = chain_receptor,          num_modes = num_modes)
-        receptor.set_filename(       filename_reduce= filename_receptor )
+                                     filename_pdb_protein = filename_receptor,       chain = chain_receptor,          num_modes = num_modes)
+        #receptor.set_filename(       filename_reduce= filename_receptor )
 
 
         name_ligand = lpdb.get_ligandBySize(proteins)
         filename_ligand = proteins[name_ligand]
         chain_ligand = protconf.get_chainfromName(name_ligand, index_chain)
         ligand = configure_protein( path_inputFolder=path_input,    path_outputFolder=path_output,  name_protein=name_ligand,
-                                    filename_pdb_protein=None,      chain=chain_ligand,             num_modes=num_modes)
-        ligand.set_filename(            filename_reduce=filename_ligand)
+                                    filename_pdb_protein=filename_ligand,      chain=chain_ligand,             num_modes=num_modes)
+        #ligand.set_filename(            filename_reduce=filename_ligand)
 
         if do_configuration:
-            print "{}/{} ".format( count, len(protein_ensembles)),"\t--Configure protein: ", name_receptor, " and ", name_ligand
+            print "{}/{} ".format( count + 1, len(protein_ensembles)),"\t--Configure protein: ", name_receptor, " and ", name_ligand
             if create_reduce:
                 print "\t\t--Create reduced pdbs"
                 benchmark.timer_start("Create_reducepdb")
@@ -181,7 +182,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                       num_modesReceptor=num_modes,      filename_pdbLigand=ligand.get_filenamePdbReduced(), filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                       filename_gridLigand=ligand.get_filenameGrid(), filename_modesLigand=ligand.get_filenameModes(),
                                       num_modesLigand=num_modes, filename_modesJoined= pair.get_filenameModes() )
-            time.sleep(0.1)
+            time.sleep(0.05)
 
         dock.stop_threads_if_done()
 
@@ -211,10 +212,11 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                           num_modesReceptor=num_modes,filename_pdbLigand=ligand.get_filenamePdbReduced(),filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                           filename_gridLigand=ligand.get_filenameGrid(),filename_modesLigand=ligand.get_filenameModes(),
                                           num_modesLigand=num_modes, filename_modesJoined= pair.get_filenameModes() )
-            time.sleep(0.1)
+            time.sleep(0.05)
 
         score.stop_threads_if_done()
-
+    dock.wait_until_done()
+    score.wait_until_done()
     if do_analyse is True:
         #for count, pair in enumerate( pairs ):
         print '**************************************************************'
@@ -237,7 +239,9 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                      num_modesReceptor=num_modes, num_modesLigand=num_modes, filename_modesJoined = filename_modesJoined,
                      path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'])
 
-            time.sleep(0.1)
+            time.sleep(0.05)
+
+
 
 
     benchmark.timer_addTimer( "Minimization",    benchmark_minimization.sumup_and_getTimer() )
@@ -246,7 +250,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     benchmark.save_benchmark( os.path.join(path_folder, name_benchmark + '-time.dat'))
 
 
-run_benchmark( "/home/glenn/Documents/Attract_benchmark", "-unboundr.pdb",name_benchmark = "benchmark_Orig_rigid", create_grid = True, create_modes = True, create_dofs = True, create_reduce = False, num_modes = 0, use_orig= True, num_threads = 7 )
+run_benchmark( "/home/glenn/Documents/benchmark2", "-aa.pdb",name_benchmark = "benchmark_GPU_5Modes_1000dofs", create_grid = True, create_modes = True, create_dofs = True, create_reduce = True, num_modes = 5, use_orig= False, num_threads = 1 )
 
 
 

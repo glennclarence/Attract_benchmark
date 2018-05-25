@@ -54,11 +54,11 @@ class ProteinConfiguration:
         self.path_attract = path_attract
         self.path_attractTools = path_attractTools
         self.ext_mapping = ".mapping"
-        self.ext_reduce = "_reduce.pdb"
-        self.ext_aa = "_aa.pdb"
-        self.ext_modes = "_modes.dat"
-        self.ext_alphabet = "_grid.alphabet"
-        self.ext_grid = "grid.grid"
+        self.ext_reduce = "-reduce.pdb"
+        self.ext_aa = "-aa.pdb"
+        self.ext_modes = "modes.dat"
+        self.ext_alphabet = "-grid.alphabet"
+        self.ext_grid = "-grid.grid"
         self.chain = "A"
 
         self.filename_pdb_protein = filename_pdb_protein
@@ -157,19 +157,19 @@ class ProteinConfiguration:
         return os.path.join( self.path_inputFolder, self.filename_modes )
 
 
-    def reduce( self, overwrite = False):
+    def reduce( self, overwrite = False, allatom = False):
         """Creates the allatom.pdb and the reduced pdb. Additionally you can choose to overwrite the files, in case they already exist. """
         path = completePath( self.path_inputFolder )
         output_path         = self.path_inputFolder+"/"
         output_name_mapping =self.name_protein+ self.ext_mapping
 
-
-        if path.isfile(  self.filename_allAtom ) is False or (path.isfile(  self.filename_allAtom ) and overwrite is True):
-            aareduce(args_pdb=self.filename_pdb_protein,
-                output_path         = output_path,
-                output_name_pdb     =  self.filename_allAtom,
-                output_name_mapping = output_name_mapping,
-                args_chain=self.chain,  args_pdb2pqr=True, args_dumppatch=True);
+        if allatom:
+            if path.isfile(  self.filename_allAtom ) is False or (path.isfile(  self.filename_allAtom ) and overwrite is True):
+                aareduce(args_pdb=self.filename_pdb_protein,
+                    output_path         = output_path,
+                    output_name_pdb     =  self.filename_allAtom,
+                    output_name_mapping = output_name_mapping,
+                    args_chain=self.chain,  args_pdb2pqr=True, args_dumppatch=True);
         if path.isfile(  self.filename_reduce ) is False or( path.isfile(  self.filename_reduce ) and overwrite is True):
             reduce(pdb=self.filename_pdb_protein,
                    path_output= output_path,

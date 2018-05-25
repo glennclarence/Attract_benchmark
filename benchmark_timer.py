@@ -40,7 +40,9 @@ class measure_benchmark:
 
     def timer_stop(self, name):
         stop = time.time()
+        self.lock.acquire()
         self.timers[name].set_stop( stop )
+        self.lock.release()
     def timer_stop(self, name):
         self.timers[name].set_stop( time.time() )
 
@@ -53,6 +55,7 @@ class measure_benchmark:
 
     def get_timers(self):
         return self.timers
+
 
     def sumup_and_getTimer(self):
         totaltime = 0

@@ -4,6 +4,8 @@ from threading import Thread
 import os
 import shlex
 import time
+import random
+from subprocess import PIPE
 
 import consumer_producer as conpro
 
@@ -49,10 +51,13 @@ class Worker:
             elif self.do_minimization:
                 name_timer += "Minimize - "
             name_timer += str( task_id )
-            #print name_timer
+
             args[0].timer_add( name_timer, start= True)
+
+            time.sleep(random.random())
             run_program( self.filename_attract, task, shell=True)
             args[0].timer_stop( name_timer )
+            print name_timer, "time: " , args[0].get_elapsedTime(name_timer )
             args[1].put(task_id)
 
     def get_sizeTask(self):
@@ -69,6 +74,10 @@ class Worker:
     def stop_threads_if_done(self):
         for i in range( self.num_threads ):
             self.consumer[i].stop_if_done()
+
+    def wait_until_done(self):
+        while self.queue.qsize() > 0:
+            time.sleep( 1 )
 
     def add_ensembleToQueue( self, id, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
                             filename_gridReceptor, filename_alphabetReceptor, filename_output,
@@ -140,8 +149,11 @@ def run_program( filename_binary, arguments, shell = False ):
     for element  in arguments:
         args.append(element)
     print ' '.join(args)
-    #shlex.split(' '.join(args))
-    os.system( ' '.join(args))
+
+    p = subprocess.Popen( shlex.split(' '.join(args)), stdin=PIPE, stdout=PIPE)
+    p.wait()
+    #output = p.communicate("get file.ext")
+    #os.system( ' '.join(args))
    # process = subprocess.Popen( split(args), stdout=subprocess.PIPE )
     #while True:
         #output = process.stdout.readline()
