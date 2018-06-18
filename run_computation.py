@@ -47,9 +47,9 @@ class Worker:
             #print string
             name_timer = ""
             if self.do_scoring:
-                name_timer += "Scoring - "
+                name_timer += "Scored - "
             elif self.do_minimization:
-                name_timer += "Minimize - "
+                name_timer += "Docked - "
             name_timer += str( task_id )
 
             args[0].timer_add( name_timer, start= True)
@@ -57,7 +57,7 @@ class Worker:
             time.sleep(random.random())
             run_program( self.filename_attract, task, shell=True)
             args[0].timer_stop( name_timer )
-            print name_timer, "time: " , args[0].get_elapsedTime(name_timer )
+            print "\n", name_timer, "time: " , args[0].get_elapsedTime(name_timer ), "taskid ", task_id
             args[1].put(task_id)
 
     def get_sizeTask(self):
@@ -76,13 +76,25 @@ class Worker:
             self.consumer[i].stop_if_done()
 
     def wait_until_done(self):
-        while self.queue.qsize() > 0:
+        done = False
+        while not done:
+            done = True
+            for i in range(self.num_threads):
+                if not self.consumer[i].is_done():
+                    done = False
             time.sleep( 1 )
+
+    def is_done(self):
+        done = True
+        for i in range(self.num_threads):
+            if not self.consumer[i].is_done():
+                done = False
+        return done
 
     def add_ensembleToQueue( self, id, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
                             filename_gridReceptor, filename_alphabetReceptor, filename_output,
                             filename_gridLigand=None, filename_alphabetLigand=None,  num_modesReceptor=0, num_modesLigand=0,
-                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None  ):
+                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None, radius_cutoff = 0  ):
 
         args = list()
         if not self.use_origAttract:
@@ -109,16 +121,25 @@ class Worker:
             args.append(" -l ")
             safeAppend(args, filename_pdbLigand)
             if num_modesReceptor > 0 and filecheck(filename_modesReceptor):
-                args.append(" --numModesRec ")
+               # args.append(" --numModesRec ")
+                args.append(" --numModes ")
                 args.append(str(num_modesReceptor))
                 args.append(" --modesr ")
                 safeAppend(args, filename_modesReceptor)
             if num_modesLigand > 0 and filecheck(filename_modesLigand):
-                args.append(" --numModesLig ")
-                args.append(str(num_modesLigand))
+                #args.append(" --numModesLig ")
+
+                #args.append(str(num_modesLigand))
                 args.append(" --modesl ")
                 safeAppend(args, filename_modesLigand)
-            args.append(" --output ")
+            #if radius_cutoff > 0:
+                #args.append("--radiusCutOff ")
+               # args.append(str( radius_cutoff ))
+
+            #args.append("--numCPUs ")
+            #args.append(" 16 ")
+            #args.append(" --output ")
+            args.append(" > ")
             args.append( filename_output )
         else:
             safeAppend( args, filename_dofs )
@@ -136,7 +157,12 @@ class Worker:
                 args.append( " --grid 2 ")
                 safeAppend( args, filename_gridLigand )
             args.append(" --vmax 1000 ")
+            if radius_cutoff > 0:
+                args.append(" --rcut ")
+                args.append(str(radius_cutoff))
 
+            if self.do_scoring:
+                args.append( " --score ")
             args.append( "> "+filename_output )
 
 
@@ -148,12 +174,13 @@ def run_program( filename_binary, arguments, shell = False ):
     args.append( filename_binary )
     for element  in arguments:
         args.append(element)
-    print ' '.join(args)
+    #print ' '.join(args)
 
-    p = subprocess.Popen( shlex.split(' '.join(args)), stdin=PIPE, stdout=PIPE)
-    p.wait()
+    #p = subprocess.Popen( shlex.split(' '.join(args)), stdin=PIPE, stdout=PIPE)
+    #p.wait()
     #output = p.communicate("get file.ext")
-    #os.system( ' '.join(args))
+    os.system( ' '.join(args))
+
    # process = subprocess.Popen( split(args), stdout=subprocess.PIPE )
     #while True:
         #output = process.stdout.readline()

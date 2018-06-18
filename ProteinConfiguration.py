@@ -47,7 +47,7 @@ class ProteinConfiguration:
 
     After setting all paths and filenames, files can be created via reduce, create_modes and create_grid
     """
-    def __init__(self, name_protein, filename_pdb_protein, path_attract = os.environ['ATTRACTDIR'] , path_attractTools = os.environ['ATTRACTTOOLS']):
+    def __init__(self, name_protein, filename_pdb_protein, path_attract = os.environ['ATTRACTDIR'] , path_attractTools = os.environ['ATTRACTTOOLS'], filename_pdb_reference=None):
         self.name_protein = name_protein
         self.use_modes = False
 
@@ -55,13 +55,14 @@ class ProteinConfiguration:
         self.path_attractTools = path_attractTools
         self.ext_mapping = ".mapping"
         self.ext_reduce = "-reduce.pdb"
-        self.ext_aa = "-aa.pdb"
+        self.ext_aa = "-allatom.pdb"
         self.ext_modes = "modes.dat"
         self.ext_alphabet = "-grid.alphabet"
         self.ext_grid = "-grid.grid"
         self.chain = "A"
 
         self.filename_pdb_protein = filename_pdb_protein
+        self.filename_pdb_reference = filename_pdb_reference
         self.filename_reduce    = name_protein + self.ext_reduce
         self.filename_alphabet  = name_protein + self.ext_alphabet
         self.filename_grid      = name_protein + self.ext_grid
@@ -115,6 +116,7 @@ class ProteinConfiguration:
 
     def set_num_modes( self, num_modes):
         """sets the number of modes and wheter modefiles can be created of not"""
+        self.ext_modes = "-"+str(num_modes)+"-modes.dat"
         self.num_modes = num_modes
         self.use_modes = self.num_modes > 0
 
@@ -157,7 +159,7 @@ class ProteinConfiguration:
         return os.path.join( self.path_inputFolder, self.filename_modes )
 
 
-    def reduce( self, overwrite = False, allatom = False):
+    def reduce( self, overwrite = False, allatom = False, reference = False):
         """Creates the allatom.pdb and the reduced pdb. Additionally you can choose to overwrite the files, in case they already exist. """
         path = completePath( self.path_inputFolder )
         output_path         = self.path_inputFolder+"/"
@@ -170,22 +172,33 @@ class ProteinConfiguration:
                     output_name_pdb     =  self.filename_allAtom,
                     output_name_mapping = output_name_mapping,
                     args_chain=self.chain,  args_pdb2pqr=True, args_dumppatch=True);
+        if reference:
+            if path.isfile(  self.filename_allAtom ) is False or (path.isfile(  self.filename_allAtom ) and overwrite is True):
+                aareduce(args_pdb=self.filename_pdb_protein,
+                    output_path         = output_path,
+                    output_name_pdb     =  self.filename_allAtom,
+                    args_chain=self.chain,   args_dumppatch=True, args_heavy=True, args_readpatch=True);
         if path.isfile(  self.filename_reduce ) is False or( path.isfile(  self.filename_reduce ) and overwrite is True):
-            reduce(pdb=self.filename_pdb_protein,
+            reduce(pdb= os.path.join(self.path_inputFolder,self.filename_allAtom),
                    path_output= output_path,
                    name_output =  self.filename_reduce,  chain=self.chain);
+
+
+
 
         return   path.filename(self.filename_allAtom),   path.filename(self.filename_reduce)
 
     def create_modes(self, overwrite = False):
         """Creates the modefile in the inputFolder according to the number of modes set before."""
         path = completePath(self.path_inputFolder)
+        self.filename_modes = self.name_protein + self.ext_modes
         path_output = self.path_inputFolder + "/"
         if path.isfile(self.filename_modes) is False or ( path.isfile(self.filename_modes) and overwrite is True):
             modes(        pdb = self.get_filenamePdbReduced(),
                   path_output = path_output,
-                  name_output = self.filename_modes, aapdb=None, nrmodes=5, sugar=False, scale=1.0, aacontact=False)
+                  name_output = self.filename_modes, aapdb=None, nrmodes=self.num_modes, sugar=False, scale=1.0, aacontact=False)
         return path.filename(self.filename_modes)
+
 
 
     def set_partner( self, filename_pdb_partner):
@@ -218,7 +231,9 @@ def create_StartingPositions( file_input_rotation, file_input_pdbReducedReceptor
     if os.path.isfile(file_output_DOFs ) is False or (os.path.isfile(file_output_DOFs ) and overwrite is True):
         bash_command = "cp {} {}/{}".format(file_input_rotation, path_output, "rotation.dat")
         os.system( bash_command )
+
         bash_command = "{}/translate {} {} > {}/translate.dat".format( path_attract, file_input_pdbReducedReceptor, file_input_pdbReducedLigand, path_output)
+        print bash_command
         os.system(bash_command)
         bash_command = "{}/tools/systsearch {}/rotation.dat {}/translate.dat> {}".format( os.path.dirname(os.path.abspath(__file__)),path_output,path_output, file_output_DOFs )
         os.system( bash_command )
@@ -240,3 +255,13 @@ def redirect_argv(num):
 
 with redirect_argv(1):
     print(sys.argv)
+
+
+def create_modes( filename_input,path_output, filename_output, num_modes):
+    """Creates the modefile in the inputFolder according to the number of modes set before."""
+
+
+    modes(        pdb = filename_input,
+          path_output = path_output,
+          name_output = filename_output, aapdb=None, nrmodes=num_modes, sugar=False, scale=1.0, aacontact=False)
+

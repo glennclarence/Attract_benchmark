@@ -100,7 +100,7 @@ def reduce(pdb, path_output, name_output, dna=False, rna=False, compat=False, ch
             print_res(outp,ff, chain,compat, mapping=False)
             outp.close()
     else:
-        assert os.path.exists(pdb)
+        assert os.path.exists(pdb), pdb
         if name_output is None:
             outfile = os.path.splitext(pdb)[0] + "r.pdb"
         else:

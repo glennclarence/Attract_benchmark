@@ -6,11 +6,13 @@ class ProteinEsemble:
     def __init__(self, path_Ensemble):
         self.path_ensemble = path_Ensemble
         self.list_PDB ={}
+        self.list_PDBreference = {}
         self.receptor = None
         self.ligand= None
 
     def add_Protein(self,  name_protein, filename_PDB ):
         self.list_PDB[ name_protein ] = filename_PDB
+        #self.list_PDBreference[name_protein] = filename_PDBreference
 
     def delete_Protein(self, name_protein ):
         del self.list_PDB[name_protein]
@@ -54,11 +56,14 @@ class ProteinEsemble:
     def get_filenamePDB(self, name_protein):
         return self.list_PDB[name_protein]
 
+    def get_filenamePDBreference(self, name_protein):
+        return self.list_PDBreference[name_protein]
+
     def get_ensemblePDB(self):
         return self.list_PDB
 
 
-def load_fromFolder( path_folder, filename_sheme_pdb  ):
+def load_fromFolder( path_folder, filename_sheme_pdb, filename_sheme_pdbreference = None  ):
     ensembleList = list()
     for root, dirs, files in os.walk( path_folder ):
         protein_ensemble = ProteinEsemble(root)
@@ -69,9 +74,13 @@ def load_fromFolder( path_folder, filename_sheme_pdb  ):
             if name.endswith( filename_sheme_pdb ) and filename_sheme_pdb is not None:
                 count += 1
                 filename_pdb = os.path.join( root, name )
-
                 name_protein = os.path.split(root)[-1] + "-" + name.split('.')[0]
                 protein_ensemble.add_Protein(name_protein, filename_pdb)
+            # if name.endswith( filename_sheme_pdbreference ) and filename_sheme_pdbreference is not None:
+            #     filename_pdb = os.path.join( root, name )
+            #
+            #     name_protein = os.path.split(root)[-1] + "-" + name.split('.')[0]
+            #     protein_ensemble.add_Proteinreference(name_protein, filename_pdb)
 
         if count > 0:
             ensembleList.append( protein_ensemble )
@@ -111,3 +120,13 @@ def get_proteinMinSize( protein_list):
             count_lines = length_pdb
             maxKey  =  key
     return maxKey
+
+def get_proteinByindex( protein_ensemble, index, scheme ):
+    for key, value in protein_ensemble.iteritems():
+        if key[index] == scheme:
+            return key
+
+
+def get_ligandByindex( protein_ensemble ):
+    receptorName = get_proteinMaxSize(protein_ensemble)
+    return receptorName
