@@ -69,9 +69,18 @@ for name_protein, input, name_bench in bechmarks:
                             amplitude[mode_idx-2] += float(line.split()[0])*float(line.split()[0]) + float(line.split()[1])*float(line.split()[1]) + float(line.split()[2])*float(line.split()[2])
                     print "\t\t", "amplitudes", amplitude
                     print "\t\t", "eigenvalues", eigenvalues
-        result_protein.append( (name_singleBench[0], rmsd, pos,  rmsd.mean(), rmsd[:10].mean(), rmsd[:50].mean(), np.sort(rmsd)[:10].mean(), np.sort(rmsd)[:50].mean(), num_modes, amplitude, eigenvalues))
+        result_protein.append( (int(num_modes), rmsd, pos,  min(rmsd), rmsd.mean(), rmsd[:10].mean(), rmsd[:50].mean(), np.sort(rmsd)[:10].mean(), np.sort(rmsd)[:50].mean(),  amplitude, eigenvalues))
     result.append( (name_protein, result_protein) )
 
 
 print result
 
+
+result_rmsd= np.zeros( 10, dtype=float)
+for protein , protein_result in result:
+    for benchmark in protein_result:
+        result_rmsd[benchmark[0]] += benchmark[5]
+
+for i in range(len(result_rmsd)):
+    result_rmsd[i] /= len(result)
+    print "modes " , i, " ",result_rmsd[i]
