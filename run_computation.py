@@ -47,17 +47,16 @@ class Worker:
             #print string
             name_timer = ""
             if self.do_scoring:
-                name_timer += "Scored - "
+                name_timer += "Scoring - "
             elif self.do_minimization:
-                name_timer += "Docked - "
+                name_timer += "Docking - "
             name_timer += str( task_id )
-
+            print  "Started", name_timer
             args[0].timer_add( name_timer, start= True)
-
             time.sleep(random.random())
             run_program( self.filename_attract, task, shell=True)
             args[0].timer_stop( name_timer )
-            print "\n", name_timer, "time: " , args[0].get_elapsedTime(name_timer ), "taskid ", task_id
+            print "Finished", name_timer, ". Time: " , args[0].get_elapsedTime(name_timer )
             args[1].put(task_id)
 
     def get_sizeTask(self):
