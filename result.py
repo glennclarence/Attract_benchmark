@@ -29,8 +29,12 @@ def mode_ext( num_modes):
 
 bechmarks = load_benchmarks( path_folder )
 
+
+
+result = list()
 for name_protein, input, name_bench in bechmarks:
     print name_protein
+    result_protein = list()
     for name_singleBench in name_bench:
         index_modes = 27
         num_modes = name_singleBench[0][index_modes]
@@ -65,6 +69,9 @@ for name_protein, input, name_bench in bechmarks:
                             amplitude[mode_idx-2] += float(line.split()[0])*float(line.split()[0]) + float(line.split()[1])*float(line.split()[1]) + float(line.split()[2])*float(line.split()[2])
                     print "\t\t", "amplitudes", amplitude
                     print "\t\t", "eigenvalues", eigenvalues
+        result_protein.append( (name_singleBench[0], rmsd, pos,  rmsd.mean(), rmsd[:10].mean(), rmsd[:50].mean(), np.sort(rmsd)[:10].mean(), np.sort(rmsd)[:50].mean(), num_modes, amplitude, eigenvalues))
+    result.append( (name_protein, result_protein) )
 
 
+print result
 
