@@ -61,17 +61,22 @@ def mode_ext( num_modes):
 
 def evaluate( bechmarks):
     result = {}
+    count = 0
     for name_protein, input, name_bench in bechmarks:
-        print name_protein
+        count += 1
+        print count,name_bench[0][0], name_protein
         result_protein = [None]*tot_num
         for name_singleBench in name_bench:
             index_modes = name_singleBench[0].find("modes")-1
             num_modes = name_singleBench[0][index_modes]
-            print "\t",name_singleBench[0]
+            #print "\t",name_singleBench[0]
             if name_singleBench[0] != 'input':
                 filename_rmsd = os.path.join(name_singleBench[1],name_protein+filename_pdb+ext_rmsd)
                 with open(filename_rmsd, 'r' ) as f:
                     lines = f.readlines()
+                    len_list = len(lines)
+                    if len_list ==0:
+                        continue
                     rmsd = np.zeros( len(lines), dtype = float)
                     pos = np.arange( len(lines), dtype = int  )
                     for i, line in enumerate(lines):
@@ -80,9 +85,9 @@ def evaluate( bechmarks):
 
                 plt.plot( rmsd[:20], pos[:20])
                 #plt.show()
-                print "\t\t", "total rmsd", rmsd.mean(), "\n\t\t10 rmsd",rmsd[:10].mean(), "\n\t\t50 rmsd",rmsd[:50].mean(), "\n\t\t10 sorted rmsd",np.sort(rmsd)[:10].mean(),"\n\t\t50 sorted rmsd", np.sort(rmsd)[:50].mean()
+                #print "\t\t", "total rmsd", rmsd.mean(), "\n\t\t10 rmsd",rmsd[:10].mean(), "\n\t\t50 rmsd",rmsd[:50].mean(), "\n\t\t10 sorted rmsd",np.sort(rmsd)[:10].mean(),"\n\t\t50 sorted rmsd", np.sort(rmsd)[:50].mean()
 
-                print num_modes
+
                 if int(num_modes) > 0:
                     filename_modes  = os.path.join(input[0],name_protein+filename_pdb+mode_ext(num_modes))
                     with open(filename_modes, 'r') as f:
@@ -96,8 +101,8 @@ def evaluate( bechmarks):
                                 eigenvalues[mode_idx-2] = float(line.split()[1])
                             elif len(line.split()) == 3:
                                 amplitude[mode_idx-2] += float(line.split()[0])*float(line.split()[0]) + float(line.split()[1])*float(line.split()[1]) + float(line.split()[2])*float(line.split()[2])
-                        print "\t\t", "amplitudes", amplitude
-                        print "\t\t", "eigenvalues", eigenvalues
+                        #print "\t\t", "amplitudes", amplitude
+                        #print "\t\t", "eigenvalues", eigenvalues
                 else:
                     amplitude = 0
                     eigenvalues = 0
@@ -141,7 +146,7 @@ def evaluate( bechmarks):
 
 
 path_folder = "/home/glenn/Documents/Masterarbeit/test_bencheval/"
-
+path_folder= "/home/glenn/cluster/benchmark5_attract"
 
 name_benchmark_0modes = "benchmark_GPU_scorig_50cut_0modes"
 noModes = load_benchmarks( path_folder, name_benchmark_0modes )
@@ -150,4 +155,4 @@ noModes_result = evaluate(noModes)
 name_benchmark_5modes = "benchmark_GPU_scorig_50cut_5modes"
 n5Modes = load_benchmarks( path_folder, name_benchmark_5modes )
 n5Modes_result = evaluate(n5Modes)
-print n5Modes_result['1ACB'][idx_mode]
+print n5Modes_result['1ACB'][idx_ev]
