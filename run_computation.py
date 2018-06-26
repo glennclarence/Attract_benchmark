@@ -93,7 +93,7 @@ class Worker:
     def add_ensembleToQueue( self, id, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
                             filename_gridReceptor, filename_alphabetReceptor, filename_output,
                             filename_gridLigand=None, filename_alphabetLigand=None,  num_modesReceptor=0, num_modesLigand=0,
-                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None, radius_cutoff = 0  ):
+                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None, radius_cutoff = 0, modeForceFac = 1.0  ):
 
         args = list()
         if not self.use_origAttract:
@@ -131,9 +131,12 @@ class Worker:
                 #args.append(str(num_modesLigand))
                 args.append(" --modesl ")
                 safeAppend(args, filename_modesLigand)
-            #if radius_cutoff > 0:
-                #args.append("--radiusCutOff ")
-               # args.append(str( radius_cutoff ))
+            if radius_cutoff > 0 and self.do_scoring:
+                args.append("--cutoff ")
+                args.append(str( radius_cutoff ))
+            if modeForceFac != 1.0:
+                args.append( " --evscale  ")
+                args.append( str(modeForceFac))
 
             #args.append("--numCPUs ")
             #args.append(" 16 ")
@@ -173,7 +176,7 @@ def run_program( filename_binary, arguments, shell = False ):
     args.append( filename_binary )
     for element  in arguments:
         args.append(element)
-    #print ' '.join(args)
+    print ' '.join(args)
 
     #p = subprocess.Popen( shlex.split(' '.join(args)), stdin=PIPE, stdout=PIPE)
     #p.wait()
