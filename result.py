@@ -1,5 +1,5 @@
 import os
-from  load_pdbs import ProteinEsemble
+#from  load_pdbs import ProteinEsemble
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -17,6 +17,20 @@ idx_mean_sort_50 = 9
 idx_amp = 10
 idx_ev = 11
 tot_num = 12
+
+dict_indices = {}
+dict_indices['idx_mode'] = 0
+dict_indices['idx_rmsd'] = 1
+dict_indices['idx_energy'] = 2
+dict_indices['idx_pos'] = 3
+dict_indices['idx_min'] = 4
+dict_indices['idx_mean'] = 5
+dict_indices['idx_mean_10'] = 6
+dict_indices['idx_mean_50'] = 7
+dict_indices['idx_mean_sort_10'] = 8
+dict_indices['idx_mean_sort_50'] = 9
+dict_indices['idx_amp'] = 10
+dict_indices['idx_ev'] = 11
 
 def getEnergyfromFile( filename_scoring):
     energies = {}
@@ -155,4 +169,4 @@ noModes_result = evaluate(noModes)
 name_benchmark_5modes = "benchmark_GPU_scorig_50cut_5modes"
 n5Modes = load_benchmarks( path_folder, name_benchmark_5modes )
 n5Modes_result = evaluate(n5Modes)
-print n5Modes_result['1ACB'][idx_ev]
+print n5Modes_result['1ACB'][idx_mean_10]
