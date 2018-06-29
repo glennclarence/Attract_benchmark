@@ -142,3 +142,51 @@ plt.plot( xData,yData, 'bo')
 plt.xlim(1,60)
 plt.ylim(1,60)
 print "ratio 0modes / 5modes", weight
+
+
+#plot rmsd vs rmsd sorted
+plt.clf()
+xData = np.zeros(len(names))
+yData = np.zeros(len(names))
+weight = 0
+wcount = 0
+for i,name in enumerate(names):
+    x = a5BM.getDataProtein( BM0m, name, 'mean_sort_10'  )
+    y = a5BM.getDataProtein(BM5m, name, 'mean_sort_10')
+    xData[i] = x
+    yData[i] = y
+    if x is not None and x != -10000 and  y is not None and y != -10000 :
+        wcount += 1
+        weight += x/y
+weight /= wcount
+
+lin = np.arange(len(names))
+plt.plot( lin, lin, 'r-')
+plt.plot( xData,yData, 'bo')
+plt.xlim(1,60)
+plt.ylim(1,60)
+print "ratio 0modes / 5modes", weight, wcount
+
+#plot rmsd vs rmsd sorted
+plt.clf()
+num_modes = 5
+xData = np.zeros(len(names))
+yData = np.zeros(len(names))
+weight = 0
+wcount = 0
+for i,name in enumerate(names):
+    x = a5BM.getDataProtein( BM5m, name, 'mean_10'  )
+    y = a5BM.getDataProtein(BM5m, name, 'mean_sort_10')
+    xData[i] = x
+    yData[i] = y
+    if x is not None and x != -10000 and  y is not None and y != -10000 :
+        wcount += 1
+        weight += x/y
+weight /= wcount
+
+lin = np.arange(len(names))
+plt.plot( lin, lin, 'r-')
+plt.plot( xData,yData, 'bo')
+plt.xlim(1,60)
+plt.ylim(1,60)
+print "ratio mean rmsd /mean sorted rmsd", weight, wcount
