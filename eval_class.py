@@ -321,11 +321,12 @@ class ResultClass:
         stdDev = 0
         mean = 0
         count = 0
-        for r in rmsd[:maxIdx]:
-            count += 1
-            mean += r
-        mean /= count
-        for r in rmsd[:50]:
-            stdDev += (r - mean)* (r - mean)
-        stdDev = np.sqrt( stdDev / count)
+        # for r in rmsd[:maxIdx]:
+        #     count += 1
+        #     mean += r
+        # mean /= count
+        # for r in rmsd[:50]:
+        #     stdDev += (r - mean)* (r - mean)
+        # stdDev = np.sqrt( stdDev / count)
+        stdDev = np.std(rmsd[:maxIdx])
         return stdDev

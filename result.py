@@ -285,3 +285,32 @@ np.cov(np.asarray(frame['rank']), np.asarray( frame['rank_Till']))
 
 correlation = np.cov(np.asarray(frame['rank']), np.asarray( frame['rank_Till']))/(np.std(np.asarray(frame['rank']), axis=0)*np.std(np.asarray(frame['rank_Till']), axis=0))
 np.corrcoef(np.asarray(frame['rank']), np.asarray( frame['rank_Till']))
+
+
+
+
+BMLoad = [
+'1_benchmark_GPU_scorig_50cut_0modes',
+'1_benchmark_GPU_scorig_50cut_1modes_2EV',
+'1_benchmark_GPU_scorig_50cut_3modes',
+'1_benchmark_GPU_scorig_50cut_5modes',
+'1_benchmark_GPU_scorig_50cut_5modes_2EV',
+'1_benchmark_GPU_scorig_50cut_5modes_3EV',
+'1_benchmark_GPU_scorig_50cut_5modes_halfEV']
+
+path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
+benchmarks = {}
+for bm in BMLoad:
+    bench = pd.read_csv(os.path.join( path_evaluation, bm), sep = "\t")
+    benchmarks[bm] = bench
+
+plt.clf()
+num_plots = 14
+
+# Have a look at the colormaps here and decide which one you'd like:
+# http://matplotlib.org/1.2.1/examples/pylab_examples/show_colormaps.html
+colormap = plt.cm.gist_ncar
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, num_plots)])
+for name, data in benchmarks.iteritems():
+    plt.plot( data['mean_10'], 'o',label=name)
+plt.legend(framealpha=0.5)
