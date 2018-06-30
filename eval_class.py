@@ -36,7 +36,7 @@ def checkNone( data ):
     if data is not None:
         return data
     else:
-        return -1000000
+        return 1000000
 
 
 def load_benchmarks( path_folder, name_benchmark):
@@ -65,6 +65,7 @@ def evaluate( bechmarks, dict_indices):
         print count,name_bench[0][0], name_protein
         result_protein = [None]*len(dict_indices)
         for name_singleBench in name_bench:
+            load = True
             index_modes = name_singleBench[0].find("modes")-1
             num_modes = name_singleBench[0][index_modes]
             #print "\t",name_singleBench[0]
@@ -76,14 +77,14 @@ def evaluate( bechmarks, dict_indices):
                         len_list = len(lines)
                         if len_list ==0:
                             rmsd = np.zeros(1)
-                            rmsd[0] = -10000
+                            rmsd[0] = 100000
                         else:
                             rmsd = np.zeros( len(lines), dtype = float)
                             pos = np.arange( len(lines), dtype = int  )
                             for i, line in enumerate(lines):
                                 rmsd[i] = float( line.split()[-1])
                         if rmsd is None:
-                            rmsd = np.asarray(-10000)
+                            rmsd = np.asarray(100000)
                 except:
                     print "error loading rmsd file", filename_rmsd
                 #plt.plot( rmsd[:20], pos[:20])
@@ -117,6 +118,7 @@ def evaluate( bechmarks, dict_indices):
                 filename_scoring=os.path.join(name_singleBench[1],name_protein+filename_pdb+ext_scored)
                 energies = getEnergyfromFile(filename_scoring)
                 #print "energies",energies
+            #try:
             result_protein[dict_indices['mode']]    = int(num_modes)
             result_protein[dict_indices['rmsd']] = checkNone(rmsd)
             result_protein[dict_indices['energy']] = checkNone(energies)
@@ -129,9 +131,13 @@ def evaluate( bechmarks, dict_indices):
             result_protein[dict_indices['mean_sort_50']] = checkNone(np.sort(rmsd)[:50].mean())
             result_protein[dict_indices['amp']] = checkNone(amplitude)
             result_protein[dict_indices['ev']] = checkNone(eigenvalues)
+            #except:
+            #    load = False
+             #   print "could not load Protein ", name_protein
+
            # result_protein.append( (int(num_modes), rmsd, energies,pos,  min(rmsd), rmsd.mean(), rmsd[:10].mean(), rmsd[:50].mean(), np.sort(rmsd)[:10].mean(), np.sort(rmsd)[:50].mean(),  amplitude, eigenvalues ))
 
-
+        #if load:
         result[name_protein] = result_protein
     return result
 
@@ -275,4 +281,51 @@ class ResultClass:
             return checkNone(scoreEnergy * scoreRmsd)
         except:
             print "error getting score for benchmark ", name_benchmark, name_protein
-            return -10000
+            return 100000
+
+
+    def getWeightedResultTill(self, name_benchmark, name_protein):
+        try:
+            data = self.getDataProtein(name_benchmark, name_protein)
+            rmsdBest = min(checkNone(data[self._dict_index['rmsd']]))
+
+            energyMeanBulk = np.mean(checkNone(data[self._dict_index['energy']]))
+            energyBest = min(checkNone(data[self._dict_index['energy']]))
+
+            siteBulk = []
+            site =[]
+            #print "Ess ",energyMeanBulk,  energyBest
+            for E, rmsd in zip(data[self._dict_index['energy']], data[self._dict_index['rmsd']]):
+                #check = 0
+                s = ( E - energyMeanBulk ) / energyBest
+                if rmsd < (rmsdBest + 1.5) and 0 < rmsd:
+                    #print "site ", s, rmsd
+                    site.append( (s,rmsd) )
+                elif (rmsdBest + 1.5) < rmsd and rmsd < 1000:
+                   # print "bulk ", s, rmsd
+                   # if s < check:
+                        #check = s
+                    siteBulk.append( (s,rmsd) )
+            siteMin = max(site, key=lambda t: t[0])
+            siteBulkMin = max(siteBulk, key=lambda t: t[0])
+           # print "check" , check
+           # print siteMin, siteBulkMin
+            return siteMin[0] - siteBulkMin[0]
+        except:
+            print "error getting score for benchmark ", name_benchmark, name_protein
+            return 100000
+
+    def stdDevRmsd(self, name_benchmark, name_protein, maxIdx):
+        data = self.getDataProtein(name_benchmark, name_protein)
+        rmsd = checkNone(data[self._dict_index['rmsd']])
+        stdDev = 0
+        mean = 0
+        count = 0
+        for r in rmsd[:maxIdx]:
+            count += 1
+            mean += r
+        mean /= count
+        for r in rmsd[:50]:
+            stdDev += (r - mean)* (r - mean)
+        stdDev = np.sqrt( stdDev / count)
+        return stdDev
