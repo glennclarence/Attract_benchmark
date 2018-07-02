@@ -10,6 +10,7 @@ from collections import OrderedDict
 # idx_energy = 2
 # idx_pos = 3
 # idx_min = 4
+# idx_min = 4
 # idx_mean = 5
 # idx_mean_10 = 6
 # idx_mean_50 = 7
@@ -261,7 +262,7 @@ BM = BM0m
 
 
 for bm in BMLoad:
-    df = pd.DataFrame(columns=['name', 'mean_10', 'rank_Till', 'rank', 'score', 'stdDev'])
+    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','rank_Till', 'rank', 'score', 'stdDev'])
     a5BM.loadBenchmark( path_folder, bm)
     names = a5BM.getSorted('mean_10', bm,onlygetName = True)
     row_list=[]
@@ -269,6 +270,7 @@ for bm in BMLoad:
         dict = {}
         dict['name'] = name
         dict['mean_10']    = a5BM.getDataProtein( bm, name, 'mean_10'  )
+        dict['mean_sort_50'] = a5BM.getDataProtein(bm, name, 'mean_sort_50')
         dict['rank_Till'] = a5BM.getWeightedResultTill(bm, name)
         dict['rank']      = a5BM.getWeightedResult(bm, name)
         dict['score']      = a5BM.scoringPerformance(bm, name)
@@ -314,3 +316,119 @@ plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, num_plots)])
 for name, data in benchmarks.iteritems():
     plt.plot( data['mean_10'], 'o',label=name)
 plt.legend(framealpha=0.5)
+
+name_Plotpath = "/home/glenn/Documents/Masterarbeit/analysis/Plots"
+name_plot = "1_benchmark_GPU_scorig_50cut_5modes_halfEV"
+import pandas as pd
+
+
+def loadPlotData(name_path, name_plot):
+    data = pd.read_csv(os.pat.join(name_path, name_plot), sep="\t")
+    return data
+
+
+def readTiming( name_path, name_plot):
+    timing = pd.read_csv(os.path.join( name_path, name_plot), sep="\s+")
+    return timing
+
+t5mgpu = readTiming( "/home/glenn/cluster", "timing_GPU_5modes")
+t0mgpu = readTiming( "/home/glenn/cluster", "timing_GPU_0modes")
+
+dict0ml = []
+for protein in t0morig['Protein']:
+    print protein
+    bla = t0mgpu.loc[t0mgpu['Protein'] == protein, 'time'].tolist()
+    dict0ml.append( (protein, bla[0]) )
+
+dict5ml = []
+for protein in t5morig['Protein']:
+    print protein
+    bla = t5mgpu.loc[t5mgpu['Protein'] == protein, 'time'].tolist()
+    dict5ml.append( (protein, float(bla[0])) )
+df5mgpu = pd.DataFrame(dict5ml, dtype = 'float',columns = ['Protein', 'time'])
+speedup = np.asarray(t5morig['time']/df5mgpu['time'] )
+
+path = '/home/glenn/cluster/benchmark5_attract/'
+this_list = []
+for protein in df5mgpu['Protein']:
+    filename_dofs=path + protein +'/input/dofs.dat'
+    #print filename_dofs
+    num = 0
+    idx= 1
+    with open(filename_dofs, 'r') as f:
+        for line in f.readlines():
+            if line.startswith("#{}".format(idx)) or line.startswith("# {}".format(idx)):
+                #print line
+                num = idx
+                idx += 1
+
+    filename_pdb = path + protein + '/receptor-for-docking.pdb'
+    filename_pdb = path + protein + '/input/' + protein + "-receptor-for-docking-reduce.pdb"
+    with open(filename_pdb, 'r') as f:
+       len_rec = len( f.readlines())
+    filename_pdb = path + protein + '/ligand-for-docking.pdb'
+    filename_pdb = path + protein + '/input/'+protein+"-ligand-for-docking-reduce.pdb"
+    with open(filename_pdb, 'r') as f:
+        len_lig = len(f.readlines())
+    this_list.append((protein, num, len_rec, len_lig))
+
+
+this_list = []
+t5mgpu = readTiming( "/home/glenn/cluster", "timing_GPU_5modes")
+for protein in t5mgpu['Protein']:
+    filename_dofs=path + protein +'/input/dofs.dat'
+    #print filename_dofs
+    num = 0
+    idx= 1
+    with open(filename_dofs, 'r') as f:
+        for line in f.readlines():
+            if line.startswith("#{}".format(idx)) or line.startswith("# {}".format(idx)):
+                #print line
+                num = idx
+                idx += 1
+
+    filename_pdb = path + protein + '/receptor-for-docking.pdb'
+    filename_pdb = path + protein + '/input/' + protein + "-receptor-for-docking-reduce.pdb"
+    with open(filename_pdb, 'r') as f:
+       len_rec = len( f.readlines())
+    filename_pdb = path + protein + '/ligand-for-docking.pdb'
+    filename_pdb = path + protein + '/input/'+protein+"-ligand-for-docking-reduce.pdb"
+    with open(filename_pdb, 'r') as f:
+        len_lig = len(f.readlines())
+    this_list.append((protein, num, len_rec, len_lig))
+
+
+1BGX_times=[
+(5000,   32.0540018082),
+(10000,  55.67700),
+(20000,  105.064357),
+(30000,  152.293265),
+(40000,  203.344777),
+(50000,  259.515478),
+(60000,  302.787827),
+(70000,  353.170102),
+(80000,  402.038713)
+]
+x=[5000,
+10000,
+20000,
+30000,
+40000,
+50000,
+60000,
+70000,
+80000
+]
+y=[
+32.0540018082,
+55.67700,
+105.064357,
+152.293265,
+203.344777,
+259.515478,
+302.787827,
+353.170102,
+402.03871]
+
+np.polyfit(x,y,1)
+array([  4.95791618e-03,   6.25623464e+00])

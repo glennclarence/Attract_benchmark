@@ -93,7 +93,7 @@ class Worker:
     def add_ensembleToQueue( self, id, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
                             filename_gridReceptor, filename_alphabetReceptor, filename_output,
                             filename_gridLigand=None, filename_alphabetLigand=None,  num_modesReceptor=0, num_modesLigand=0,
-                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None, radius_cutoff = 0, modeForceFac = 1.0  ):
+                            filename_modesReceptor=None, filename_modesLigand=None, filename_modesJoined = None, radius_cutoff = 0, modeForceFac = 1.0 , logfile=None ):
 
         args = list()
         if not self.use_origAttract:
@@ -167,7 +167,10 @@ class Worker:
                 args.append( " --score ")
             args.append( "> "+filename_output )
 
-
+        if logfile is not None:
+            with open(logfile, 'w') as f:
+                f.write(''.join(args))
+                f.close()
         self.producer.add( (id,args) )
 
 

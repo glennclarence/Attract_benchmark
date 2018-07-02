@@ -78,6 +78,7 @@ def evaluate( bechmarks, dict_indices):
                         if len_list ==0:
                             rmsd = np.zeros(1)
                             rmsd[0] = 100000
+                            pos= np.zeros(1)
                         else:
                             rmsd = np.zeros( len(lines), dtype = float)
                             pos = np.arange( len(lines), dtype = int  )
@@ -330,3 +331,7 @@ class ResultClass:
         # stdDev = np.sqrt( stdDev / count)
         stdDev = np.std(rmsd[:maxIdx])
         return stdDev
+
+
+
+        
