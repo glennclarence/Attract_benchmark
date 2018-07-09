@@ -316,12 +316,13 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
 path_test = "/home/glenn/cluster/benchmark_attract_test/1AVX"
 path = "/home/glenn/cluster/benchmark5_attract/"
-path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
+#path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
 #path = "/home/glenn/Documents/benchmark_1bgx"
+
 ###test
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_ORIG_scorig_0modes", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes = 0, use_orig= False
-               , num_threads = 1, do_minimization=True, do_scoring=True)
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_ORIG_scorig_0modes", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 0, use_orig= False
+ #              , num_threads = 1, do_minimization=True, do_scoring=True)
 
 
 #run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_0modes", create_grid = True, create_modes = True, create_dofs = True,
@@ -338,13 +339,17 @@ run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_ORIG_scorig_
 
 
 
-#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_5modes_3EV", create_grid = True, create_modes = True, create_dofs = True,
-#               create_reduce = True, num_modes = 5, use_orig= False
-#               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 3)
+run_benchmark( path_test, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_7modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes = 5, use_orig= False
+               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0)
 
-#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_1modes_2EV", create_grid = True, create_modes = True, create_dofs = True,
-#               create_reduce = True, num_modes = 1, use_orig= False
-#               , num_threads = 1, do_minimization=True, do_scoring=True,evfactor = 2)
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_10modes_3EV", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 10, use_orig= False
+#               , num_threads = 1, do_minimization=True, do_scoring=True,evfactor = 3)
+
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_10modes_5EV", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 10, use_orig= False
+ #              , num_threads = 1, do_minimization=True, do_scoring=True,evfactor = 5)
 
 #run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_1modes", create_grid = True, create_modes = True, create_dofs = True,
 #               create_reduce = True, num_modes = 1, use_orig= False, num_threads = 1, do_minimization=True, do_scoring=True)

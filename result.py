@@ -262,7 +262,7 @@ BM = BM0m
 
 
 for bm in BMLoad:
-    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','rank_Till', 'rank', 'score', 'stdDev'])
+    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','rank_Till', 'rank', 'score', 'stdDev', 'best_energy'])
     a5BM.loadBenchmark( path_folder, bm)
     names = a5BM.getSorted('mean_10', bm,onlygetName = True)
     row_list=[]
@@ -275,6 +275,7 @@ for bm in BMLoad:
         dict['rank']      = a5BM.getWeightedResult(bm, name)
         dict['score']      = a5BM.scoringPerformance(bm, name)
         dict['stdDev']      = a5BM.stdDevRmsd(bm, name, 50)
+        dict['best_energy'] = min(a5BM.getDataProtein( bm, name, 'energy'  ))
         #print dict
         row_list.append( dict )
 
