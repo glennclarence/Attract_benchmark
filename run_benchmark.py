@@ -88,21 +88,21 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
 
     if use_orig:
-        path_attract_app = "/home/glenn/Documents/attract/bin"
+       #path_attract_app = "/home/glenn/Documents/attract/bin"
 
         name_attractBinary = "attract"
     #if do_minimization:
     dock = compute.Worker(path_attract=path_attract_app, name_attractBinary = name_attractBinary, do_minimization=True,
                           num_threads=num_threads, args=(benchmark_minimization,finisheditems_docking,), use_OrigAttract=use_orig)
 
-    path_attract_app = "/home/glenn/Documents/attract/bin"
-    name_attractBinary = "attract"
+   # path_attract_app = "/home/glenn/Documents/attract/bin"
+   # name_attractBinary = "attract"
     dock.start_threads()
     #if do_scoring:
     score = compute.Worker(path_attract=path_attract_app, name_attractBinary= name_attractBinary,
                                do_scoring=True,
                                num_threads=num_threads, args=(benchmark_scoring, finisheditems_scoring,),
-                               use_OrigAttract=True)
+                               use_OrigAttract=False)
 
     score.start_threads()
 
@@ -180,8 +180,11 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             if create_modes and num_modes > 0:
                 print "\t\t--Create modefiles"
                 benchmark.timer_start("Create_modes")
-                receptor.create_modes(overwrite=False)
-                ligand.create_modes(overwrite=False)
+                try:
+                    receptor.create_modes(overwrite=False)
+                    ligand.create_modes(overwrite=False)
+                except:
+                    pass
                 benchmark.timer_appendStop("Create_modes")
                 filename_modesJoined = None
 
@@ -239,12 +242,12 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
 
 
-
     if not do_minimization:
         for key, pair in pairs.iteritems():
             finisheditems_docking.put(key)
 
     dock.stop_threads_if_done()
+    dock.wait_until_done()
     if do_scoring:
         # print '**************************************************************'
         # print "Run Scoring"
@@ -307,7 +310,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             time.sleep(0.05)
 
 
-    dock.wait_until_done()
+
     score.wait_until_done()
 
 
@@ -347,10 +350,34 @@ path = "/home/glenn/cluster/benchmark5_attract/"
 
 
 
+########STILLL to complete
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_1modes", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 1, use_orig= False
+#               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0)
+
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_1modes_point5EV", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 1, use_orig= False
+#               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5)
+
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_1modes_5EV", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 1, use_orig= False
+#               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0)
+
+#####end to complete
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_10modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes = 10, use_orig= False
+               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1)
+
 
 run_benchmark( path_test, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_test", create_grid = True, create_modes = True, create_dofs = True,
                create_reduce = True, num_modes = 5, use_orig= False
                , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, irmsd=True)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes = 20, use_orig= False
+               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1)
+
 
 #run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_10modes_3EV", create_grid = True, create_modes = True, create_dofs = True,
 #               create_reduce = True, num_modes = 10, use_orig= False

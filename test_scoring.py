@@ -33,7 +33,7 @@ def getReferenceFile( use_modes,scoring):
     if scoring:
         ext += "/result.dat"
     else:
-        ext += "dof.dat"
+        ext += "/dof.dat"
     return  os.path.join(path_reference,ext)
 
 
@@ -72,8 +72,8 @@ def run_attract( use_orig, filename_dof, folder_input, do_scoring ,num_modes):
     ext_grid ="grid.grid"
     lig ="ligand"
     rec ="receptor"
-    ext_modesRec = "modes"+ rec + ".dat"
-    ext_modesLig = "modes" + lig + ".dat"
+    ext_modesRec = "modes"+ rec + "_10.dat"
+    ext_modesLig = "modes" + lig + "_10.dat"
 
     ext_pdb = "r.pdb"
     ext_alphabet ="grid.alphabet"
@@ -146,6 +146,7 @@ def test_result(use_modes, use_gpu, scoring):
     #ean_debug = getMean(data_debug)
     row_list=[]
     file_ref = getReferenceFile(use_modes, scoring)
+    print file_ref
     data_ref = loadData(file_ref)
     print type(data_ref)
     template = "{0:22}|{1:3}{2:23.6g}|{3:13}{4:17.6g}|{5:17}{6:10.3g}|{7:17}{8:10.5g}"
@@ -173,10 +174,10 @@ def test_result(use_modes, use_gpu, scoring):
 
         # maxdiff = max(diff)
 
-        print idx_maxdiff, "maximum difference", diff[idx_maxdiff], "maximum ration of maxdiff/data at idx diff", max(
+        print idx_maxdiff, "\tmaximum difference", diff[idx_maxdiff], "\tmaximum ration of maxdiff/data at idx diff", max(
             diff[idx_maxdiff] / data_debug[column][idx_maxdiff],
-            diff[idx_maxdiff] / data_ref[column][idx_maxdiff]), "max of mean of diff/ mean of debug/ref data", max(
-            np.mean(diff) / np.mean(data_debug[column]), np.mean(diff) / np.mean(data_ref[column]))
+            diff[idx_maxdiff] / data_ref[column][idx_maxdiff]), "\tmax of mean of diff/ mean of debug/ref data", max(
+            np.mean(diff) / np.mean(data_debug[column]), np.mean(diff) / np.mean(data_ref[column])), "\t data gpu ", data_debug[column][idx_maxdiff],  "\t data ref ", data_ref[column][idx_maxdiff]
 
         row_list.append(dict)
 
@@ -195,8 +196,9 @@ def test_result(use_modes, use_gpu, scoring):
 
 #path_input = "/home/glenn/Documents/Masterarbeit/testfolder/1AVX/input"
 file_dof ="/dof_docked_all.dat"
+
 #run_attract( True, path_input + file_dof, path_input, do_scoring=True,num_modes=5)
-run_attract( False, path_input + file_dof,path_input, do_scoring=True,num_modes=10)
+run_attract( False, path_input + file_dof,path_input, do_scoring=True,num_modes=5)
 use_modes = True
 use_gpu = True
 scoring = True

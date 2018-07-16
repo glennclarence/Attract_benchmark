@@ -199,6 +199,9 @@ class ResultClass:
         if clear:
             plt.clf()
         plt.plot(rmsd, y, 'bo')
+        plt.xlabel('RMSD (A)')
+        plt.ylabel('Energy ')
+        plt.title('{}\t{}'.format(name_benchmark, name_protein))
         if show:
             plt.show()
         return plt
@@ -333,5 +336,11 @@ class ResultClass:
         return stdDev
 
 
-
+    def getNumSmaller(self, name_benchmark, name_protein, borderRmsd,sorted = False):
+        data = self.getDataProtein(name_benchmark, name_protein)
+        rmsd = checkNone(data[self._dict_index['rmsd']])
+        if sorted:
+            rmsd = np.sort(rmsd)
+        count = np.where(rmsd < borderRmsd)
+        return len(count[0])
         
