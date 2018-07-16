@@ -204,8 +204,8 @@ yData = np.zeros(len(names))
 weight = 0
 wcount = 0
 for i,name in enumerate(names):
-    x = a5BM.getDataProtein( BM0m, name, 'mean_sort_10'  )
-    y = a5BM.getDataProtein(BM5m, name, 'mean_sort_10')
+    x = a5BM.getDataProtein( BM0m, name, 'mean_sort_10' )
+    y = a5BM.getDataProtein( BM5m, name, 'mean_sort_10' )
     xData[i] = x
     yData[i] = y
     if x is not None and x != -10000 and  y is not None and y != -10000 :
@@ -262,20 +262,29 @@ BM = BM0m
 
 
 for bm in BMLoad:
-    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','rank_Till', 'rank', 'score', 'stdDev', 'best_energy'])
-    a5BM.loadBenchmark( path_folder, bm)
+    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A'])
+    #a5BM.loadBenchmark( path_folder, bm)
     names = a5BM.getSorted('mean_10', bm,onlygetName = True)
     row_list=[]
     for name in names:
         dict = {}
-        dict['name'] = name
-        dict['mean_10']    = a5BM.getDataProtein( bm, name, 'mean_10'  )
-        dict['mean_sort_50'] = a5BM.getDataProtein(bm, name, 'mean_sort_50')
-        dict['rank_Till'] = a5BM.getWeightedResultTill(bm, name)
-        dict['rank']      = a5BM.getWeightedResult(bm, name)
-        dict['score']      = a5BM.scoringPerformance(bm, name)
-        dict['stdDev']      = a5BM.stdDevRmsd(bm, name, 50)
-        dict['best_energy'] = min(a5BM.getDataProtein( bm, name, 'energy'  ))
+        try:
+            dict['name'] = name
+            dict['mean_10']    = a5BM.getDataProtein( bm, name, 'mean_10'  )
+            dict['mean_sort_50'] = a5BM.getDataProtein(bm, name, 'mean_sort_50')
+            dict['mean_sort_10'] = a5BM.getDataProtein(bm, name, 'mean_sort_10')
+            dict['rank_Till'] = a5BM.getWeightedResultTill(bm, name)
+            dict['rank']      = a5BM.getWeightedResult(bm, name)
+            dict['score']      = a5BM.scoringPerformance(bm, name)
+            dict['stdDev']      = a5BM.stdDevRmsd(bm, name, 50)
+            dict['best_energy'] = min(a5BM.getDataProtein( bm, name, 'energy'  ))
+
+            dict['num_10A'] = len(a5BM.getNumSmaller(bm, name, 10,sorted = False)[0])
+            dict['num_5A'] = len(a5BM.getNumSmaller(bm, name, 5,sorted = False)[0])
+            dict['num_sorted_10A'] = len(a5BM.getNumSmaller(bm, name, 10,sorted = True)[0])
+            dict['num_sorted_5A'] =len( a5BM.getNumSmaller(bm, name, 5,sorted = True)[0])
+        except:
+            pass
         #print dict
         row_list.append( dict )
 
@@ -303,7 +312,7 @@ BMLoad = [
 
 path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
 benchmarks = {}
-for bm in BMLoad:
+for bm in bms:
     bench = pd.read_csv(os.path.join( path_evaluation, bm), sep = "\t")
     benchmarks[bm] = bench
 
@@ -433,3 +442,99 @@ y=[
 
 np.polyfit(x,y,1)
 array([  4.95791618e-03,   6.25623464e+00])
+bms=[
+'1_benchmark_GPU_scGPU_50cut_0modes',
+'1_benchmark_GPU_scGPU_50cut_3modes',
+'1_benchmark_GPU_scGPU_50cut_3modes_sc2EV',
+'1_benchmark_GPU_scGPU_50cut_3modes_scnoEV',
+'1_benchmark_GPU_scGPU_50cut_5modes',
+'1_benchmark_GPU_scGPU_50cut_5modes_sc2EV',
+'1_benchmark_GPU_scGPU_50cut_5modes_scnoEV',
+'1_benchmark_GPU_scorig_50cut_0modes',
+'1_benchmark_GPU_scorig_50cut_1modes_2EV',
+'1_benchmark_GPU_scorig_50cut_3modes',
+'1_benchmark_GPU_scorig_50cut_5modes',
+'1_benchmark_GPU_scorig_50cut_5modes_2EV',
+'1_benchmark_GPU_scorig_50cut_5modes_3EV',
+'1_benchmark_GPU_scorig_50cut_5modes_halfEV'  ]
+#######################################################################plot rmsds according to ranking
+
+bms = ['1_benchmark_GPU_scorig_50cut_0modes',
+'1_benchmark_GPU_scorig_50cut_3modes',
+'1_benchmark_GPU_scorig_50cut_5modes']
+BM = [ "benchmark_GPU_scorig_50cut_0modes","benchmark_GPU_scorig_50cut_3modes","benchmark_GPU_scorig_50cut_5modes" ]
+path = '/home/glenn/Documents/Masterarbeit/analysis/Plots/BM5_GPU_eval'
+
+
+for bb in BM:
+    a5BM.loadBenchmark(path_folder,bb)
+
+
+
+for index in range(len(bms)):
+    bm = bms[index]
+    path1 = os.path.join( path, bm)
+    df = pd.read_csv(path1, sep='\t')
+    B = BM[index]
+    column = 'rank'
+    sorted = df.sort_values(by=column,ascending=False)[:20]
+
+    for i,name in enumerate(sorted['name']):
+        #plt.clf()
+        #a5BM.plotRmsd(10000, B, name, use_energy=True)
+
+        name_dir = "/home/glenn/{}_{}".format(B,column)
+
+
+        if not os.path.exists(name_dir):
+            os.makedirs(name_dir)
+        # os.makedirs(name_dir, exist_ok=True)
+        #plt.savefig('{}/{}_{}_{}.svg'.format(name_dir,i,name,column))
+        filename = '{}/{}.dat'.format(name_dir,column)
+        file = open(filename, 'w' )
+       # sorted.reindex(np.arange(len(sorted.index)))
+        #sorted.reset_index(np.arange(len(sorted.index)))
+        sorted.reset_index(drop=True, inplace=True)
+        print sorted
+        for i, name in enumerate(sorted['name']):
+            string = " {0:3}\t{1:6}\t{2:23.6g}\t{3:23.6g}\n".format(i, name, sorted[column][i], sorted['mean_10'][i] )
+            file.write( string )
+
+
+
+BMLoad = [
+'benchmark_GPU_scorig_50cut_0modes',
+'benchmark_GPU_scorig_nocut_1modes',
+'benchmark_GPU_scorig_50cut_3modes',
+'benchmark_GPU_scorig_50cut_5modes'
+]
+bm_dict={}
+for bm in BMLoad:
+    frame = pd.read_csv(os.path.join(path_evaluation, bm), sep='\t')
+    dict ={}
+    for column in frame:
+        if column != 'Unnamed: 0':
+            try:
+                dict[column] = frame[column].mean()
+            except:
+                pass
+    bm_dict[bm] = dict
+
+
+###BARPLOT
+plt.clf()
+for i,bm in enumerate(BMLoad):
+    plt.bar(np.arange(len(bm_dict[bm]))*2*len(BMLoad)*0.2+i*0.2, list(bm_dict[bm].values()),width=0.2, align='center')
+
+
+plt.xticks(np.arange(len(bm_dict[bm]))*2*len(BMLoad)*0.2, list(bm_dict[bm].keys()), rotation='vertical')
+
+    # librarie
+
+
+plt.legend()
+
+# Show graphic
+plt.show()
+
+########END BARPLOTT''''''########
