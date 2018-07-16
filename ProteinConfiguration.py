@@ -47,7 +47,7 @@ class ProteinConfiguration:
 
     After setting all paths and filenames, files can be created via reduce, create_modes and create_grid
     """
-    def __init__(self, name_protein, filename_pdb_protein, path_attract = os.environ['ATTRACTDIR'] , path_attractTools = os.environ['ATTRACTTOOLS'], filename_pdb_reference=None):
+    def __init__(self, name_protein, filename_pdb_protein, path_attract = os.environ['ATTRACTDIR'] , path_attractTools = os.environ['ATTRACTTOOLS'], filename_pdb_referencereceptor = None,filename_pdb_referenceligand=None):
         self.name_protein = name_protein
         self.use_modes = False
 
@@ -55,6 +55,7 @@ class ProteinConfiguration:
         self.path_attractTools = path_attractTools
         self.ext_mapping = ".mapping"
         self.ext_reduce = "-reduce.pdb"
+        self.ext_heavy = "-heavy.pdb"
         self.ext_aa = "-allatom.pdb"
         self.ext_modes = "modes.dat"
         self.ext_alphabet = "-grid.alphabet"
@@ -62,12 +63,15 @@ class ProteinConfiguration:
         self.chain = "A"
 
         self.filename_pdb_protein = filename_pdb_protein
-        self.filename_pdb_reference = filename_pdb_reference
+        self.filename_pdb_referencereceptor = filename_pdb_referencereceptor
+        self.filename_pdb_referenceligand = filename_pdb_referenceligand
+
         self.filename_reduce    = name_protein + self.ext_reduce
         self.filename_alphabet  = name_protein + self.ext_alphabet
         self.filename_grid      = name_protein + self.ext_grid
         self.filename_modes     = name_protein + self.ext_modes
         self.filename_allAtom   = name_protein + self.ext_aa
+        self.filename_heavy = name_protein + self.ext_heavy
 
 
 
@@ -159,19 +163,29 @@ class ProteinConfiguration:
         return os.path.join( self.path_inputFolder, self.filename_modes )
 
 
-    def reduce( self, overwrite = False, allatom = False, reference = False):
+    def reduce( self, overwrite = False, allatom = False, reference = False, heavy= False):
         """Creates the allatom.pdb and the reduced pdb. Additionally you can choose to overwrite the files, in case they already exist. """
         path = completePath( self.path_inputFolder )
         output_path         = self.path_inputFolder+"/"
         output_name_mapping =self.name_protein+ self.ext_mapping
 
         if allatom:
+            print self.filename_reduce
             if path.isfile(  self.filename_allAtom ) is False or (path.isfile(  self.filename_allAtom ) and overwrite is True):
                 aareduce(args_pdb=self.filename_pdb_protein,
                     output_path         = output_path,
                     output_name_pdb     =  self.filename_allAtom,
                     output_name_mapping = output_name_mapping,
                     args_chain=self.chain,  args_pdb2pqr=True, args_dumppatch=True);
+
+        if heavy:
+            if path.isfile(  self.filename_heavy ) is False or (path.isfile(  self.filename_heavy ) and overwrite is True):
+                aareduce(args_pdb=os.path.join(self.path_inputFolder,self.filename_allAtom),
+                    output_path         = output_path,
+                    output_name_pdb     =  self.filename_heavy,
+                    output_name_mapping = output_name_mapping,args_readpatch=True,
+                    args_chain=self.chain,  args_pdb2pqr=True);
+
         if reference:
             if path.isfile(  self.filename_allAtom ) is False or (path.isfile(  self.filename_allAtom ) and overwrite is True):
                 aareduce(args_pdb=self.filename_pdb_protein,
