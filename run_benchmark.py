@@ -9,13 +9,31 @@ import time
 from Queue import Queue
 
 
+#paths
+d_config = {'file_compute_dock':'_dock.result',
+                'file_compute_scoring':'_scoring.result',
+                'folder_input':'input',
+                'file_config_dof':'dofs.dat',
+                'file_config_receptor_reference':'receptor-refe.pdb',
+                'file_config_ligand_reference':'ligand-refe.pdb',
+                'index_protein': 5,
+                'index_chain': 5
+                }
+
+d_paths={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0",
+       "compute_attract_orig": "/home/glenn/Documents/attract/bin"}
+
+d_binary={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0/AttractServer",
+       "compute_attract_orig":"home/glenn/Documents/attract/bin/attract"}
 
 parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
-filename_extension_dock = "_dock.result"
-filename_extension_scoring = "_scoring.result"
 
-path_attract_app = "/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0"
-name_attractBinary = "AttractServer"
+
+#path_attract_app = "/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0"
+#name_attractBinary = "AttractServer"
+#file extensions
+#filename_extension_dock = "_dock.result"
+#filename_extension_scoring = "_scoring.result"
 
 
 class ProteinPair:
@@ -25,25 +43,25 @@ class ProteinPair:
         self.filename_dof =filename_dof
         self.input_folder = input_folder
         self.output_folder = output_folder
-        self.filename_pdb_reference_ligand = filename_pdb_reference_ligand
+        # self.filename_pdb_reference_ligand = filename_pdb_reference_ligand
         self.filename_modesJoined = filename_modesJoined
-        self.filename_modesJoined_reference = filename_modesJoined_reference
-        self.filename_receptor_heavy = filename_receptor_heavy
-        self.filename_ligand_heavy = filename_ligand_heavy
+        # self.filename_modesJoined_reference = filename_modesJoined_reference
+        # self.filename_receptor_heavy = filename_receptor_heavy
+        # self.filename_ligand_heavy = filename_ligand_heavy
 
         self.id = id
-    def get_receptor(self):
-        return self.receptor
-    def get_ligand(self):
-        return self.ligand
-    def get_filenameDOF(self):
-        return self.filenameDOF
-    def get_filenameModes(self):
-        return self.filename_modesJoined
+    # def get_receptor(self):
+    #     return self.receptor
+    # def get_ligand(self):
+    #     return self.ligand
+    # def get_filenameDOF(self):
+    #     return self.filenameDOF
+    # def get_filenameModes(self):
+    #     return self.filename_modesJoined
 
 
-def configure_protein( path_inputFolder, path_outputFolder, name_protein, filename_pdb_protein,filename_referencerec = None, filename_referencelig = None,chain = None, num_modes = 0):
-    protein = protconf.ProteinConfiguration(filename_pdb_protein= filename_pdb_protein, name_protein=name_protein, filename_pdb_referencereceptor=filename_referencerec, filename_pdb_referenceligand=filename_referencelig)
+def configure_protein( path_inputFolder, path_outputFolder, name_protein, filename_pdb_protein,filename_reference = None, chain = None, num_modes = 0):
+    protein = protconf.ProteinConfiguration(filename_pdb_protein= filename_pdb_protein, name_protein=name_protein, filename_pdb_reference=filename_reference)
     protein.set_path_inputFolder( path_inputFolder = path_inputFolder )
 
     protein.set_path_outputFolder( path_outputFolder = path_outputFolder )
@@ -65,7 +83,7 @@ def configure_protein( path_inputFolder, path_outputFolder, name_protein, filena
 
 
 
-def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0, use_orig = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None, fnat = False, irmsd= False,do_configuration = True):
+def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True):
     pairs = {}
     finisheditems_scoring = Queue()
     finisheditems_docking = Queue()
@@ -76,34 +94,17 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     benchmark.timer_add("Create_grid")
     benchmark.timer_add("Create_dofs")
     benchmark.timer_add("Analysis")
-
     benchmark_minimization = benchtime.measure_benchmark()
     benchmark_scoring = benchtime.measure_benchmark()
-
-
-
-
-
-    index_chain = 5
-
-
-    if use_orig:
-       #path_attract_app = "/home/glenn/Documents/attract/bin"
-
-        name_attractBinary = "attract"
-    #if do_minimization:
-    dock = compute.Worker(path_attract=path_attract_app, name_attractBinary = name_attractBinary, do_minimization=True,
-                          num_threads=num_threads, args=(benchmark_minimization,finisheditems_docking,), use_OrigAttract=use_orig)
-
-   # path_attract_app = "/home/glenn/Documents/attract/bin"
-   # name_attractBinary = "attract"
+    #create and start the threads for docking
+    dock = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_docking else d_binary["compute_attract_gpu"],
+                           do_minimization=True,
+                           num_threads=num_threads, args=(benchmark_minimization,finisheditems_docking,), use_OrigAttract=orig_docking)
     dock.start_threads()
-    #if do_scoring:
-    score = compute.Worker(path_attract=path_attract_app, name_attractBinary= name_attractBinary,
-                               do_scoring=True,
-                               num_threads=num_threads, args=(benchmark_scoring, finisheditems_scoring,),
-                               use_OrigAttract=False)
-
+    # create and start the threads for scoring
+    score = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_docking else d_binary["compute_attract_gpu"],
+                            do_scoring=True, num_threads=num_threads, args=(benchmark_scoring, finisheditems_scoring,),
+                            use_OrigAttract=orig_scoring)
     score.start_threads()
 
 
@@ -111,62 +112,44 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     print "Load Protein Pdbs"
     #load all proteins inside one folder into
     protein_ensembles =         lpdb.load_fromFolder( path_folder= path_folder, filename_sheme_pdb=filename_scheme)
-    protein_ensembles_reference = lpdb.load_fromFolder( path_folder=path_folder, filename_sheme_pdb="-aa.pdb")
-
     print 'detected',len(protein_ensembles) , "protein ensembles"
+
     print '**************************************************************'
     print "Create Protein Configurations"
     for count, ensemble in enumerate(protein_ensembles):
         #set paths and get proteins from the ensemble list
         proteins = ensemble.get_ensemblePDB()
-        path_input =    os.path.join( ensemble.get_pathEnsemble(), 'input')
+        #create the input and output path as subfolder
+        path_input =    os.path.join( ensemble.get_pathEnsemble(), d_config['folder_input'])
         path_output =   os.path.join( ensemble.get_pathEnsemble(), name_benchmark)
-        filename_dof =  os.path.join( os.path.join(ensemble.get_pathEnsemble(), 'input'), "dofs.dat")
+        filename_dof =  os.path.join( os.path.join(ensemble.get_pathEnsemble(),  d_config['folder_input']),  d_config['file_config_dof'])
+        #set the pair name as the name of the last folder level ( assuming it is the pdb-id)
         name_pair = os.path.split( ensemble.get_pathEnsemble() )[-1]
-        filename_modesJoined = None
 
 
 
         #get the receptor and the ligand via their size and create Proteinconfigurations from it for receptor and ligand
-       # name_receptor = lpdb.get_receptorBySize(   proteins )
-        name_receptor = lpdb.get_proteinByindex(proteins,5, 'r')
-        #name_receptor = lpdb.get_proteinByindex(proteins, 14, 'r')
-        #filename_receptor_reference = os.path.join( os.path.dirname( proteins[ name_receptor] ), '1AVX_r_b.pdb' )
-        filename_receptor_reference = os.path.join(os.path.dirname(proteins[name_receptor]), 'receptor-refe.pdb')
-        #filename_receptor_reference = os.path.join(os.path.dirname(proteins[name_receptor]), '1AVX_r_b.pdb')
+        name_receptor = lpdb.get_proteinByindex(proteins,d_config['index_protein'], 'r')
+        filename_receptor_reference = os.path.join(os.path.dirname(proteins[name_receptor]), d_config["file_config_receptor_reference"])
         filename_receptor = proteins[ name_receptor]
-
-        chain_receptor = protconf.get_chainfromName(name_receptor, index_chain)
-        chain_receptor = "A"
         receptor = configure_protein(path_inputFolder = path_input,     path_outputFolder = path_output, name_protein = name_receptor,
-                                     filename_pdb_protein = filename_receptor,       chain = chain_receptor,          num_modes = num_modes, filename_referencerec=filename_receptor)
-        #receptor.set_filename(       filename_reduce= filename_receptor )
+                                     filename_pdb_protein = filename_receptor,       chain = "A",          num_modes = num_modes, filename_reference=filename_receptor)
 
 
-        #name_ligand = lpdb.get_ligandBySize(proteins)
-        name_ligand = lpdb.get_proteinByindex(proteins, 5, 'l')
-        #name_ligand = lpdb.get_proteinByindex(proteins, 14, 'l')
+        name_ligand = lpdb.get_proteinByindex(proteins,d_config['index_protein'], 'l')
         filename_ligand = proteins[name_ligand]
-        filename_ligand_reference = os.path.join( os.path.dirname( proteins[ name_ligand] ), 'ligand-refe.pdb' )
-        #filename_ligand_reference = os.path.join(os.path.dirname(proteins[name_ligand]), '1AVX_l_b.pdb')
-        #filename_ligand_reference = filename_ligand
-        chain_ligand = protconf.get_chainfromName(name_ligand, index_chain)
-        chain_ligand = "B"
+        filename_ligand_reference = os.path.join( os.path.dirname( proteins[ name_ligand] ), d_config["file_config_ligand_reference"] )
         ligand = configure_protein( path_inputFolder=path_input,    path_outputFolder=path_output,  name_protein=name_ligand,
-                                    filename_pdb_protein=filename_ligand,      chain=chain_ligand,             num_modes=num_modes, filename_referencelig=filename_ligand)
-        #ligand.set_filename(            filename_reduce=filename_ligand)
+                                    filename_pdb_protein=filename_ligand,      chain="B",             num_modes=num_modes, filename_reference=filename_ligand)
+        filename_modesJoined = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + ".dat")
 
         if do_configuration:
             print "{}/{} ".format( count + 1, len(protein_ensembles)),"\t--Configure protein: ", name_receptor, " and ", name_ligand
             if create_reduce:
-                print "\t\t--Create reduced pdbs"
+                print "\t\t--Create pdbs"
                 benchmark.timer_start("Create_reducepdb")
-                if irmsd or fnat:
-                    ligand.reduce( overwrite=False, allatom=True, heavy=True)
-                    receptor.reduce( overwrite=False , allatom=True, heavy = True)
-                else:
-                    ligand.reduce(overwrite=False, allatom=True)
-                    receptor.reduce(overwrite=False, allatom=True)
+                ligand.createPDB( overwrite=False, allatom=True, heavy=True, reference=True)
+                receptor.createPDB( overwrite=False , allatom=True, heavy = True, reference=True)
                 benchmark.timer_appendStop("Create_reducepdb")
             if create_grid:
                 print "\t\t--Create grids"
@@ -176,40 +159,31 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 receptor.create_grid(overwrite=False)
                 ligand.create_grid(overwrite=False)
                 benchmark.timer_appendStop("Create_grid")
-            filename_modesJoinedReference = None
+
             if create_modes and num_modes > 0:
                 print "\t\t--Create modefiles"
                 benchmark.timer_start("Create_modes")
+
                 try:
                     receptor.create_modes(overwrite=False)
                     ligand.create_modes(overwrite=False)
+                    if orig_docking or orig_scoring:
+
+                        join_modefiles(receptor.get_filenameModes(), ligand.get_filenameModes(), filename_modesJoined)
                 except:
+                    print "could not create Modefiles"
                     pass
                 benchmark.timer_appendStop("Create_modes")
-                filename_modesJoined = None
 
-
-                filename_modesJoinedReference = os.path.join(receptor.get_pathInput(), "allModes-reference-"+str(num_modes)+".dat")
-                #if use_orig:
-                filename_modesJoined = os.path.join( receptor.get_pathInput(), "-allModes-"+str(num_modes)+".dat" )
-                join_modefiles( receptor.get_filenameModes(), ligand.get_filenameModes(), filename_modesJoined )
-
-                if not os.path.isfile(filename_modesJoinedReference):
-                    protconf.create_modes(os.path.join(receptor.get_pathInput(),receptor.filename_allAtom), receptor.get_pathInput(), "/receptor-Modes-reference.dat", num_modes)
-                    protconf.create_modes(os.path.join(ligand.get_pathInput(),ligand.filename_allAtom), ligand.get_pathInput(), "/ligand-Modes-reference.dat", num_modes)
-                    #protconf.create_modes(os.path.join(receptor.get_pathInput(), filename_receptor_reference),
-                    #                      receptor.get_pathInput(), "/receptor-Modes-reference.dat", num_modes)
-                    #protconf.create_modes(os.path.join(ligand.get_pathInput(), filename_ligand_reference),
-                    #                      ligand.get_pathInput(), "/ligand-Modes-reference.dat", num_modes)
-                    join_modefiles( os.path.join(receptor.get_pathInput(),"receptor-Modes-reference.dat"), os.path.join(ligand.get_pathInput(),"ligand-Modes-reference.dat"), filename_modesJoinedReference)
             if create_dofs:
                 print "\t\t--Create dofs"
                 benchmark.timer_start("Create_dofs")
                 protconf.create_StartingPositions("/home/glenn/Documents/attract/rotation.dat",  receptor.get_filenamePdbReduced(), ligand.get_filenamePdbReduced(),filename_dof)
                 benchmark.timer_appendStop("Create_dofs")
 
-        pair = ProteinPair( name_pair, receptor, ligand, filename_dof, receptor.get_pathInput(), receptor.get_pathOutput() , filename_modesJoined = filename_modesJoined,  filename_modesJoined_reference=filename_modesJoinedReference, filename_ligand_heavy=os.path.join( ligand.get_pathInput(), ligand.filename_heavy),
-                            filename_receptor_heavy=os.path.join( receptor.get_pathInput(), receptor.filename_heavy))
+        pair = ProteinPair( name_pair, receptor, ligand, filename_dof, receptor.get_pathInput(), receptor.get_pathOutput() ,  filename_ligand_heavy=os.path.join( ligand.get_pathInput(), ligand.filename_heavy),
+                            filename_receptor_heavy=os.path.join( receptor.get_pathInput(), receptor.filename_heavy),
+                            filename_modesJoined= filename_modesJoined if create_modes and num_modes > 0   else None)
         pair.filename_pdb_reference_ligand = filename_ligand_reference
         pair.filename_pdb_reference_receptor = filename_receptor_reference
         pairs[name_pair] = pair
@@ -222,10 +196,10 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
         count_minimization = 0
         for  key, pair in pairs.iteritems():
             count_minimization += 1
-            receptor = pair.get_receptor()
-            ligand = pair.get_ligand()
+            receptor = pair.receptor
+            ligand = pair.ligand
             print "{}/{} ".format( count_minimization, len(pairs)),"\t--put in docking queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
-            filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + filename_extension_dock)
+            filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
             if not os.path.isfile(filename_output):
 
                 dock.add_ensembleToQueue( id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,    filename_parameter=parameter_dir,
@@ -233,7 +207,8 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                           filename_gridReceptor=receptor.get_filenameGrid(),                    filename_modesReceptor=receptor.get_filenameModes(),
                                           num_modesReceptor=num_modes,      filename_pdbLigand=ligand.get_filenamePdbReduced(), filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                           filename_gridLigand=ligand.get_filenameGrid(), filename_modesLigand=ligand.get_filenameModes(),
-                                          num_modesLigand=num_modes, filename_modesJoined= pair.get_filenameModes(), modeForceFac= 1.0 , logfile=os.path.join(receptor.get_pathOutput(), "logfile_minimization"))
+                                          num_modesLigand=num_modes, filename_modesJoined= pair.filename_modesJoined,
+                                          modeForceFac= 1.0 , logfile=os.path.join(receptor.get_pathOutput(), "logfile_minimization"))
             else:
                 print filename_output, " exists already\n"
                 finisheditems_docking.put(key)
@@ -259,20 +234,20 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 pairId = finisheditems_docking.get()
                 count_scoring += 1
                 pair = pairs[pairId]
-                receptor = pair.get_receptor()
-                ligand = pair.get_ligand()
+                receptor = pair.receptor
+                ligand = pair.ligand
                 print "{}/{} ".format( count_scoring, len(pairs)),"\t--put in scoring queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
-                filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + filename_extension_scoring)
-
+                filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_scoring'])
+                print filename_output
                 filename_docking = os.path.join(pair.receptor.get_pathOutput(),
-                                                pair.receptor.get_name() + filename_extension_dock)
+                                                pair.receptor.get_name() + d_config['file_compute_scoring'])
                 if not os.path.isfile(filename_output):
                     score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
                                               filename_pdbReceptor=receptor.get_filenamePdbReduced(),filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                               filename_gridReceptor=receptor.get_filenameGrid(),filename_modesReceptor=receptor.get_filenameModes(),
                                               num_modesReceptor=num_modes,filename_pdbLigand=ligand.get_filenamePdbReduced(),filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                               filename_gridLigand=ligand.get_filenameGrid(),filename_modesLigand=ligand.get_filenameModes(),
-                                              num_modesLigand=num_modes, filename_modesJoined= pair.get_filenameModes(), radius_cutoff=rcut, modeForceFac=evfactor, logfile=os.path.join(receptor.get_pathOutput(), "logfile_scoring") )
+                                              num_modesLigand=num_modes, filename_modesJoined= pair.filename_modesJoined, radius_cutoff=rcut, modeForceFac=evfactor, logfile=os.path.join(receptor.get_pathOutput(), "logfile_scoring") )
                 else:
                     print filename_output , " exists already \n"
                     finisheditems_scoring.put(key)
@@ -288,25 +263,47 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
         print "Run Analysis"
         count_analysis = 0
         while not score.is_done() or not  finisheditems_scoring.empty():
-
             if not finisheditems_scoring.empty():
                 count_analysis += 1
                 #allatom_proteins = protein_ensembles_allatom[count].get_ensemblePDB()
                 pairId = finisheditems_scoring.get()
                 print "Analyse ", pairId
                 pair = pairs[pairId]
-                filename_scoring = os.path.join(pair.receptor.get_pathOutput(), pair.receptor.get_name() + filename_extension_scoring)
-                filename_docking = os.path.join(pair.receptor.get_pathOutput(), pair.receptor.get_name() + filename_extension_dock)
+                filename_scoring = os.path.join(pair.output_folder, pair.receptor.get_name() + d_config['file_compute_scoring'])
+                filename_docking = os.path.join(pair.output_folder, pair.receptor.get_name() + d_config['file_compute_dock'])
+
+
+                fn_rec = os.path.join(pair.input_folder, pair.receptor.filename_reduce)
+                fn_rec_aa = os.path.join(pair.input_folder, pair.receptor.filename_allAtom)
+                fn_rec_heavy = os.path.join(pair.input_folder, pair.receptor.filename_heavy)
+                fn_rec_ref = pair.receptor.filename_pdb_reference
+                fn_rec_ref_aa = os.path.join(pair.input_folder,pair.receptor.filename_allAtom_ref)
+                fn_rec_ref_heavy = os.path.join(pair.input_folder,pair.receptor.filename_heavy_ref)
+
+                fn_lig = os.path.join(pair.input_folder, pair.ligand.filename_reduce)
+                fn_lig_aa = os.path.join(pair.input_folder, pair.ligand.filename_allAtom)
+                fn_lig_heavy = os.path.join(pair.input_folder, pair.ligand.filename_heavy)
+                fn_lig_ref = pair.ligand.filename_pdb_reference
+                fn_lig_ref_aa = os.path.join(pair.input_folder,pair.ligand.filename_allAtom_ref)
+                fn_lig_ref_heavy = os.path.join(pair.input_folder,pair.ligand.filename_heavy_ref)
+
+
 
                 print "{}/{} ".format( count_analysis, len(pairs)),"\t--analyse protein: ", pair.receptor.get_name(), " and ", pair.ligand.get_name()
-                filename_rmsd = os.path.join(pair.output_folder,pair.receptor.name_protein + "-rmsd.result")
-
-                analyse.run_analysis(pair.output_folder,pair.receptor.name_protein, filename_docking, filename_scoring, os.path.join(pair.input_folder, pair.receptor.filename_allAtom),os.path.join(pair.input_folder,pair.ligand.filename_allAtom),os.path.join(pair.input_folder,pair.filename_pdb_reference_ligand) ,filename_modesReceptor = pair.receptor.get_filenameModes(),
-                                 filename_modesLigand=pair.ligand.get_filenameModes(),
-                     num_modesReceptor=num_modes, num_modesLigand=num_modes, filename_modesJoined = pair.filename_modesJoined_reference,
-                     path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], filename_pdbLigandHeavy=pair.filename_ligand_heavy, filename_pdbReceptorHeavy=pair.filename_receptor_heavy)
-
-
+                # analyse.run_analysis(pair.output_folder,pair.receptor.name_protein, filename_docking, filename_scoring,
+                #                      filename_refLig,
+                #      num_modesReceptor=num_modes, num_modesLigand=num_modes, filename_modesJoined = pair.filename_modesJoined,
+                #      path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite= False)
+                print pair.filename_modesJoined
+                analyse.run_analysis(pair.output_folder, pair.receptor.name_protein, filename_docking, filename_scoring,
+                                     filename_pdbReceptor=          fn_rec,         filename_pdbLigand=           fn_lig,
+                                     filename_pdbReceptor_aa=       fn_rec_aa,      filename_pdbLigand_aa=        fn_lig_aa,
+                                     filename_pdbReceptor_heavy=    fn_rec_heavy,   filename_pdbLigand_heavy=     fn_lig_heavy,
+                                     filename_pdbReceptorRef=       fn_rec_ref,     filename_pdbLigandRef=        fn_lig_ref,
+                                     filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
+                                     filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
+                                     filename_modesJoined=pair.filename_modesJoined,num_modesReceptor=num_modes, num_modesLigand=num_modes,
+                                     path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=True)
             time.sleep(0.05)
 
 
@@ -326,7 +323,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 #                create_reduce = True, num_modes = 0, use_orig= False
 #                , num_threads = 1, do_minimization=True, do_scoring=True)
 
-path_test = "/home/glenn/cluster/benchmark_attract_test/1AVX"
+path_test = "/home/glenn/Documents/benchmark_test/1AVX"
 path = "/home/glenn/cluster/benchmark5_attract/"
 #path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
 #path = "/home/glenn/Documents/benchmark_1bgx"
@@ -365,18 +362,10 @@ path = "/home/glenn/cluster/benchmark5_attract/"
 
 #####end to complete
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_10modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes = 10, use_orig= False
-               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1)
 
-
-run_benchmark( path_test, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_test", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes = 5, use_orig= False
-               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, irmsd=True)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes = 20, use_orig= False
-               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1)
+run_benchmark( path_test, "-for-docking.pdb",name_benchmark = "benchmark", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes = 5, orig_docking= False, orig_scoring=False
+               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0)
 
 
 #run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_10modes_3EV", create_grid = True, create_modes = True, create_dofs = True,
@@ -463,3 +452,31 @@ run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_no
 # run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_dof_320k", create_grid = True, create_modes = True, create_dofs = True,
 #                create_reduce = True, num_modes = 5, use_orig= False
 #                , num_threads = 1, do_minimization=True, do_scoring=False, do_analyse=False, f_dof="/home/glenn/Documents/benchmark_1bgx/1BGX/input/dofs_320k.dat")
+
+
+
+#leftovers
+#filename_receptor_reference = os.path.join( os.path.dirname( proteins[ name_receptor] ), '1AVX_r_b.pdb' )
+# name_receptor = lpdb.get_receptorBySize(   proteins )
+# name_receptor = lpdb.get_proteinByindex(proteins, 14, 'r')
+#filename_receptor_reference = os.path.join(os.path.dirname(proteins[name_receptor]), '1AVX_r_b.pdb')
+#chain_receptor = protconf.get_chainfromName(name_receptor, index_chain)
+# chain_ligand = protconf.get_chainfromName(name_ligand, index_chain)
+##receptor.set_filename(       filename_reduce= filename_receptor )
+#
+# filename_modesJoinedReference = os.path.join(receptor.get_pathInput(), "allModes-reference-" + str(num_modes) + ".dat")
+#
+# if not os.path.isfile(filename_modesJoinedReference):
+#     protconf.create_modes(os.path.join(receptor.get_pathInput(), receptor.filename_allAtom), receptor.get_pathInput(),
+#                           "/receptor-Modes-reference.dat", num_modes)
+#     protconf.create_modes(os.path.join(ligand.get_pathInput(), ligand.filename_allAtom), ligand.get_pathInput(),
+#                           "/ligand-Modes-reference.dat", num_modes)
+#     # protconf.create_modes(os.path.join(receptor.get_pathInput(), filename_receptor_reference),
+#     #                      receptor.get_pathInput(), "/receptor-Modes-reference.dat", num_modes)
+#     # protconf.create_modes(os.path.join(ligand.get_pathInput(), filename_ligand_reference),
+#     #                      ligand.get_pathInput(), "/ligand-Modes-reference.dat", num_modes)
+#     join_modefiles(os.path.join(receptor.get_pathInput(), "receptor-Modes-reference.dat"),
+#                    os.path.join(ligand.get_pathInput(), "ligand-Modes-reference.dat"), filename_modesJoinedReference)
+# filename_modesJoined = os.path.join(receptor.get_pathInput(),
+#                                                        "-allModes-" + str(num_modes) + ".dat")
+#                    join_modefiles(receptor.get_filenameModes(), ligand.get_filenameModes(), filename_modesJoined)

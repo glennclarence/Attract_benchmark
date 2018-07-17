@@ -24,14 +24,12 @@ def filecheck(  filename):
 
 
 class Worker:
-    def __init__(self,  path_attract=os.environ['ATTRACTDIR'], name_attractBinary = "AttractServer", num_threads = 1, do_minimization = False, do_scoring = False, use_OrigAttract = False, args = None ):
+    def __init__(self,  filename_attractBinary = "AttractServer", num_threads = 1, do_minimization = False, do_scoring = False, use_OrigAttract = False, args = None ):
         self.num_threads = num_threads
         self.do_minimization = do_minimization
         self.do_scoring = do_scoring
         self.queue= Queue()
-        self.path_attract = path_attract
-        self.filename_attract = os.path.join( path_attract, name_attractBinary )
-        self.name_attractBinary = name_attractBinary
+        self.filename_attract = filename_attractBinary
         self.consumer = []
         self.use_origAttract = use_OrigAttract
 

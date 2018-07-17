@@ -1,8 +1,19 @@
 import sys,os
 DEBUG_COMMAND = True
-def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,filename_pdbReceptor, filename_pdbLigand,  filename_pdbReferenceLigand, filename_modesReceptor = None, filename_modesLigand = None,  num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'], path_attractTools = os.environ['ATTRACTTOOLS'],filename_pdbLigandHeavy=None,filename_pdbReceptorHeavy=None, filename_pdb_receptorrefe = None, filename_modesJoined = None,  overwrite = False):
-    filename_irmsd = os.path.join(path_analysis, name_analysis + "-irmsd.dat")
-    filename_fnat = os.path.join(path_analysis, name_analysis + "-fnat.dat")
+from ProteinConfiguration import createPDB
+from ProteinConfiguration import create_modes
+
+def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,
+                  filename_pdbReceptor, filename_pdbLigand,
+                  filename_pdbReceptor_aa, filename_pdbLigand_aa,
+filename_pdbReceptor_heavy, filename_pdbLigand_heavy,
+                  filename_pdbReceptorRef, filename_pdbLigandRef,
+                  filename_pdbReceptorRef_aa, filename_pdbLigandRef_aa,
+        filename_pdbReceptorRef_heavy, filename_pdbLigandRef_heavy,
+filename_modesJoined = None, num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'],
+                  path_attractTools = os.environ['ATTRACTTOOLS'],  overwrite = False):
+    filename_irmsd =        os.path.join(path_analysis, name_analysis + "-irmsd.dat")
+    filename_fnat =         os.path.join(path_analysis, name_analysis + "-fnat.dat")
     filename_filled =       os.path.join(path_analysis , name_analysis + "-score.dat")
     filename_sorted =       os.path.join(path_analysis ,name_analysis + "-sorted.dat")
     filename_deredundant =  os.path.join(path_analysis ,name_analysis + "-sorted-dr.dat")
@@ -21,24 +32,28 @@ def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_sc
                              path_attractTools, filename_deredundant)
     if not os.path.isfile(filename_top) or overwrite is True:
         analysis_getTop(path_attractTools, filename_deredundant, filename_top)
+
     if not os.path.isfile(filename_demode) or overwrite is True:
         if num_modesReceptor > 0 or num_modesLigand > 0:
             analysis_removeModes(path_python, path_attractTools, filename_top, filename_demode)
+
     if not os.path.isfile(filename_pdbFinal) or overwrite is True:
         if num_modesReceptor > 0 or num_modesLigand > 0:
             analysis_collect(path_attract, filename_demode, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
         else:
             analysis_collect(path_attract, filename_top, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
     if not os.path.isfile( filename_rmsd) or overwrite is True:
-        calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand, filename_pdbReferenceLigand, filename_modesJoined,
+
+        calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand, filename_pdbLigandRef, filename_modesJoined,
                        filename_pdbReceptor,  filename_rmsd, num_modesLigand, num_modesReceptor)
 
     if not os.path.isfile(filename_fnat) or overwrite is True:
-        calc_fnat(path_attract, filename_demode,filename_pdbReceptorHeavy,filename_pdbReceptorHeavy,filename_pdbLigandHeavy,filename_pdbLigandHeavy, filename_fnat)
+        calc_fnat(path_attract, filename_demode,filename_pdbReceptor_heavy,filename_pdbReceptorRef_heavy,
+                  filename_pdbLigand_heavy,filename_pdbLigandRef_heavy, filename_fnat)
 
     if not os.path.isfile(filename_irmsd) or overwrite is True:
-        calc_IRmsd(path_attract, filename_demode, filename_pdbReceptorHeavy, filename_pdb_receptorrefe,
-                   filename_pdbLigand, filename_pdbReferenceLigand,filename_irmsd)
+        calc_IRmsd(path_attract, filename_demode, filename_pdbReceptor_heavy, filename_pdbReceptorRef_heavy,
+                   filename_pdbLigand_heavy, filename_pdbLigandRef_heavy,filename_irmsd)
 
 
 
