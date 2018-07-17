@@ -33,7 +33,8 @@ dict_indices['mean_sort_10'] = 8
 dict_indices['mean_sort_50'] = 9
 dict_indices['amp'] = 10
 dict_indices['ev'] = 11
-
+dict_indices['irmsd'] = 12
+dict_indices['fnat'] = 13
 
 #filename_scoring = "/home/glenn/cluster/benchmark_attract_test/1AVX/benchmark_ORI_scorig_50cut_5modes_2/1AVX-receptor-for-docking-sorted-dr.dat"
 #energies =  getEnergyfromFile( filename_scoring)

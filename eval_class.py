@@ -49,6 +49,8 @@ def load_benchmarks( path_folder, name_benchmark):
         bench.append( (name_prot,input,benchmarks))
     return bench
 ext_rmsd = "-rmsd.result"
+ext_irmsd= "-irmsd.result"
+ext_fnat = "-fnat.dat"
 ext_scored = "-sorted-dr.dat"
 filename_pdb = "-receptor-for-docking"
 
@@ -88,6 +90,46 @@ def evaluate( bechmarks, dict_indices):
                             rmsd = np.asarray(100000)
                 except:
                     print "error loading rmsd file", filename_rmsd
+
+                filename_irmsd = os.path.join(name_singleBench[1], name_protein + filename_pdb + ext_irmsd)
+                try:
+                    with open(filename_irmsd, 'r') as f:
+                        lines = f.readlines()
+                        len_list = len(lines)
+                        if len_list == 0:
+                            irmsd = np.zeros(1)
+                            irmsd[0] = 100000
+                            pos = np.zeros(1)
+                        else:
+                            irmsd = np.zeros(len(lines), dtype=float)
+                            pos = np.arange(len(lines), dtype=int)
+                            for i, line in enumerate(lines):
+                                rmsd[i] = float(line.split()[-1])
+                        if irmsd is None:
+                            irmsd = np.asarray(100000)
+                except:
+                    print
+                    "error loading Irmsd file", filename_irmsd
+
+                filename_fnat = os.path.join(name_singleBench[1], name_protein + filename_pdb + ext_fnat)
+                try:
+                    with open(filename_fnat, 'r') as f:
+                        lines = f.readlines()
+                        len_list = len(lines)
+                        if len_list == 0:
+                            fnat = np.zeros(1)
+                            fnat[0] = 100000
+                            pos = np.zeros(1)
+                        else:
+                            fnat = np.zeros(len(lines), dtype=float)
+                            pos = np.arange(len(lines), dtype=int)
+                            for i, line in enumerate(lines):
+                                fnat[i] = float(line.split()[0])
+                        if fnat is None:
+                            fnat = np.asarray(100000)
+                except:
+                    print
+                    "error loading Irmsd file", filename_fnat
                 #plt.plot( rmsd[:20], pos[:20])
                 #plt.show()
                 #print "\t\t", "total rmsd", rmsd.mean(), "\n\t\t10 rmsd",rmsd[:10].mean(), "\n\t\t50 rmsd",rmsd[:50].mean(), "\n\t\t10 sorted rmsd",np.sort(rmsd)[:10].mean(),"\n\t\t50 sorted rmsd", np.sort(rmsd)[:50].mean()
@@ -122,6 +164,8 @@ def evaluate( bechmarks, dict_indices):
             #try:
             result_protein[dict_indices['mode']]    = int(num_modes)
             result_protein[dict_indices['rmsd']] = checkNone(rmsd)
+            result_protein[dict_indices['irmsd']] = checkNone(irmsd)
+            result_protein[dict_indices['fnat']] = checkNone(fnat)
             result_protein[dict_indices['energy']] = checkNone(energies)
             result_protein[dict_indices['pos']] = checkNone(pos)
             result_protein[dict_indices['min']] = checkNone(min(rmsd))
