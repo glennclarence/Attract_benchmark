@@ -180,7 +180,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 benchmark.timer_start("Create_dofs")
                 protconf.create_StartingPositions("/home/glenn/Documents/attract/rotation.dat",  receptor.get_filenamePdbReduced(), ligand.get_filenamePdbReduced(),filename_dof)
                 benchmark.timer_appendStop("Create_dofs")
-
+	print filename_dof
         pair = ProteinPair( name_pair, receptor, ligand, filename_dof, receptor.get_pathInput(), receptor.get_pathOutput() ,  filename_ligand_heavy=os.path.join( ligand.get_pathInput(), ligand.filename_heavy),
                             filename_receptor_heavy=os.path.join( receptor.get_pathInput(), receptor.filename_heavy),
                             filename_modesJoined= filename_modesJoined if create_modes and num_modes > 0   else None)
@@ -241,7 +241,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 print filename_output
                 filename_docking = os.path.join(pair.receptor.get_pathOutput(),
                                                 pair.receptor.get_name() + d_config['file_compute_scoring'])
-                if not os.path.isfile(filename_output):
+                if  os.path.isfile(filename_output):
                     score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
                                               filename_pdbReceptor=receptor.get_filenamePdbReduced(),filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                               filename_gridReceptor=receptor.get_filenameGrid(),filename_modesReceptor=receptor.get_filenameModes(),
@@ -324,7 +324,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 #                , num_threads = 1, do_minimization=True, do_scoring=True)
 
 path_test = "/home/glenn/Documents/benchmark_test/1AVX"
-path = "/home/glenn/cluster/benchmark5_attract/"
+path = "/home/glenn/cluster/benchmark5_attract"
 #path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
 #path = "/home/glenn/Documents/benchmark_1bgx"
 
@@ -363,9 +363,14 @@ path = "/home/glenn/cluster/benchmark5_attract/"
 #####end to complete
 
 
-run_benchmark( path_test, "-for-docking.pdb",name_benchmark = "benchmark", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes = 5, orig_docking= False, orig_scoring=False
-               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0)
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_heavy", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes = 0, orig_docking= False, orig_scoring=False
+               , num_threads = 1, do_minimization=False, do_scoring=False, evfactor = 1.0, do_analyse = False)
+
+
+#run_benchmark( path_test, "-for-docking.pdb",name_benchmark = "benchmark_ORIG_scorig_5modes", create_grid = True, create_modes = True, create_dofs = True,
+#               create_reduce = True, num_modes = 5, orig_docking= False, orig_scoring=False
+#               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0)
 
 
 #run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_10modes_3EV", create_grid = True, create_modes = True, create_dofs = True,
