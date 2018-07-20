@@ -1,7 +1,7 @@
 import sys,os
 DEBUG_COMMAND = True
-from ProteinConfiguration import createPDB
-from ProteinConfiguration import create_modes
+#from ProteinConfiguration import createPDB
+#from ProteinConfiguration import create_modes
 
 def run_analysis( path_analysis, name_analysis, filename_dockResult, filename_scoreResult,
                   filename_pdbReceptor, filename_pdbLigand,
@@ -10,7 +10,7 @@ filename_pdbReceptor_heavy, filename_pdbLigand_heavy,
                   filename_pdbReceptorRef, filename_pdbLigandRef,
                   filename_pdbReceptorRef_aa, filename_pdbLigandRef_aa,
         filename_pdbReceptorRef_heavy, filename_pdbLigandRef_heavy,
-filename_modesJoined = None, num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'],
+filename_modesJoined = None,filename_modesJoined_aa = None,filename_modesJoined_heavy = None, num_modesReceptor = 0, num_modesLigand = 0, path_python=sys.executable, path_attract= os.environ['ATTRACTDIR'],
                   path_attractTools = os.environ['ATTRACTTOOLS'],  overwrite = False):
     filename_irmsd =        os.path.join(path_analysis, name_analysis + "-irmsd.dat")
     filename_fnat =         os.path.join(path_analysis, name_analysis + "-fnat.dat")
@@ -41,19 +41,19 @@ filename_modesJoined = None, num_modesReceptor = 0, num_modesLigand = 0, path_py
         if num_modesReceptor > 0 or num_modesLigand > 0:
             analysis_collect(path_attract, filename_demode, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
         else:
-            analysis_collect(path_attract, filename_top, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
-    if not os.path.isfile( filename_rmsd) or overwrite is True:
+            analysis_collect(path_attract, filename_demode,    filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
 
-        calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand, filename_pdbLigandRef, filename_modesJoined,
-                       filename_pdbReceptor,  filename_rmsd, num_modesLigand, num_modesReceptor)
+    if not os.path.isfile( filename_rmsd) or overwrite is True:
+        calculate_rmsd(path_attract, filename_deredundant, filename_pdbLigand_aa, filename_pdbLigandRef_aa, filename_modesJoined_aa,
+                       filename_pdbReceptor_aa,  filename_rmsd, num_modesLigand, num_modesReceptor)
 
     if not os.path.isfile(filename_fnat) or overwrite is True:
-        calc_fnat(path_attract, filename_demode,filename_pdbReceptor_heavy,filename_pdbReceptorRef_heavy,
-                  filename_pdbLigand_heavy,filename_pdbLigandRef_heavy, filename_fnat)
-
+        calc_fnat(path_attract, filename_top,filename_pdbReceptor_heavy,filename_pdbReceptorRef_heavy,
+                  filename_pdbLigand_heavy,filename_pdbLigandRef_heavy,filename_fnat, num_modesLigand + num_modesReceptor, filename_modesJoined_heavy)
+    print filename_irmsd, os.path.isfile(filename_irmsd)
     if not os.path.isfile(filename_irmsd) or overwrite is True:
-        calc_IRmsd(path_attract, filename_demode, filename_pdbReceptor_heavy, filename_pdbReceptorRef_heavy,
-                   filename_pdbLigand_heavy, filename_pdbLigandRef_heavy,filename_irmsd)
+        calc_IRmsd(path_attract, filename_top, filename_pdbReceptor_heavy, filename_pdbReceptorRef_heavy,
+                   filename_pdbLigand_heavy, filename_pdbLigandRef_heavy,filename_irmsd,num_modesLigand+ num_modesReceptor,filename_modesJoined_heavy)
 
 
 
@@ -123,22 +123,38 @@ def calculate_rmsd(path_attract, filename_deredundant , filename_pdbLigandAllAto
 
 
 
-def calc_IRmsd(path_attract, filename_demode , filename_pdbReceptorHeavy, filename_pdbReceptorRefe, filename_pdbLigandHeavy, filename_pdbLigandRefe,irmsd_output):
+def calc_IRmsd(path_attract, filename_demode , filename_pdbReceptorHeavy, filename_pdbReceptorRefe, filename_pdbLigandHeavy, filename_pdbLigandRefe,irmsd_output, num_modes=None, modefile=None):
 
    # if num_modesReceptor > 0 or num_modesLigand > 0:
-    bash_command = "python2 {}/irmsd.py {} {} {} {} {} > {}".format(path_attract, filename_demode , filename_pdbReceptorHeavy, filename_pdbReceptorRefe,filename_pdbLigandHeavy, filename_pdbLigandRefe,
+    if num_modes > 0:
+        bash_command = "python2 {}/irmsd.py {} {} {} {} {} --modes {} > {}".format(path_attract, filename_demode , filename_pdbReceptorHeavy, filename_pdbReceptorRefe,filename_pdbLigandHeavy, filename_pdbLigandRefe,modefile,
                                                          irmsd_output)
+    else:
+        bash_command = "python2 {}/irmsd.py {} {} {} {} {} > {}".format(path_attract, filename_demode,
+                                                                                   filename_pdbReceptorHeavy,
+                                                                                   filename_pdbReceptorRefe,
+                                                                                   filename_pdbLigandHeavy,
+                                                                                   filename_pdbLigandRefe,
+                                                                                   irmsd_output)
 
 
     if DEBUG_COMMAND:
         print bash_command
     os.system(bash_command)
 
-def calc_fnat(path_attract, filename_demode , filename_pdbReceptorHeavy, filename_pdbReceptorRefe, filename_pdbLigandHeavy, filename_pdbLigandRefe,fnat_output):
-    bash_command = "python2 {}/fnat.py {} 5 {} {} {} {} > {}".format(path_attract, filename_demode,
+def calc_fnat(path_attract, filename_demode , filename_pdbReceptorHeavy, filename_pdbReceptorRefe, filename_pdbLigandHeavy, filename_pdbLigandRefe,fnat_output, num_modes=None, modefile=None):
+    if num_modes > 0 :
+        bash_command = "python2 {}/fnat.py {} 5 {} {} {} {} --modes {} > {}".format(path_attract, filename_demode,
                                                                     filename_pdbReceptorHeavy, filename_pdbReceptorRefe,
-                                                                    filename_pdbLigandHeavy, filename_pdbLigandRefe,
+                                                                    filename_pdbLigandHeavy, filename_pdbLigandRefe,modefile,
                                                                     fnat_output)
+    else:
+        bash_command = "python2 {}/fnat.py {} 5 {} {} {} {} > {}".format(path_attract, filename_demode,
+                                                                                 filename_pdbReceptorHeavy,
+                                                                                 filename_pdbReceptorRefe,
+                                                                                 filename_pdbLigandHeavy,
+                                                                                 filename_pdbLigandRefe,
+                                                                                 fnat_output)
     if DEBUG_COMMAND:
         print bash_command
     os.system(bash_command)

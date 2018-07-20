@@ -1,6 +1,7 @@
 import os, sys
 import subprocess
 sys.path.append('/home/glenn/Documents/Masterthesis/attract_unchanged/allatom')
+from modes_transpose import mode_transpose
 #import aareduce_01.py
 
 #sys.path.append('/home/glenn/Documents/Masterthesis/attract_unchanged/tools/custom/')
@@ -8,6 +9,8 @@ sys.path.append('/home/glenn/Documents/Masterthesis/attract_unchanged/allatom')
 from reduce_nonparse import reduce
 from modes_nonparse import modes
 from aareduce_nonparse import aareduce
+from run_analysis import join_modefiles
+
 DEBUG_COMMAND = True
 #This filecontains two classes and one free function:
 
@@ -58,6 +61,8 @@ class ProteinConfiguration:
         self.ext_heavy = "-heavy.pdb"
         self.ext_aa = "-allatom.pdb"
         self.ext_modes = "modes.dat"
+        self.ext_modes_aa = "-aa-modes.dat"
+        self.ext_modes_heavy = "-heavy-modes.dat"
         self.ext_alphabet = "-grid.alphabet"
         self.ext_grid = "-grid.grid"
         self.chain = "A"
@@ -71,9 +76,17 @@ class ProteinConfiguration:
         self.filename_alphabet  = name_protein + self.ext_alphabet
         self.filename_grid      = name_protein + self.ext_grid
         self.filename_modes     = name_protein + self.ext_modes
+        self.filename_modes_aa = self.name_protein + self.ext_modes_aa
+        self.filename_modes_heavy = self.name_protein + self.ext_modes_heavy
+
+        self.filename_ref_modes = self.name_protein + "_ref" + self.ext_modes
+        self.filename_ref_modes_aa = self.name_protein + "_ref" + self.ext_modes_aa
+        self.filename_ref_modes_heavy = self.name_protein + "_ref" + self.ext_modes_heavy
+
         self.filename_allAtom   = name_protein + self.ext_aa
         self.filename_heavy = name_protein + self.ext_heavy
 
+        self.filename_reduce_ref = name_protein + "_ref" + self.ext_reduce
         self.filename_allAtom_ref = name_protein + "_ref" + self.ext_aa
         self.filename_heavy_ref = name_protein + "_ref" + self.ext_heavy
 
@@ -123,6 +136,8 @@ class ProteinConfiguration:
     def set_num_modes( self, num_modes):
         """sets the number of modes and wheter modefiles can be created of not"""
         self.ext_modes = "-"+str(num_modes)+"-modes.dat"
+        self.ext_modes_aa = "-" + str(num_modes) + "-aa-modes.dat"
+        self.ext_modes_heavy = "-" + str(num_modes) + "-heavy-modes.dat"
         self.num_modes = num_modes
         self.use_modes = self.num_modes > 0
 
@@ -189,8 +204,6 @@ class ProteinConfiguration:
                     args_chain=self.chain,  args_pdb2pqr=True);
         if reference:
             if allatom:
-                print
-                self.filename_reduce
                 if path.isfile(self.filename_allAtom_ref) is False or overwrite is True:
                     aareduce(args_pdb=self.filename_pdb_reference,
                              output_path=output_path,
@@ -205,6 +218,10 @@ class ProteinConfiguration:
                              output_name_pdb=self.filename_heavy_ref,
                              output_name_mapping=output_name_mapping, args_readpatch=True,
                              args_chain=self.chain, args_pdb2pqr=True);
+            #if path.isfile(self.filename_reduce_ref) is False or (path.isfile(self.filename_reduce_ref) and overwrite is True):
+            #    reduce(pdb=os.path.join(self.path_inputFolder, self.filename_allAtom_ref),
+            #           path_output=output_path,
+            #           name_output=self.filename_reduce_ref, chain=self.chain);
 
         if path.isfile(  self.filename_reduce ) is False or( path.isfile(  self.filename_reduce ) and overwrite is True):
             reduce(pdb= os.path.join(self.path_inputFolder,self.filename_allAtom),
@@ -216,15 +233,47 @@ class ProteinConfiguration:
 
         return   path.filename(self.filename_allAtom),   path.filename(self.filename_reduce)
 
-    def create_modes(self, overwrite = False):
+    def create_modes(self, overwrite = False, allAtom = False, heavy = False, ref = False):
         """Creates the modefile in the inputFolder according to the number of modes set before."""
         path = completePath(self.path_inputFolder)
         self.filename_modes = self.name_protein + self.ext_modes
+        self.filename_modes_aa = self.name_protein + self.ext_modes_aa
+        self.filename_modes_heavy = self.name_protein + self.ext_modes_heavy
         path_output = self.path_inputFolder + "/"
         if path.isfile(self.filename_modes) is False or ( path.isfile(self.filename_modes) and overwrite is True):
             modes(        pdb = self.get_filenamePdbReduced(),
                   path_output = path_output,
                   name_output = self.filename_modes, aapdb=None, nrmodes=self.num_modes, sugar=False, scale=1.0, aacontact=False)
+        if allAtom:
+            if path.isfile(self.filename_modes_aa) is False or( path.isfile(self.filename_modes_aa) and overwrite is True):
+                mode_transpose(path.filename(self.filename_modes), self.get_filenamePdbReduced(), path.filename(self.filename_allAtom), path.filename(self.filename_modes_aa))
+        if heavy:
+
+            if path.isfile(self.filename_modes_heavy) is False or (path.isfile(self.filename_modes_heavy) and overwrite is True):
+                mode_transpose(path.filename(self.filename_modes), self.get_filenamePdbReduced(), path.filename(self.filename_heavy),
+                               path.filename(self.filename_modes_heavy))
+        if ref is True:
+            self.filename_ref_modes = self.name_protein + "_ref"+self.ext_modes
+            self.filename_ref_modes_aa = self.name_protein + "_ref"+self.ext_modes_aa
+            self.filename_ref_modes_heavy = self.name_protein +"_ref"+ self.ext_modes_heavy
+            path_output = self.path_inputFolder + "/"
+            if path.isfile(self.filename_ref_modes) is False or (path.isfile(self.filename_ref_modes) and overwrite is True):
+                modes(pdb=path.filename(self.filename_reduce_ref),
+                      path_output=path_output,
+                      name_output=self.filename_ref_modes, aapdb=None, nrmodes=self.num_modes, sugar=False, scale=1.0,
+                      aacontact=False)
+            if allAtom:
+
+                if path.isfile(self.filename_ref_modes_aa) is False or (
+                        path.isfile(self.filename_ref_modes_aa) and overwrite is True):
+                    mode_transpose(self.filename_ref_modes, self.get_filenamePdbReduced(),
+                                   path.filename(self.filename_allAtom), self.filename_ref_modes_aa)
+            if heavy:
+                if path.isfile(self.filename_ref_modes_heavy) is False or (
+                        path.isfile(self.filename_ref_modes_heavy) and overwrite is True):
+                    mode_transpose(self.filename_ref_modes, self.get_filenamePdbReduced(),
+                                   path.filename(self.filename_ref_heavy),
+                                   self.filename_ref_modes_heavy)
         return path.filename(self.filename_modes)
 
 

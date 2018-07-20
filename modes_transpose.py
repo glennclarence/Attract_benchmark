@@ -73,6 +73,7 @@ def mode_transpose(file_inputModes, file_refPdb, file_targetPdb, file_outputMode
             d_modesTarget[key][1][i] = d_modesRef[key][1][modeIdx]
             d_modesTarget[key][2][i] = d_modesRef[key][2][modeIdx]
             d_modesTarget[key][3][i] = d_modesRef[key][3][modeIdx]
+
     safeModeFile(file_outputModes,  d_modesTarget)
 
 

@@ -380,9 +380,12 @@ class ResultClass:
         return stdDev
 
 
-    def getNumSmaller(self, name_benchmark, name_protein, borderRmsd,sorted = False):
+    def getNumSmaller(self, name_benchmark, name_protein, borderRmsd,maxindex = None, sorted = False):
         data = self.getDataProtein(name_benchmark, name_protein)
-        rmsd = checkNone(data[self._dict_index['rmsd']])
+        if maxindex is None:
+            rmsd = checkNone(data[self._dict_index['rmsd']])
+        else:
+            rmsd = checkNone(data[self._dict_index['rmsd']][:maxindex])
         if sorted:
             rmsd = np.sort(rmsd)
         count = np.where(rmsd < borderRmsd)
