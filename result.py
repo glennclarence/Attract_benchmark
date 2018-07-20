@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from eval_class import ResultClass
 from collections import OrderedDict
+import pandas as pd
+
 
 # idx_mode = 0
 # idx_rmsd = 1
@@ -35,6 +37,12 @@ dict_indices['amp'] = 10
 dict_indices['ev'] = 11
 dict_indices['irmsd'] = 12
 dict_indices['fnat'] = 13
+dict_indices['num_10A_10'] = 14
+dict_indices['num_5A_10'] =15
+dict_indices['num_10A_100'] =16
+dict_indices['num_5A_100'] =17
+dict_indices['num_10A_1000']=18
+dict_indices['num_5A_1000'] =19
 
 #filename_scoring = "/home/glenn/cluster/benchmark_attract_test/1AVX/benchmark_ORI_scorig_50cut_5modes_2/1AVX-receptor-for-docking-sorted-dr.dat"
 #energies =  getEnergyfromFile( filename_scoring)
@@ -280,8 +288,14 @@ for bm in BMLoad:
             dict['stdDev']      = a5BM.stdDevRmsd(bm, name, 50)
             dict['best_energy'] = min(a5BM.getDataProtein( bm, name, 'energy'  ))
 
-            dict['num_10A'] = len(a5BM.getNumSmaller(bm, name, 10,sorted = False)[0])
-            dict['num_5A'] = len(a5BM.getNumSmaller(bm, name, 5,sorted = False)[0])
+            dict['num_10A'] = len(a5BM.getNumSmaller(bm, name, 10, sorted=False)[0])
+            dict['num_5A'] = len(a5BM.getNumSmaller(bm, name, 5, sorted=False)[0])
+            dict['num_10A_10'] = len(a5BM.getNumSmaller(bm, name, 10,maxindex=10,sorted = False)[0])
+            dict['num_5A_10'] = len(a5BM.getNumSmaller(bm, name, 5,maxindex=10,sorted = False)[0])
+            dict['num_10A_100'] = len(a5BM.getNumSmaller(bm, name, 10,maxindex=100, sorted=False)[0])
+            dict['num_5A_100'] = len(a5BM.getNumSmaller(bm, name, 5, maxindex=100,sorted=False)[0])
+            dict['num_10A_1000'] = len(a5BM.getNumSmaller(bm, name, 10,maxindex=1000, sorted=False)[0])
+            dict['num_5A_1000'] = len(a5BM.getNumSmaller(bm, name, 5,maxindex=1000, sorted=False)[0])
             dict['num_sorted_10A'] = len(a5BM.getNumSmaller(bm, name, 10,sorted = True)[0])
             dict['num_sorted_5A'] =len( a5BM.getNumSmaller(bm, name, 5,sorted = True)[0])
         except:

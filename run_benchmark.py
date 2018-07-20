@@ -44,10 +44,17 @@ class ProteinPair:
         self.input_folder = input_folder
         self.output_folder = output_folder
         # self.filename_pdb_reference_ligand = filename_pdb_reference_ligand
-        self.filename_modesJoined = filename_modesJoined
+
         # self.filename_modesJoined_reference = filename_modesJoined_reference
         # self.filename_receptor_heavy = filename_receptor_heavy
         # self.filename_ligand_heavy = filename_ligand_heavy
+
+        self.filename_modesJoined = None
+        self.filename_modesJoined_aa  = None
+        self.filename_modesJoined_heavy  = None
+        self.filename_modesJoined_ref  = None
+        self.filename_modesJoined_ref_aa = None
+        self.filename_modesJoined_ref_heavy = None
 
         self.id = id
     # def get_receptor(self):
@@ -83,7 +90,8 @@ def configure_protein( path_inputFolder, path_outputFolder, name_protein, filena
 
 
 
-def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True):
+def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
+                   scoring_overwrite=False, analyse_overwrite= False):
     pairs = {}
     finisheditems_scoring = Queue()
     finisheditems_docking = Queue()
@@ -142,7 +150,14 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
         ligand = configure_protein( path_inputFolder=path_input,    path_outputFolder=path_output,  name_protein=name_ligand,
                                     filename_pdb_protein=filename_ligand,      chain="B",             num_modes=num_modes, filename_reference=filename_ligand)
         filename_modesJoined = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + ".dat")
+        filename_modesJoined_aa = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + "-aa.dat")
+        filename_modesJoined_heavy = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + "-heavy.dat")
 
+        filename_modesJoined_ref = os.path.join(receptor.get_pathInput(), "-allModes-ref-" + str(num_modes) + ".dat")
+        filename_modesJoined_ref_aa = os.path.join(receptor.get_pathInput(), "-allModes-ref-" + str(num_modes) + "-aa.dat")
+        filename_modesJoined_ref_heavy = os.path.join(receptor.get_pathInput(),"-allModes-ref-" + str(num_modes) + "-heavy.dat")
+        heavy = True
+        allAtom = True
         if do_configuration:
             print "{}/{} ".format( count + 1, len(protein_ensembles)),"\t--Configure protein: ", name_receptor, " and ", name_ligand
             if create_reduce:
@@ -165,11 +180,20 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 benchmark.timer_start("Create_modes")
 
                 try:
-                    receptor.create_modes(overwrite=False)
-                    ligand.create_modes(overwrite=False)
-                    if orig_docking or orig_scoring:
 
-                        join_modefiles(receptor.get_filenameModes(), ligand.get_filenameModes(), filename_modesJoined)
+                    receptor.create_modes(overwrite=False, heavy= True, allAtom=True)
+                    ligand.create_modes(overwrite=False, heavy= True, allAtom=True)
+
+
+                    join_modefiles(receptor.get_filenameModes(), ligand.get_filenameModes(), filename_modesJoined)
+                    if heavy:
+                        join_modefiles(os.path.join(receptor.get_pathInput(), receptor.filename_modes_heavy) ,os.path.join(receptor.get_pathInput(), ligand.filename_modes_heavy),
+                                       filename_modesJoined_heavy)
+                    if allAtom:
+
+                        join_modefiles(os.path.join(receptor.get_pathInput(), receptor.filename_modes_aa) ,os.path.join(receptor.get_pathInput(), ligand.filename_modes_aa),
+                                       filename_modesJoined_aa)
+
                 except:
                     print "could not create Modefiles"
                     pass
@@ -180,10 +204,14 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 benchmark.timer_start("Create_dofs")
                 protconf.create_StartingPositions("/home/glenn/Documents/attract/rotation.dat",  receptor.get_filenamePdbReduced(), ligand.get_filenamePdbReduced(),filename_dof)
                 benchmark.timer_appendStop("Create_dofs")
-	print filename_dof
+
         pair = ProteinPair( name_pair, receptor, ligand, filename_dof, receptor.get_pathInput(), receptor.get_pathOutput() ,  filename_ligand_heavy=os.path.join( ligand.get_pathInput(), ligand.filename_heavy),
                             filename_receptor_heavy=os.path.join( receptor.get_pathInput(), receptor.filename_heavy),
                             filename_modesJoined= filename_modesJoined if create_modes and num_modes > 0   else None)
+
+        pair.filename_modesJoined_aa = filename_modesJoined_aa
+
+        pair.filename_modesJoined_heavy  = filename_modesJoined_heavy
         pair.filename_pdb_reference_ligand = filename_ligand_reference
         pair.filename_pdb_reference_receptor = filename_receptor_reference
         pairs[name_pair] = pair
@@ -200,7 +228,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             ligand = pair.ligand
             print "{}/{} ".format( count_minimization, len(pairs)),"\t--put in docking queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
             filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
-            if not os.path.isfile(filename_output):
+            if not os.path.isfile(filename_output) or scoring_overwrite:
 
                 dock.add_ensembleToQueue( id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,    filename_parameter=parameter_dir,
                                            filename_pdbReceptor=receptor.get_filenamePdbReduced(),               filename_alphabetReceptor=receptor.get_filenameAlphabet(),
@@ -208,11 +236,11 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                           num_modesReceptor=num_modes,      filename_pdbLigand=ligand.get_filenamePdbReduced(), filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                           filename_gridLigand=ligand.get_filenameGrid(), filename_modesLigand=ligand.get_filenameModes(),
                                           num_modesLigand=num_modes, filename_modesJoined= pair.filename_modesJoined,
-                                          modeForceFac= 1.0 , logfile=os.path.join(receptor.get_pathOutput(), "logfile_minimization"))
+                                          modeForceFac= evfactor , logfile=os.path.join(receptor.get_pathOutput(), "logfile_minimization"))
             else:
                 print filename_output, " exists already\n"
                 finisheditems_docking.put(key)
-            time.sleep(0.05)
+
 
 
 
@@ -238,10 +266,10 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 ligand = pair.ligand
                 print "{}/{} ".format( count_scoring, len(pairs)),"\t--put in scoring queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
                 filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_scoring'])
-                print filename_output
-                filename_docking = os.path.join(pair.receptor.get_pathOutput(),
-                                                pair.receptor.get_name() + d_config['file_compute_scoring'])
-                if  os.path.isfile(filename_output):
+                filename_docking = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
+                print filename_docking
+                if not os.path.isfile(filename_output) :
+                    print filename_docking
                     score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
                                               filename_pdbReceptor=receptor.get_filenamePdbReduced(),filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                               filename_gridReceptor=receptor.get_filenameGrid(),filename_modesReceptor=receptor.get_filenameModes(),
@@ -249,9 +277,9 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                               filename_gridLigand=ligand.get_filenameGrid(),filename_modesLigand=ligand.get_filenameModes(),
                                               num_modesLigand=num_modes, filename_modesJoined= pair.filename_modesJoined, radius_cutoff=rcut, modeForceFac=evfactor, logfile=os.path.join(receptor.get_pathOutput(), "logfile_scoring") )
                 else:
-                    print filename_output , " exists already \n"
-                    finisheditems_scoring.put(key)
-            time.sleep(0.05)
+                    print filename_output , " exists already\n"
+                    finisheditems_scoring.put(pairId)
+
 
     score.stop_threads_if_done()
     if not do_scoring:
@@ -302,9 +330,10 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                      filename_pdbReceptorRef=       fn_rec_ref,     filename_pdbLigandRef=        fn_lig_ref,
                                      filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
                                      filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
-                                     filename_modesJoined=pair.filename_modesJoined,num_modesReceptor=num_modes, num_modesLigand=num_modes,
-                                     path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=True)
-            time.sleep(0.05)
+                                     filename_modesJoined=pair.filename_modesJoined, filename_modesJoined_aa=pair.filename_modesJoined_aa,
+                                     filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modes, num_modesLigand=num_modes,
+                                     path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
+
 
 
 
@@ -323,7 +352,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 #                create_reduce = True, num_modes = 0, use_orig= False
 #                , num_threads = 1, do_minimization=True, do_scoring=True)
 
-path_test = "/home/glenn/Documents/benchmark_test/1AVX"
+path_test = "/home/glenn/cluster/benchmark_attract_test"
 path = "/home/glenn/cluster/benchmark5_attract"
 #path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
 #path = "/home/glenn/Documents/benchmark_1bgx"
@@ -360,13 +389,66 @@ path = "/home/glenn/cluster/benchmark5_attract"
 #               create_reduce = True, num_modes = 1, use_orig= False
 #               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0)
 
-#####end to complete
 
+#####end to complete
 
 
 run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
                create_reduce = True, num_modes = 20, use_orig= False
                , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1)
+
+
+
+
+
+
+
+
+
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =20, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True)
+
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_0modes", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =0, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_1modes", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes =1, orig_docking= False, orig_scoring=False,
+               num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_3modes", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes =3, orig_docking= False, orig_scoring=False,
+               num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_5modes", create_grid = True, create_modes = True, create_dofs = True,
+               create_reduce = True, num_modes =5, orig_docking= False, orig_scoring=False,
+               num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_point5EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =20, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_2EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =20, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_4EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =20, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 4.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
