@@ -49,7 +49,7 @@ def load_benchmarks( path_folder, name_benchmark):
         bench.append( (name_prot,input,benchmarks))
     return bench
 ext_rmsd = "-rmsd.result"
-ext_irmsd= "-irmsd.result"
+ext_irmsd= "-irmsd.dat"
 ext_fnat = "-fnat.dat"
 ext_scored = "-sorted-dr.dat"
 filename_pdb = "-receptor-for-docking"
@@ -58,6 +58,38 @@ def mode_ext( num_modes):
     return "-" + num_modes +"-modes.dat"
 
 
+
+def getCapriRanking( Irmsd, fnat):
+        if fnat >= 0.5 and Irmsd <= 1.0:
+            return 3
+        elif fnat >= 0.3 and Irmsd <= 2.0:
+            return 2
+        elif fnat >= 0.1 and fnat < 0.3 and Irmsd < 4:
+            return 1
+        else:
+            return 0
+
+def getCapriList(list_Irmsd, list_fnat, maxIndex):
+    list_capri = np.zeros(maxIndex)
+    if maxIndex > len(list_Irmsd) or maxIndex  > len(list_fnat):
+        print "the index is higher than the length of inpuarrays"
+    else:
+        for i in range(maxIndex):
+            list_capri[i] = getCapriRanking(list_Irmsd[i], list_fnat[i])
+    return list_capri
+
+def capriCount(list_capri):
+    count_1 = 0
+    count_2 = 0
+    count_3 = 0
+    for rank in list_capri:
+        if rank == 1:
+            count_1 += 1
+        elif rank == 2:
+            count_2 += 1
+        elif rank == 3:
+            count_3 += 1
+    return count_1, count_2, count_3
 
 def evaluate( bechmarks, dict_indices):
     result = {}
@@ -92,6 +124,7 @@ def evaluate( bechmarks, dict_indices):
                     print "error loading rmsd file", filename_rmsd
 
                 filename_irmsd = os.path.join(name_singleBench[1], name_protein + filename_pdb + ext_irmsd)
+                irmsd = np.zeros(1)
                 try:
                     with open(filename_irmsd, 'r') as f:
                         lines = f.readlines()
@@ -104,7 +137,7 @@ def evaluate( bechmarks, dict_indices):
                             irmsd = np.zeros(len(lines), dtype=float)
                             pos = np.arange(len(lines), dtype=int)
                             for i, line in enumerate(lines):
-                                rmsd[i] = float(line.split()[-1])
+                                irmsd[i] = float(line.split()[-1])
                         if irmsd is None:
                             irmsd = np.asarray(100000)
                 except:
@@ -112,6 +145,7 @@ def evaluate( bechmarks, dict_indices):
                     "error loading Irmsd file", filename_irmsd
 
                 filename_fnat = os.path.join(name_singleBench[1], name_protein + filename_pdb + ext_fnat)
+                fnat = np.zeros(1)
                 try:
                     with open(filename_fnat, 'r') as f:
                         lines = f.readlines()
@@ -162,10 +196,18 @@ def evaluate( bechmarks, dict_indices):
                 energies = getEnergyfromFile(filename_scoring)
                 #print "energies",energies
             #try:
+
+            list_capri = getCapriList(irmsd, fnat, maxIndex=50)
+            one_star, two_star, three_star = capriCount(list_capri= list_capri)
             result_protein[dict_indices['mode']]    = int(num_modes)
             result_protein[dict_indices['rmsd']] = checkNone(rmsd)
             result_protein[dict_indices['irmsd']] = checkNone(irmsd)
             result_protein[dict_indices['fnat']] = checkNone(fnat)
+            result_protein[dict_indices['capri']] = checkNone(list_capri)
+            result_protein[dict_indices['one_star_50']] = one_star
+            result_protein[dict_indices['two_star_50']] = two_star
+            result_protein[dict_indices['three_star_50']] = three_star
+
             result_protein[dict_indices['energy']] = checkNone(energies)
             result_protein[dict_indices['pos']] = checkNone(pos)
             result_protein[dict_indices['min']] = checkNone(min(rmsd))
@@ -228,11 +270,13 @@ class ResultClass:
     def setActiveProtein(self, name_protein):
         self._activeProtein = name_protein
 
-    def plotRmsd(self, max_indx, name_benchmark = None, name_protein = None, use_energy = False, show = True, clear = False):
+    def plotRmsd(self, max_indx = None, name_benchmark = None, name_protein = None, use_energy = False, show = True, clear = False):
         if name_protein is None:
             name_protein = self._activeProtein
         if name_benchmark is None:
             name_benchmark = self._activeBM
+        if max_indx is None:
+            max_indx = len(self._dict_dataBenchmark[name_benchmark][name_protein][self._dict_index['rmsd']])
         rmsd = self._dict_dataBenchmark[name_benchmark][name_protein][self._dict_index['rmsd']][:max_indx]
         if not use_energy:
             y = self._dict_dataBenchmark[name_benchmark][name_protein][self._dict_index['pos']][:max_indx]

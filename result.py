@@ -6,22 +6,6 @@ from eval_class import ResultClass
 from collections import OrderedDict
 import pandas as pd
 
-
-# idx_mode = 0
-# idx_rmsd = 1
-# idx_energy = 2
-# idx_pos = 3
-# idx_min = 4
-# idx_min = 4
-# idx_mean = 5
-# idx_mean_10 = 6
-# idx_mean_50 = 7
-# idx_mean_sort_10 = 8
-# idx_mean_sort_50 = 9
-# idx_amp = 10
-# idx_ev = 11
-# tot_num = 12
-
 dict_indices = {}
 dict_indices['mode'] = 0
 dict_indices['rmsd'] = 1
@@ -43,15 +27,30 @@ dict_indices['num_10A_100'] =16
 dict_indices['num_5A_100'] =17
 dict_indices['num_10A_1000']=18
 dict_indices['num_5A_1000'] =19
+dict_indices['one_star_50'] = 20
+dict_indices['two_star_50'] = 21
+dict_indices['three_star_50'] = 22
+dict_indices['capri'] = 23
 
-#filename_scoring = "/home/glenn/cluster/benchmark_attract_test/1AVX/benchmark_ORI_scorig_50cut_5modes_2/1AVX-receptor-for-docking-sorted-dr.dat"
-#energies =  getEnergyfromFile( filename_scoring)
-#print energies
 
 a5BM = ResultClass( dict_indices )
 
 path_folder = "/home/glenn/Documents/Masterarbeit/test_bencheval/"
 path_folder= "/home/glenn/cluster/benchmark5_attract"
+
+BMLoad = [
+'benchmark_GPU_scorig_50cut_0modes',
+'benchmark_GPU_scorig_nocut_1modes',
+'benchmark_GPU_scorig_50cut_3modes',
+'benchmark_GPU_scorig_50cut_5modes'
+]
+
+for bm in BMLoad:
+    a5BM.loadBenchmark(path_folder, bm)
+
+
+
+
 BM5m = "benchmark_GPU_scorig_50cut_5modes"
 BM0m = "benchmark_GPU_scorig_50cut_0modes"
 BM3m = "benchmark_GPU_scorig_50cut_3modes"
@@ -73,6 +72,9 @@ BMLoad = [
 'benchmark_GPU_scorig_50cut_5modes_3EV',
 'benchmark_GPU_scorig_50cut_5modes_halfEV',
 'benchmark_GPU_scorig_50cut_5modes_point7EV']
+
+
+
 #BM5m_0_5ev = "benchmark_GPU_scorig_50cut_5modes_halfEV"
 
 #a5BM.loadBenchmark( path_folder, BM5m )
@@ -264,14 +266,15 @@ print a5BM.getWeightedResultTill(BM0m, '1ACB')
 
 import pandas as pd
 
-path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
+
 sort_BM = BM0m
 BM = BM0m
 
 
-
+path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
+path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
 for bm in BMLoad:
-    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A'])
+    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A', 'num_10A_10', 'num_5A_10', 'num_10A_100', 'num_5A_100', 'num_10A_1000', 'num_5A_1000', 'one_star', 'two_star', 'three_star'])
     #a5BM.loadBenchmark( path_folder, bm)
     names = a5BM.getSorted('mean_10', bm,onlygetName = True)
     row_list=[]
@@ -280,6 +283,11 @@ for bm in BMLoad:
         try:
             dict['name'] = name
             dict['mean_10']    = a5BM.getDataProtein( bm, name, 'mean_10'  )
+
+            dict['one_star_50'] = a5BM.getDataProtein(bm, name, 'one_star_50')
+            dict['two_star_50'] = a5BM.getDataProtein(bm, name, 'two_star_50')
+            dict['three_star_50'] = a5BM.getDataProtein(bm, name, 'three_star_50')
+
             dict['mean_sort_50'] = a5BM.getDataProtein(bm, name, 'mean_sort_50')
             dict['mean_sort_10'] = a5BM.getDataProtein(bm, name, 'mean_sort_10')
             dict['rank_Till'] = a5BM.getWeightedResultTill(bm, name)
@@ -288,16 +296,16 @@ for bm in BMLoad:
             dict['stdDev']      = a5BM.stdDevRmsd(bm, name, 50)
             dict['best_energy'] = min(a5BM.getDataProtein( bm, name, 'energy'  ))
 
-            dict['num_10A'] = len(a5BM.getNumSmaller(bm, name, 10, sorted=False)[0])
-            dict['num_5A'] = len(a5BM.getNumSmaller(bm, name, 5, sorted=False)[0])
-            dict['num_10A_10'] = len(a5BM.getNumSmaller(bm, name, 10,maxindex=10,sorted = False)[0])
-            dict['num_5A_10'] = len(a5BM.getNumSmaller(bm, name, 5,maxindex=10,sorted = False)[0])
-            dict['num_10A_100'] = len(a5BM.getNumSmaller(bm, name, 10,maxindex=100, sorted=False)[0])
-            dict['num_5A_100'] = len(a5BM.getNumSmaller(bm, name, 5, maxindex=100,sorted=False)[0])
-            dict['num_10A_1000'] = len(a5BM.getNumSmaller(bm, name, 10,maxindex=1000, sorted=False)[0])
-            dict['num_5A_1000'] = len(a5BM.getNumSmaller(bm, name, 5,maxindex=1000, sorted=False)[0])
-            dict['num_sorted_10A'] = len(a5BM.getNumSmaller(bm, name, 10,sorted = True)[0])
-            dict['num_sorted_5A'] =len( a5BM.getNumSmaller(bm, name, 5,sorted = True)[0])
+            dict['num_10A'] = a5BM.getNumSmaller(bm, name, 10, sorted=False)
+            dict['num_5A'] = a5BM.getNumSmaller(bm, name, 5, sorted=False)
+            dict['num_10A_10'] = a5BM.getNumSmaller(bm, name, 10,maxindex=10,sorted = False)
+            dict['num_5A_10'] = a5BM.getNumSmaller(bm, name, 5,maxindex=10,sorted = False)
+            dict['num_10A_100'] = a5BM.getNumSmaller(bm, name, 10,maxindex=100, sorted=False)
+            dict['num_5A_100'] = a5BM.getNumSmaller(bm, name, 5, maxindex=100,sorted=False)
+            dict['num_10A_1000'] = a5BM.getNumSmaller(bm, name, 10,maxindex=1000, sorted=False)
+            dict['num_5A_1000'] = a5BM.getNumSmaller(bm, name, 5,maxindex=1000, sorted=False)
+            dict['num_sorted_10A'] = a5BM.getNumSmaller(bm, name, 10,sorted = True)
+            dict['num_sorted_5A'] = a5BM.getNumSmaller(bm, name, 5,sorted = True)
         except:
             pass
         #print dict
@@ -523,6 +531,8 @@ BMLoad = [
 'benchmark_GPU_scorig_50cut_3modes',
 'benchmark_GPU_scorig_50cut_5modes'
 ]
+
+
 bm_dict={}
 for bm in BMLoad:
     frame = pd.read_csv(os.path.join(path_evaluation, bm), sep='\t')
@@ -553,3 +563,97 @@ plt.legend()
 plt.show()
 
 ########END BARPLOTT''''''########
+path_base = "/home/glenn/Documents/Masterarbeit/analysis/Plots/evaluation"
+path_csv = "/home/glenn/Documents/Masterarbeit/analysis"
+names = a5BM.getSorted('mean_10', 'benchmark_GPU_scorig_50cut_0modes',onlygetName = True)
+
+path_base = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE/evaluation"
+path_csv = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
+names = a5BM.getSorted('mean_10', 'benchmark_ORIG_scorig_0modes',onlygetName = True)
+dict_data = {}
+for bm in BMLoad:
+    frame = pd.read_csv(os.path.join(path_csv, bm), sep='\t')
+    dict_data[bm] = frame
+
+for name in names:
+    path_protein =os.path.join( path_base, name)
+    if not os.path.exists(path_protein):
+        os.mkdir(path_protein)
+    bm_mean = {}
+    bm_star = {}
+    bm_num = {}
+    bm_rank = {}
+    for bm in BMLoad:
+        plot =  a5BM.plotRmsd( max_indx = None, name_benchmark = bm, name_protein = name, use_energy = True, show = False, clear = True)
+        plot.savefig(os.path.join(path_protein, "fig-{}-{}.svg".format(name,bm)))
+        data = dict_data[bm]
+        dat =  data.loc[data['name'] == name]
+        dict = {}
+        dict_mean ={}
+        dict_star = {}
+        dict_num= {}
+        dict_rank = {}
+        for column in dat:
+            dict_mean['mean_10'] = dat['mean_10'].values
+            dict_mean['mean_sort_50'] = dat['mean_sort_50'].values
+            dict_mean['mean_sort_10'] = dat['mean_sort_10'].values
+            dict_mean['best_energy'] = dat['best_energy'].values
+            dict_star['one_star_50'] = dat['one_star_50'].values
+            dict_star['two_star_50'] = dat['two_star_50'].values
+            dict_star['three_star_50'] = dat['three_star_50'].values
+            dict_rank['rank_Till'] = dat['rank_Till'].values
+            dict_rank['rank'] = dat['rank'].values
+            dict_rank['score'] = dat['score'].values
+            dict_num['num_10A'] = dat['num_10A'].values
+            dict_num['num_5A'] = dat['num_5A'].values
+            dict_num['num_10A_10'] = dat['num_10A_10'].values
+            dict_num['num_5A_10'] = dat['num_5A_10'].values
+            dict_num['num_10A_100'] = dat['num_10A_100'].values
+            dict_num['num_5A_100'] = dat['num_5A_100'].values
+            dict_num['num_10A_1000'] = dat['num_10A_1000'].values
+            dict_num['num_5A_1000'] = dat['num_5A_1000'].values
+            dict_num['num_sorted_10A'] = dat['num_sorted_10A'].values
+            dict_num['num_sorted_5A'] = dat['num_sorted_5A'].values
+        bm_mean[bm] = dict_mean
+        bm_star[bm] = dict_star
+        bm_num[bm] = dict_num
+        bm_rank[bm] = dict_rank
+    plt.clf()
+    for i, bm in enumerate(BMLoad):
+        plt.bar(np.arange(len(bm_mean[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_mean[bm].values()), width=0.2,
+                align='center')
+    plt.xticks(np.arange(len(bm_mean[bm])) * 2 * len(BMLoad) * 0.2, list(bm_mean[bm].keys()), rotation='vertical')      
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(path_protein, "bar-mean-{}-{}.svg".format(name,bm)))
+
+    plt.clf()
+    for i, bm in enumerate(BMLoad):
+        plt.bar(np.arange(len(bm_rank[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_rank[bm].values()), width=0.2,
+                align='center')
+    plt.xticks(np.arange(len(bm_rank[bm])) * 2 * len(BMLoad) * 0.2, list(bm_rank[bm].keys()), rotation='vertical')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(path_protein, "bar-rank-{}-{}.svg".format(name, bm)))
+
+    plt.clf()
+    for i, bm in enumerate(BMLoad):
+        plt.bar(np.arange(len(bm_star[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_star[bm].values()), width=0.2,
+                align='center')
+    plt.xticks(np.arange(len(bm_star[bm])) * 2 * len(BMLoad) * 0.2, list(bm_star[bm].keys()), rotation='vertical')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(path_protein, "bar-star-{}-{}.svg".format(name, bm)))
+
+    plt.clf()
+    for i, bm in enumerate(BMLoad):
+        plt.bar(np.arange(len(bm_num[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_num[bm].values()), width=0.2,
+                align='center')
+    plt.xticks(np.arange(len(bm_num[bm])) * 2 * len(BMLoad) * 0.2, list(bm_num[bm].keys()), rotation='vertical')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(path_protein, "bar-num-{}-{}.svg".format(name, bm)))
+
+
+
+

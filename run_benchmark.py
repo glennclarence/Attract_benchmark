@@ -91,7 +91,7 @@ def configure_protein( path_inputFolder, path_outputFolder, name_protein, filena
 
 
 def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
-                   scoring_overwrite=False, analyse_overwrite= False):
+                   scoring_overwrite=False, analyse_overwrite= False, docking_overwrite = False):
     pairs = {}
     finisheditems_scoring = Queue()
     finisheditems_docking = Queue()
@@ -228,7 +228,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             ligand = pair.ligand
             print "{}/{} ".format( count_minimization, len(pairs)),"\t--put in docking queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
             filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
-            if not os.path.isfile(filename_output) or scoring_overwrite:
+            if not os.path.isfile(filename_output) or docking_overwrite:
 
                 dock.add_ensembleToQueue( id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,    filename_parameter=parameter_dir,
                                            filename_pdbReceptor=receptor.get_filenamePdbReduced(),               filename_alphabetReceptor=receptor.get_filenameAlphabet(),
@@ -268,7 +268,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_scoring'])
                 filename_docking = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
                 print filename_docking
-                if not os.path.isfile(filename_output) :
+                if not os.path.isfile(filename_output) or scoring_overwrite :
                     print filename_docking
                     score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
                                               filename_pdbReceptor=receptor.get_filenamePdbReduced(),filename_alphabetReceptor=receptor.get_filenameAlphabet(),
@@ -353,7 +353,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 #                , num_threads = 1, do_minimization=True, do_scoring=True)
 
 path_test = "/home/glenn/cluster/benchmark_attract_test"
-path = "/home/glenn/cluster/benchmark5_attract"
+#path = "/home/glenn/cluster/benchmark5_attract"
 #path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
 #path = "/home/glenn/Documents/benchmark_1bgx"
 
@@ -393,38 +393,65 @@ path = "/home/glenn/cluster/benchmark5_attract"
 #####end to complete
 
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes = 20, use_orig= False
-               , num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1)
 
 
-
-
-
-
-
+##from 19.7.2018 - 23.07.2018
 
 
 # run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
-#                create_reduce = True, num_modes =20, orig_docking= False, orig_scoring=False,
-#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True)
+#                 create_reduce = True, num_modes = 20, orig_docking= False, orig_scoring=False,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True, docking_overwrite=True)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_point5EV", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modes = 20, orig_docking= False, orig_scoring=False,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True, docking_overwrite=True)
+#
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_2EV", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modes = 20, orig_docking= False, orig_scoring=False,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True, docking_overwrite=True)
+
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_4EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes = 20, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=False, do_scoring=True, evfactor = 4.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False)
+
+
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_10modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes = 10, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True, docking_overwrite=True)
+
+
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_15modes_1EV", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes = 15, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True, docking_overwrite=True)
+
+##end
+
+
+
+
+
+
+
+
+
 
 # run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_0modes", create_grid = True, create_modes = True, create_dofs = True,
 #                create_reduce = True, num_modes =0, orig_docking= False, orig_scoring=False,
 #                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
 
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_1modes", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes =1, orig_docking= False, orig_scoring=False,
-               num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_3modes", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes =3, orig_docking= False, orig_scoring=False,
-               num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_5modes", create_grid = True, create_modes = True, create_dofs = True,
-               create_reduce = True, num_modes =5, orig_docking= False, orig_scoring=False,
-               num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_nocut_1modes", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =1, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_3modes", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =3, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scorig_50cut_5modes", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modes =5, orig_docking= False, orig_scoring=False,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False)
 #
 # run_benchmark( path, "-for-docking.pdb",name_benchmark = "benchmark_GPU_scGPU_nocut_20modes_point5EV", create_grid = True, create_modes = True, create_dofs = True,
 #                create_reduce = True, num_modes =20, orig_docking= False, orig_scoring=False,

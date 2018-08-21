@@ -81,6 +81,7 @@ def run_attract( use_orig, filename_dof, folder_input, do_scoring ,num_modes):
     if not use_orig:
 
         bash_command += "/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0/AttractServer_DEBUG "
+        #bash_command += "/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0/AttractServer_back_180718 "
         if do_scoring:
             bash_command += "sc "
         else:
@@ -96,8 +97,10 @@ def run_attract( use_orig, filename_dof, folder_input, do_scoring ,num_modes):
         bash_command+=os.path.join(folder_input, lig + ext_pdb)
 
         if num_modes > 0:
-            bash_command+=" --numModes "
+            bash_command+=" --numModesLig "
             bash_command+=str(num_modes)
+            bash_command += " --numModesRec "
+            bash_command += str(num_modes)
             bash_command+=" --modesr "
             bash_command+=os.path.join(folder_input, ext_modesRec)
             bash_command+=" --modesl "
@@ -110,8 +113,10 @@ def run_attract( use_orig, filename_dof, folder_input, do_scoring ,num_modes):
         bash_command+=os.path.join(folder_input, rec + ext_grid)
         bash_command+=" --gridlig "
         bash_command+=os.path.join(folder_input, lig + ext_grid)
+        #bash_command += " > " + getDebugFile(num_modes > 0,True ,  do_scoring)
     else:
-        bash_command += "/home/glenn/Documents/attract/bin/attract "
+        #bash_command += "/home/glenn/Documents/attract/bin/attract "
+        bash_command +="/home/glenn/Downloads/attract_fromHP/bin/attract "
         bash_command += filename_dof
         bash_command += " ${ATTRACTDIR}/../attract.par "
         bash_command += os.path.join(folder_input, rec + ext_pdb) + " "
@@ -196,8 +201,8 @@ def test_result(use_modes, use_gpu, scoring):
 
 #path_input = "/home/glenn/Documents/Masterarbeit/testfolder/1AVX/input"
 file_dof ="/dof_docked_all.dat"
-
-#run_attract( True, path_input + file_dof, path_input, do_scoring=True,num_modes=5)
+#file_dof="/systsearch.dat"
+run_attract( True, path_input + file_dof, path_input, do_scoring=True,num_modes=5)
 run_attract( False, path_input + file_dof,path_input, do_scoring=True,num_modes=5)
 use_modes = True
 use_gpu = True
