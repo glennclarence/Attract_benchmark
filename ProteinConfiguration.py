@@ -210,7 +210,7 @@ class ProteinConfiguration:
                              output_name_pdb=self.filename_allAtom_ref,
                              output_name_mapping=output_name_mapping,
                              args_chain=self.chain, args_pdb2pqr=True, args_dumppatch=True);
-
+            print "\n\n ref",self.filename_pdb_reference
             if heavy:
                 if path.isfile(self.filename_heavy_ref) is False or overwrite is True:
                     aareduce(args_pdb=os.path.join(self.path_inputFolder, self.filename_allAtom_ref),
@@ -218,10 +218,10 @@ class ProteinConfiguration:
                              output_name_pdb=self.filename_heavy_ref,
                              output_name_mapping=output_name_mapping, args_readpatch=True,
                              args_chain=self.chain, args_pdb2pqr=True);
-            #if path.isfile(self.filename_reduce_ref) is False or (path.isfile(self.filename_reduce_ref) and overwrite is True):
-            #    reduce(pdb=os.path.join(self.path_inputFolder, self.filename_allAtom_ref),
-            #           path_output=output_path,
-            #           name_output=self.filename_reduce_ref, chain=self.chain);
+            if path.isfile(self.filename_reduce_ref) is False or overwrite is True:
+                reduce(pdb=os.path.join(self.path_inputFolder, self.filename_allAtom_ref),
+                   path_output=output_path,
+                       name_output=self.filename_reduce_ref, chain=self.chain);
 
         if path.isfile(  self.filename_reduce ) is False or( path.isfile(  self.filename_reduce ) and overwrite is True):
             reduce(pdb= os.path.join(self.path_inputFolder,self.filename_allAtom),

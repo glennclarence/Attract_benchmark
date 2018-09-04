@@ -7,7 +7,8 @@ from run_analysis import join_modefiles
 import benchmark_timer as benchtime
 import time
 from Queue import Queue
-
+import compare as compModes
+import numpy as np
 
 #paths
 d_config = {'file_compute_dock':'_dock.result',
@@ -21,10 +22,9 @@ d_config = {'file_compute_dock':'_dock.result',
                 }
 
 d_paths={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0",
-       "compute_attract_orig": "/home/glenn/Documents/attract/bin"}
-
+       "compute_attract_orig": "/home/glenn/Downloads/attract_fromHP/bin"}
 d_binary={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0/AttractServer",
-       "compute_attract_orig":"home/glenn/Documents/attract/bin/attract"}
+       "compute_attract_orig":"/home/glenn/Downloads/attract_fromHP/bin/attract"}
 
 parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
 
@@ -49,7 +49,7 @@ class ProteinPair:
         # self.filename_receptor_heavy = filename_receptor_heavy
         # self.filename_ligand_heavy = filename_ligand_heavy
 
-        self.filename_modesJoined = None
+        self.filename_modesJoined = filename_modesJoined
         self.filename_modesJoined_aa  = None
         self.filename_modesJoined_heavy  = None
         self.filename_modesJoined_ref  = None
@@ -90,11 +90,12 @@ def configure_protein( path_inputFolder, path_outputFolder, name_protein, filena
 
 
 
-def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modes= 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
-                   scoring_overwrite=False, analyse_overwrite= False, docking_overwrite = False):
+def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modesRec= 0,num_modesLig = 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
+                   scoring_overwrite=False, analyse_overwrite= False, docking_overwrite = False, analyse_mode = False):
     pairs = {}
     finisheditems_scoring = Queue()
     finisheditems_docking = Queue()
+    num_modes = max(num_modesRec, num_modesLig)
 
     benchmark = benchtime.measure_benchmark()
     benchmark.timer_add("Create_reducepdb")
@@ -110,7 +111,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                            num_threads=num_threads, args=(benchmark_minimization,finisheditems_docking,), use_OrigAttract=orig_docking)
     dock.start_threads()
     # create and start the threads for scoring
-    score = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_docking else d_binary["compute_attract_gpu"],
+    score = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_scoring else d_binary["compute_attract_gpu"],
                             do_scoring=True, num_threads=num_threads, args=(benchmark_scoring, finisheditems_scoring,),
                             use_OrigAttract=orig_scoring)
     score.start_threads()
@@ -137,18 +138,22 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
 
         #get the receptor and the ligand via their size and create Proteinconfigurations from it for receptor and ligand
+
         name_receptor = lpdb.get_proteinByindex(proteins,d_config['index_protein'], 'r')
+        print d_config["file_config_receptor_reference"]
+        print name_receptor
+        print os.path.dirname(proteins[name_receptor])
         filename_receptor_reference = os.path.join(os.path.dirname(proteins[name_receptor]), d_config["file_config_receptor_reference"])
         filename_receptor = proteins[ name_receptor]
         receptor = configure_protein(path_inputFolder = path_input,     path_outputFolder = path_output, name_protein = name_receptor,
-                                     filename_pdb_protein = filename_receptor,       chain = "A",          num_modes = num_modes, filename_reference=filename_receptor)
+                                     filename_pdb_protein = filename_receptor,       chain = "A",          num_modes = num_modes, filename_reference=filename_receptor_reference)
 
 
         name_ligand = lpdb.get_proteinByindex(proteins,d_config['index_protein'], 'l')
         filename_ligand = proteins[name_ligand]
         filename_ligand_reference = os.path.join( os.path.dirname( proteins[ name_ligand] ), d_config["file_config_ligand_reference"] )
         ligand = configure_protein( path_inputFolder=path_input,    path_outputFolder=path_output,  name_protein=name_ligand,
-                                    filename_pdb_protein=filename_ligand,      chain="B",             num_modes=num_modes, filename_reference=filename_ligand)
+                                    filename_pdb_protein=filename_ligand,      chain="B",             num_modes=num_modes, filename_reference=filename_ligand_reference)
         filename_modesJoined = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + ".dat")
         filename_modesJoined_aa = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + "-aa.dat")
         filename_modesJoined_heavy = os.path.join(receptor.get_pathInput(), "-allModes-" + str(num_modes) + "-heavy.dat")
@@ -207,7 +212,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
         pair = ProteinPair( name_pair, receptor, ligand, filename_dof, receptor.get_pathInput(), receptor.get_pathOutput() ,  filename_ligand_heavy=os.path.join( ligand.get_pathInput(), ligand.filename_heavy),
                             filename_receptor_heavy=os.path.join( receptor.get_pathInput(), receptor.filename_heavy),
-                            filename_modesJoined= filename_modesJoined if create_modes and num_modes > 0   else None)
+                            filename_modesJoined= filename_modesJoined )
 
         pair.filename_modesJoined_aa = filename_modesJoined_aa
 
@@ -229,7 +234,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             print "{}/{} ".format( count_minimization, len(pairs)),"\t--put in docking queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
             filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
             if not os.path.isfile(filename_output) or docking_overwrite:
-
+                print pair.filename_modesJoined
                 dock.add_ensembleToQueue( id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,    filename_parameter=parameter_dir,
                                            filename_pdbReceptor=receptor.get_filenamePdbReduced(),               filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                           filename_gridReceptor=receptor.get_filenameGrid(),                    filename_modesReceptor=receptor.get_filenameModes(),
@@ -250,7 +255,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             finisheditems_docking.put(key)
 
     dock.stop_threads_if_done()
-    dock.wait_until_done()
+
     if do_scoring:
         # print '**************************************************************'
         # print "Run Scoring"
@@ -269,7 +274,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 filename_docking = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
                 print filename_docking
                 if not os.path.isfile(filename_output) or scoring_overwrite :
-                    print filename_docking
+                    print "modes joined ",pair.filename_modesJoined
                     score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
                                               filename_pdbReceptor=receptor.get_filenamePdbReduced(),filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                               filename_gridReceptor=receptor.get_filenameGrid(),filename_modesReceptor=receptor.get_filenameModes(),
@@ -285,7 +290,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     if not do_scoring:
         for key, pair in pairs.iteritems():
             finisheditems_scoring.put(key)
-    if do_analyse is True:
+    if do_analyse or analyse_mode is True:
         #for count, pair in enumerate( pairs ):
         print '**************************************************************'
         print "Run Analysis"
@@ -322,21 +327,37 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 #                      filename_refLig,
                 #      num_modesReceptor=num_modes, num_modesLigand=num_modes, filename_modesJoined = pair.filename_modesJoined,
                 #      path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite= False)
-                print pair.filename_modesJoined
-                analyse.run_analysis(pair.output_folder, pair.receptor.name_protein, filename_docking, filename_scoring,
-                                     filename_pdbReceptor=          fn_rec,         filename_pdbLigand=           fn_lig,
-                                     filename_pdbReceptor_aa=       fn_rec_aa,      filename_pdbLigand_aa=        fn_lig_aa,
-                                     filename_pdbReceptor_heavy=    fn_rec_heavy,   filename_pdbLigand_heavy=     fn_lig_heavy,
-                                     filename_pdbReceptorRef=       fn_rec_ref,     filename_pdbLigandRef=        fn_lig_ref,
-                                     filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
-                                     filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
-                                     filename_modesJoined=pair.filename_modesJoined, filename_modesJoined_aa=pair.filename_modesJoined_aa,
-                                     filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modes, num_modesLigand=num_modes,
-                                     path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
+                if  do_analyse:
+                	analyse.run_analysis(pair.output_folder, pair.receptor.name_protein, filename_docking, filename_scoring,
+                                      filename_pdbReceptor=          fn_rec,         filename_pdbLigand=           fn_lig,
+                                      filename_pdbReceptor_aa=       fn_rec_aa,      filename_pdbLigand_aa=        fn_lig_aa,
+                                      filename_pdbReceptor_heavy=    fn_rec_heavy,   filename_pdbLigand_heavy=     fn_lig_heavy,
+                                      filename_pdbReceptorRef=       fn_rec_ref,     filename_pdbLigandRef=        fn_lig_ref,
+                                      filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
+                                      filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
+                                      filename_modesJoined=pair.filename_modesJoined, filename_modesJoined_aa=pair.filename_modesJoined_aa,
+                                      filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modes, num_modesLigand=num_modes,
+                                      path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
+                folder_mode = os.path.join(os.path.dirname(pair.output_folder), "mode_eval")
+                if analyse_mode:
 
 
+                    os.system("mkdir -p {} ".format(folder_mode))
+                    modes_vec = np.linspace(1, num_modes-1, num_modes -2,dtype=int)#
+		    print modes_vec
+                    #print pair.receptor.get_filenameModes()
+                    out_pdbs_rec =[]
+                    out_pdbs_lig = []
+                    for mode in modes_vec:
+                        out_pdbs_rec.append(os.path.join(folder_mode, "out_rec_{}.pdb".format(mode)))
+                        out_pdbs_lig.append(os.path.join(folder_mode, "out_lig_{}.pdb".format(mode)))
 
-
+		    compModes.evaluateModes(modes_vec,pair.receptor.get_filenameModes(),
+                                        os.path.join(pair.input_folder, pair.receptor.filename_reduce_ref),fn_rec,"dof.dat",  out_pdbs_rec ,os.path.join(folder_mode,"result_rec.dat") )
+                    compModes.evaluateModes(modes_vec, pair.ligand.get_filenameModes(),
+                                            os.path.join(pair.input_folder, pair.ligand.filename_reduce_ref), fn_lig,
+                                            "dof.dat", out_pdbs_lig, os.path.join(folder_mode, "result_lig.dat"))
+    dock.wait_until_done()
     score.wait_until_done()
 
 
@@ -352,8 +373,8 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 #                create_reduce = True, num_modes = 0, use_orig= False
 #                , num_threads = 1, do_minimization=True, do_scoring=True)
 
-path_test = "/home/glenn/cluster/benchmark_attract_test"
-#path = "/home/glenn/cluster/benchmark5_attract"
+path_test = "/home/glenn/work/benchmark_attract_test"
+path = "/home/glenn/work/benchmark5_attract"
 #path = "/home/glenn/cluster/benchmark5_attract_ORIG/"
 #path = "/home/glenn/Documents/benchmark_1bgx"
 
@@ -428,7 +449,102 @@ path_test = "/home/glenn/cluster/benchmark_attract_test"
 ##end
 
 
+#new  docking run 180824
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modesRec = 0,num_modesLig = 0, orig_docking= False, orig_scoring=True, rcut=50,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
+
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 5,num_modesLig = 5, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 5,num_modesLig = 5, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 5,num_modesLig = 5, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 3,num_modesLig = 3, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev2p0_sO_c50_mr10_ml10_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev5p0_sO_c50_mr10_ml10_ev5p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p5_sO_c50_mr10_ml10_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr15_ml15_ev1p0_sO_c50_mr15_ml15_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = 15,num_modesLig = 15, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+#run_benchmark( path, "-for-docking.pdb",name_be# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 5,num_modesLig = 5, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 5,num_modesLig = 5, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 5,num_modesLig = 5, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+# nchmark = "dG_mr20_ml20_ev1p0_sO_c50_mr20_ml20_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 20,num_modesLig = 20, orig_docking= False, orig_scoring=True, rcut=50,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+#end
+
+#evaluate modes 180824
+#path= "/home/glenn/work/benchmark_attract_test"
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "bn_mode_eval", create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modesRec = 20,num_modesLig = 20, orig_docking= False, orig_scoring=True, rcut=50,
+#                num_threads = 1, do_minimization=False, do_scoring=False, evfactor = 1.0, do_analyse = False, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = True)
+
+#end
 
 
 

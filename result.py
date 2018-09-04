@@ -50,6 +50,23 @@ for bm in BMLoad:
 
 
 
+def evaluateModes1(path_folder, num_modes ):
+    list_dir = [ d for d in os.listdir( path_folder ) if os.path.isdir(os.path.join( path_folder,d))]
+    name_modefolder = "mode_eval"
+    result = {}
+    for name_prot in list_dir:
+        dir_mode = os.path.join( os.path.join( path_folder, name_prot ),name_modefolder)
+        frame_rec = pd.read_csv(os.path.join(dir_mode, "result_rec.dat"))
+        frame_lig = pd.read_csv(os.path.join(dir_mode, "result_lig.dat"))
+        rmsd_improve_rec = frame_rec['rmsd'][0] / frame_rec['rmsd'][num_modes]
+        rmsd_improve_lig = frame_lig['rmsd'][0] / frame_lig['rmsd'][num_modes]
+        mode_maxOverlap_rec = max(frame_rec['overlap'])
+        mode_maxOverlap_lig = max(frame_lig['overlap'])
+        result[name_prot] =[ rmsd_improve_rec, rmsd_improve_lig, mode_maxOverlap_rec, mode_maxOverlap_lig]
+    return result
+
+path_folder= "/home/glenn/work/benchmark5_attract"
+mode_evaluation = evaluateModes1(path_folder, 19 )
 
 BM5m = "benchmark_GPU_scorig_50cut_5modes"
 BM0m = "benchmark_GPU_scorig_50cut_0modes"
@@ -270,15 +287,25 @@ import pandas as pd
 sort_BM = BM0m
 BM = BM0m
 
+data_dict ={}
 
 path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
-path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
+#path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
+deleted =['4GXU', '1DE4', '1EXB','3L89','4GAM','4FQI',]
 for bm in BMLoad:
-    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A', 'num_10A_10', 'num_5A_10', 'num_10A_100', 'num_5A_100', 'num_10A_1000', 'num_5A_1000', 'one_star', 'two_star', 'three_star'])
+    df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A', 'num_10A_10', 'num_5A_10', 'num_10A_100', 'num_5A_100', 'num_10A_1000', 'num_5A_1000', 'one_star', 'two_star', 'three_star', 'num_g20A_20',"m_rmsd_impro_rec","m_rmsd_impro_lig", "m_overmax_rec", "m_overmax_lig"])
     #a5BM.loadBenchmark( path_folder, bm)
     names = a5BM.getSorted('mean_10', bm,onlygetName = True)
+    names = sorted(names)
+
     row_list=[]
     for name in names:
+        conti = False
+        for del_name in deleted:
+            if name == del_name:
+                conti = True
+        if conti:
+            continue
         dict = {}
         try:
             dict['name'] = name
@@ -306,6 +333,11 @@ for bm in BMLoad:
             dict['num_5A_1000'] = a5BM.getNumSmaller(bm, name, 5,maxindex=1000, sorted=False)
             dict['num_sorted_10A'] = a5BM.getNumSmaller(bm, name, 10,sorted = True)
             dict['num_sorted_5A'] = a5BM.getNumSmaller(bm, name, 5,sorted = True)
+            dict['num_g20A_20'] = a5BM.getNumGreater(bm, name, 20, maxindex=20, sorted=False)
+            dict["m_rmsd_impro_rec"] = mode_evaluation[name][0]
+            dict["m_rmsd_impro_lig"] =mode_evaluation[name][1]
+            dict["m_overmax_rec"] =mode_evaluation[name][2]
+            dict["m_overmax_lig"] =mode_evaluation[name][3]
         except:
             pass
         #print dict
@@ -314,7 +346,8 @@ for bm in BMLoad:
     #df.append( dict, ignore_index=True )
     df = pd.DataFrame(row_list)
     file_name = os.path.join( path_evaluation, bm )
-    df.to_csv(file_name, sep='\t', encoding='utf-8')
+    df.to_csv(file_name,  encoding='utf-8')
+    data_dict[bm] =df
 
 np.cov(np.asarray(frame['rank']), np.asarray( frame['rank_Till']))
 

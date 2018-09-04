@@ -119,8 +119,10 @@ class Worker:
             safeAppend(args, filename_pdbLigand)
             if num_modesReceptor > 0 and filecheck(filename_modesReceptor):
                # args.append(" --numModesRec ")
-                args.append(" --numModes ")
+                args.append(" --numModesRec ")
                 args.append(str(num_modesReceptor))
+                args.append(" --numModesLig ")
+                args.append(str(num_modesLigand))
                 args.append(" --modesr ")
                 safeAppend(args, filename_modesReceptor)
             if num_modesLigand > 0 and filecheck(filename_modesLigand):
@@ -150,17 +152,19 @@ class Worker:
             if filename_modesJoined is not None and (num_modesLigand > 0 or num_modesReceptor > 0):
                 args.append(" --modes  ")
                 safeAppend( args, filename_modesJoined )
-            args.append( " --grid 1  ")
-            safeAppend(args, filename_gridReceptor)
+            #args.append( " --grid 1  ")
+            #safeAppend(args, filename_gridReceptor)
 
-            if filename_gridLigand is not None:
-                args.append( " --grid 2 ")
-                safeAppend( args, filename_gridLigand )
+            #if filename_gridLigand is not None:
+            #    args.append( " --grid 2 ")
+            #    safeAppend( args, filename_gridLigand )
             args.append(" --vmax 1000 ")
             if radius_cutoff > 0:
                 args.append(" --rcut ")
                 args.append(str(radius_cutoff))
-
+            if modeForceFac != 1.0:
+                args.append( " --evscale  ")
+                args.append( str(modeForceFac))
             if self.do_scoring:
                 args.append( " --score ")
             args.append( "> "+filename_output )

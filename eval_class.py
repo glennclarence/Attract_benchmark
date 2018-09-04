@@ -434,4 +434,14 @@ class ResultClass:
             rmsd = np.sort(rmsd)
         count = np.where(rmsd < borderRmsd)
         return len(count[0])
-        
+
+    def getNumGreater(self, name_benchmark, name_protein, borderRmsd,maxindex = None, sorted = False):
+        data = self.getDataProtein(name_benchmark, name_protein)
+        if maxindex is None:
+            rmsd = checkNone(data[self._dict_index['rmsd']])
+        else:
+            rmsd = checkNone(data[self._dict_index['rmsd']][:maxindex])
+        if sorted:
+            rmsd = np.sort(rmsd)
+        count = np.where(rmsd > borderRmsd)
+        return len(count[0])

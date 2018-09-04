@@ -1,6 +1,7 @@
 
 
 import numpy as np
+
 def read_pdb(f):
   coor, res, resn, atom = [], [], [], []
   curr_resid = None
@@ -101,7 +102,17 @@ def test( file_testModeFile, file_referenceModeFile):
 
 
 
-
+def createFullModeFile(dict_modes, list_resinumbers, num_modes, filenameOutModefile):
+    file_modes = open(filenameOutModefile, 'w+')
+    for idx_mode in range(num_modes):
+        idx_mode += 1
+        x_vec = dict_modes[idx_mode + 1][1]
+        y_vec = dict_modes[idx_mode + 1][2]
+        z_vec = dict_modes[idx_mode + 1][3]
+        file_modes.write(" {} {}\n".format(idx_mode+1, dict_modes[idx_mode+1][0]))
+        for idx_res in list_resinumbers:
+            file_modes.write("{} {} {}\n".format(x_vec[idx_res],y_vec[idx_res],z_vec[idx_res]))
+    file_modes.close()
 #path = "/home/glenn/test_Mode_transpose/"
 #mode_transpose(path + "1AVX-ligand-for-docking-5-modes.dat", path + "1AVX-ligand-for-docking-reduce.pdb", path + "1AVX-ligand-for-docking-heavy.pdb", path + "test")
 #test( path + "test", path + "referenceModes.dat")
