@@ -742,8 +742,9 @@ for bm in benchmarks:
         names_largest = b.iloc[diff_largest.index]['name']
         diff_smallest = (b['two_star_50'] + b['three_star_50'] -  benchmarks[no_mode]['two_star_50'] -  benchmarks[no_mode][
             'three_star_50']).nsmallest(10)
-        names = names + names_largest.tolist()
         names_smallest = b.iloc[diff_smallest.index]['name']
+        names = names + names_smallest.tolist()
+
         best_three  = b['three_star_50'].nlargest(3)
         best_three_name = b.iloc[best_three.index]
         best_two = b['two_star_50'].nlargest(3)

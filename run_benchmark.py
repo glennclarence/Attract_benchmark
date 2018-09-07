@@ -472,52 +472,65 @@ path = "/home/glenn/work/benchmark5_attract"
 #                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
 #                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 3,num_modesLig = 3, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev2p0_sO_c50_mr10_ml10_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev5p0_sO_c50_mr10_ml10_ev5p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p5_sO_c50_mr10_ml10_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr15_ml15_ev1p0_sO_c50_mr15_ml15_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = 15,num_modesLig = 15, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 1,num_modesLig = 1, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+path = "/home/glenn/work/benchmark5_best"
+numModesList = [1,3,5,10,15,20]
+numScales = [0.1,0.5,1.0,2.0,5.0]
+for modes in numModesList:
+    for scale in numScales:
+        frac, whole = math.modf(scale)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 3,num_modesLig = 3, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+        run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}".format(modes,modes,int(whole),str(frac)[2], modes,modes,int(whole),str(frac)[2]), create_grid = True, create_modes = True, create_dofs = True,
+                create_reduce = True, num_modesRec = modes,num_modesLig = modes, orig_docking= False, orig_scoring=True, rcut=50,
+                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev2p0_sO_c50_mr10_ml10_ev2p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 2.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev5p0_sO_c50_mr10_ml10_ev5p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 5.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p5_sO_c50_mr10_ml10_ev0p5", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.5, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.1, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
-
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr15_ml15_ev1p0_sO_c50_mr15_ml15_ev1p0", create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = 15,num_modesLig = 15, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
-
-import math
-
+path = "/home/glenn/work/benchmark5_worst"
 numModesList = [1,3,5,10,15,20]
 numScales = [0.1,0.5,1.0,2.0,5.0]
 for modes in numModesList:
