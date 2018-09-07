@@ -28,7 +28,8 @@ def getEnergyfromFile( filename_scoring):
         energies = 0
     return np.asarray( energies )
    # except:
-     #   print "error loading energies", filename_scoring
+
+    #    print "error loading energies", filename_scoring
     #    return -1
 
 
@@ -100,8 +101,10 @@ def evaluate( bechmarks, dict_indices):
         result_protein = [None]*len(dict_indices)
         for name_singleBench in name_bench:
             load = True
-            index_modes = name_singleBench[0].find("modes")-1
-            num_modes = name_singleBench[0][index_modes]
+            index_modes = name_singleBench[0].find("mr")+2
+            #index_modes_end = name_singleBench[0][index_modes:].find("_")
+            num_modes = name_singleBench[0][index_modes:index_modes+4].rsplit('_', 1)[0]
+            print num_modes
             #print "\t",name_singleBench[0]
             if name_singleBench[0] != 'input':
                 filename_rmsd = os.path.join(name_singleBench[1],name_protein+filename_pdb+ext_rmsd)

@@ -36,7 +36,7 @@ dict_indices['capri'] = 23
 a5BM = ResultClass( dict_indices )
 
 path_folder = "/home/glenn/Documents/Masterarbeit/test_bencheval/"
-path_folder= "/home/glenn/cluster/benchmark5_attract"
+path_folder= "/home/glenn/work/benchmark5_attract"
 
 BMLoad = [
 'benchmark_GPU_scorig_50cut_0modes',
@@ -45,9 +45,21 @@ BMLoad = [
 'benchmark_GPU_scorig_50cut_5modes'
 ]
 
+BMLoad = [
+'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
+'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0',
+'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1',
+'dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5',
+'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0',
+'dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0',
+'dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0',
+'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
+'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1',
+'dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5',
+'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
+'dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0']
 for bm in BMLoad:
     a5BM.loadBenchmark(path_folder, bm)
-
 
 
 def evaluateModes1(path_folder, num_modes ):
@@ -289,9 +301,9 @@ BM = BM0m
 
 data_dict ={}
 
-path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
+path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/newrun"
 #path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
-deleted =['4GXU', '1DE4', '1EXB','3L89','4GAM','4FQI',]
+deleted =['4GXU', '1DE4', '1EXB','3L89','4GAM','4FQI','1EER','1BGX','2HMI']
 for bm in BMLoad:
     df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A', 'num_10A_10', 'num_5A_10', 'num_10A_100', 'num_5A_100', 'num_10A_1000', 'num_5A_1000', 'one_star', 'two_star', 'three_star', 'num_g20A_20',"m_rmsd_impro_rec","m_rmsd_impro_lig", "m_overmax_rec", "m_overmax_lig"])
     #a5BM.loadBenchmark( path_folder, bm)
@@ -366,7 +378,7 @@ BMLoad = [
 '1_benchmark_GPU_scorig_50cut_5modes_3EV',
 '1_benchmark_GPU_scorig_50cut_5modes_halfEV']
 
-path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis"
+path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/newrun"
 benchmarks = {}
 for bm in bms:
     bench = pd.read_csv(os.path.join( path_evaluation, bm), sep = "\t")
@@ -690,3 +702,88 @@ for name in names:
 
 
 
+#9147/141/80143
+
+#08912522171
+
+######################GET NUM STARS OF ALL BENCHMARKS
+list = []
+for bm in benchmarks:
+    dict = {}
+    index_modes = bm.find("mr") + 2
+    # index_modes_end = name_singleBench[0][index_modes:].find("_")
+    num_modes = bm[index_modes:index_modes + 4].rsplit('_', 1)[0]
+    dict['numModes']= int(num_modes)
+    index_scale = bm.find("ev") + 2
+    index_scale1 = bm.find("p") + 1
+    scale = float(bm[index_scale]) + float(bm[index_scale1])/10
+    dict['evScale']= scale
+    dict['one_star_50'] =    benchmarks[bm]['one_star_50'].sum()
+    dict['two_star_50'] = benchmarks[bm]['two_star_50'].sum()
+    dict['three_star_50'] = benchmarks[bm]['three_star_50'].sum()
+    list.append(dict)
+frame = pd.DataFrame(list)
+frame =  frame[['numModes','evScale','one_star_50','two_star_50','three_star_50']]
+frame.to_csv("/home/glenn/test")
+
+
+############################GET MAX DIFF OF STARS TO NO STARS
+from collections import Counter
+best_mode = 'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0'
+list =[]
+dict ={}
+names = []
+numpresent ={}
+for bm in benchmarks:
+    if bm !='dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1':
+        b = benchmarks[bm]
+        diff_largest = (b['two_star_50']+b['three_star_50']- benchmarks[no_mode]['two_star_50']- benchmarks[no_mode]['three_star_50']).nlargest(10)
+
+        names_largest = b.iloc[diff_largest.index]['name']
+        diff_smallest = (b['two_star_50'] + b['three_star_50'] -  benchmarks[no_mode]['two_star_50'] -  benchmarks[no_mode][
+            'three_star_50']).nsmallest(10)
+        names = names + names_largest.tolist()
+        names_smallest = b.iloc[diff_smallest.index]['name']
+        best_three  = b['three_star_50'].nlargest(3)
+        best_three_name = b.iloc[best_three.index]
+        best_two = b['two_star_50'].nlargest(3)
+        best_two_name = b.iloc[best_two.index]
+
+        print bm ,'\n', best_three_name[['name','three_star_50']], "\n",best_two_name[['name','two_star_50']],'\n','\n',diff_largest.values,'\n',names_largest.values, '\n','\n',diff_smallest.values,'\n',names_smallest.values,'\n\n\n'
+
+counter =  Counter(names)
+path ='/home/glenn/work/benchmark5_attract'
+
+list = ['3MXW',
+'1KXQ',
+'3PC8',
+'1IJK',
+'1AK4',
+'1RV6',
+'1K74',
+'1SYX',
+'1K4C',
+'4G6M',
+'1XQS',
+'1WEJ',
+'1WDW',
+'1QFW',
+'2MTA',
+'2OUL',
+'1GL1',
+'1BVK',
+'2I25',
+'1AY7',
+'2YVJ',
+'1FSK',
+'1M27',
+'1XD3',
+'7CEI',
+'2PCC',
+'3VLB',
+'1BUH',
+'2CFH']
+import shutil
+for i in list:
+    src = os.path.join(path,i)
+    shutil.copytree(src, os.path.join('/home/glenn/work/benchmark5_best',i))
