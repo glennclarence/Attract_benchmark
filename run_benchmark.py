@@ -516,7 +516,7 @@ path = "/home/glenn/work/benchmark5_attract"
 #                 create_reduce = True, num_modesRec = 15,num_modesLig = 15, orig_docking= False, orig_scoring=True, rcut=50,
 #                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1.0, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-
+import math
 
 path = "/home/glenn/work/benchmark5_best"
 numModesList = [1,3,5,10,15,20]

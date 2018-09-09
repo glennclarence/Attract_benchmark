@@ -788,3 +788,28 @@ import shutil
 for i in list:
     src = os.path.join(path,i)
     shutil.copytree(src, os.path.join('/home/glenn/work/benchmark5_best',i))
+
+
+[
+'1AK4A-refe.pdb',
+'1K4CB-refe.pdb',
+'1RV6A-refe.pdb',
+'1XQSA-refe.pdb',
+'4G6MA-refe.pdb',
+'1AK4B-refe.pdb',
+'1K74A-refe.pdb',
+'1RV6B-refe2.pdb',
+'3MXWA-refe.pdb',
+'4G6MB-refe.pdb',
+'1IJKA-refe.pdb',
+'1K74B-refe.pdb',
+'1RV6B-refe.pdb',
+'3MXWB-refe.pdb',
+'1IJKB-refe.pdb',
+'1KXQA-refe.pdb',
+'1SYXA-refe.pdb',
+'3PC8A-refe.pdb',
+'1K4CA-refe.pdb',
+'1KXQB-refe.pdb',
+'1SYXB-refe.pdb' ,
+'3PC8B-refe.pdb']
