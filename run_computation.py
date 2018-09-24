@@ -117,14 +117,14 @@ class Worker:
             safeAppend(args, filename_pdbReceptor)
             args.append(" -l ")
             safeAppend(args, filename_pdbLigand)
-            if num_modesReceptor > 0 and filecheck(filename_modesReceptor):
+            #if (num_modesReceptor > 0 ) or num_modesLigand > 0and filecheck(filename_modesReceptor):
                # args.append(" --numModesRec ")
-                args.append(" --numModesRec ")
-                args.append(str(num_modesReceptor))
-                args.append(" --numModesLig ")
-                args.append(str(num_modesLigand))
-                args.append(" --modesr ")
-                safeAppend(args, filename_modesReceptor)
+            args.append(" --numModesRec ")
+            args.append(str(num_modesReceptor))
+            args.append(" --numModesLig ")
+            args.append(str(num_modesLigand))
+            args.append(" --modesr ")
+            safeAppend(args, filename_modesReceptor)
             if num_modesLigand > 0 and filecheck(filename_modesLigand):
                 #args.append(" --numModesLig ")
 
@@ -146,12 +146,20 @@ class Worker:
         else:
             safeAppend( args, filename_dofs )
             safeAppend( args, filename_parameter )
+            #print "this is in safe append runcomputatuon filename",filename_pdbReceptor
             safeAppend( args, filename_pdbReceptor )
             safeAppend( args, filename_pdbLigand )
             args.append( " --fix-receptor ")
             if filename_modesJoined is not None and (num_modesLigand > 0 or num_modesReceptor > 0):
                 args.append(" --modes  ")
                 safeAppend( args, filename_modesJoined )
+            #if num_modesReceptor > 0:
+            args.append(" --numModesRec  ")
+            args.append(str(num_modesReceptor))
+            #if num_modesLigand > 0:
+            args.append(" --numModesLig  ")
+            args.append(str(num_modesLigand))
+
             #args.append( " --grid 1  ")
             #safeAppend(args, filename_gridReceptor)
 

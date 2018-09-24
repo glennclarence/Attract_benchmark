@@ -3,6 +3,8 @@
 
 
 
+
+
 import os
 #from  load_pdbs import ProteinEsemble
 import numpy as np
@@ -40,40 +42,256 @@ dict_indices['capri'] = 23
 
 a5BM = ResultClass( dict_indices )
 
-path_folder = "/home/glenn/Documents/Masterarbeit/test_bencheval/"
-path_folder= "/home/glenn/work/benchmark5_attract"
 
-BMLoad = [
-'benchmark_GPU_scorig_50cut_0modes',
-'benchmark_GPU_scorig_nocut_1modes',
-'benchmark_GPU_scorig_50cut_3modes',
-'benchmark_GPU_scorig_50cut_5modes'
-]
+path_folder= "/home/glenn/work/benchmark5_worst"
+
 
 BMLoad = [
 'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
-'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0',
+
 'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1',
 'dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5',
-#'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0',
 'dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0',
 'dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0',
 'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
 'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1',
 'dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5',
 'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
-'dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0']
+'dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0',
+'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0']
 
+BMLoad = [
+'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
+'dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1',
+'dG_mr10_ml10_ev0p5_sO_c50_mr10_ml10_ev0p5',
+'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0',
+'dG_mr10_ml10_ev2p0_sO_c50_mr10_ml10_ev2p0',
+'dG_mr10_ml10_ev5p0_sO_c50_mr10_ml10_ev5p0',
+'dG_mr15_ml15_ev0p1_sO_c50_mr15_ml15_ev0p1',
+'dG_mr15_ml15_ev0p5_sO_c50_mr15_ml15_ev0p5',
+'dG_mr15_ml15_ev1p0_sO_c50_mr15_ml15_ev1p0',
+'dG_mr15_ml15_ev2p0_sO_c50_mr15_ml15_ev2p0',
+'dG_mr15_ml15_ev5p0_sO_c50_mr15_ml15_ev5p0',
+'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1',
+'dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5',
+'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0',
+'dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0',
+'dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0',
+'dG_mr20_ml20_ev0p1_sO_c50_mr20_ml20_ev0p1',
+'dG_mr20_ml20_ev0p5_sO_c50_mr20_ml20_ev0p5',
+'dG_mr20_ml20_ev1p0_sO_c50_mr20_ml20_ev1p0',
+'dG_mr20_ml20_ev2p0_sO_c50_mr20_ml20_ev2p0',
+'dG_mr20_ml20_ev5p0_sO_c50_mr20_ml20_ev5p0',
+'dG_mr3_ml3_ev0p1_sO_c50_mr3_ml3_ev0p1',
+'dG_mr3_ml3_ev0p5_sO_c50_mr3_ml3_ev0p5',
+'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
+'dG_mr3_ml3_ev2p0_sO_c50_mr3_ml3_ev2p0',
+'dG_mr3_ml3_ev5p0_sO_c50_mr3_ml3_ev5p0',
+'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1',
+'dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5',
+'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
+'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1p0',
+'dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0',
+'dG_mr5_ml5_ev5p0_sO_c50_mr5_ml5_ev5p0'
 
+]
+
+path_folder = "/home/glenn/Documents/3MXW"
+BMLoad=[
+'dG_mr10_ml20_ev0p03_sO_c50_mr10_ml20_ev0p03_hinsen',
+'dG_mr3_ml5_ev1p0_sO_c50_mr3_ml5_ev1p0_hinsen',
+'dG_mr1_ml3_ev0p01_sO_c50_mr1_ml3_ev0p01_hinsen',
+'dG_mr5_ml3_ev1p0_sO_c50_mr5_ml3_ev1p0_hinsen',
+'dG_mr1_ml3_ev0p07_sO_c50_mr1_ml3_ev0p07_hinsen',
+'dG_mr10_ml3_ev10p0_sO_c50_mr10_ml3_ev10p0_hinsen',
+'dG_mr10_ml5_ev0p05_sO_c50_mr10_ml5_ev0p05_hinsen',
+'dG_mr5_ml5_ev0p03_sO_c50_mr5_ml5_ev0p03_hinsen',
+'dG_mr10_ml10_ev0p01_sO_c50_mr10_ml10_ev0p01_hinsen',
+'dG_mr3_ml1_ev0p05_sO_c50_mr3_ml1_ev0p05_hinsen',
+'dG_mr5_ml1_ev1p0_sO_c50_mr5_ml1_ev1p0_hinsen',
+'dG_mr5_ml0_ev0p005_sO_c50_mr5_ml0_ev0p005_hinsen',
+'dG_mr1_ml10_ev0p03_sO_c50_mr1_ml10_ev0p03_hinsen',
+'dG_mr10_ml10_ev0p03_sO_c50_mr10_ml10_ev0p03_hinsen',
+'dG_mr20_ml10_ev0p1_sO_c50_mr20_ml10_ev0p1_hinsen',
+'dG_mr10_ml5_ev1p0_sO_c50_mr10_ml5_ev1p0_hinsen',
+'dG_mr5_ml3_ev0p03_sO_c50_mr5_ml3_ev0p03_hinsen',
+'dG_mr20_ml10_ev0p01_sO_c50_mr20_ml10_ev0p01_hinsen',
+'dG_mr20_ml1_ev0p1_sO_c50_mr20_ml1_ev0p1_hinsen',
+'dG_mr5_ml1_ev0p03_sO_c50_mr5_ml1_ev0p03_hinsen',
+'dG_mr5_ml20_ev0p07_sO_c50_mr5_ml20_ev0p07_hinsen',
+'dG_mr5_ml1_ev0p07_sO_c50_mr5_ml1_ev0p07_hinsen',
+'dG_mr3_ml10_ev0p05_sO_c50_mr3_ml10_ev0p05_hinsen',
+'dG_mr1_ml1_ev0p07_sO_c50_mr1_ml1_ev0p07_hinsen',
+'dG_mr3_ml10_ev0p03_sO_c50_mr3_ml10_ev0p03_hinsen',
+'dG_mr5_ml20_ev0p01_sO_c50_mr5_ml20_ev0p01_hinsen',
+'dG_mr3_ml20_ev0p05_sO_c50_mr3_ml20_ev0p05_hinsen',
+'dG_mr5_ml5_ev0p07_sO_c50_mr5_ml5_ev0p07_hinsen',
+'dG_mr10_ml5_ev0p03_sO_c50_mr10_ml5_ev0p03_hinsen',
+'dG_mr10_ml1_ev0p03_sO_c50_mr10_ml1_ev0p03_hinsen',
+'dG_mr20_ml10_ev10p0_sO_c50_mr20_ml10_ev10p0_hinsen',
+'dG_mr20_ml5_ev10p0_sO_c50_mr20_ml5_ev10p0_hinsen',
+'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1_hinsen',
+'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1p0_hinsen',
+'dG_mr5_ml3_ev0p1_sO_c50_mr5_ml3_ev0p1_hinsen',
+'dG_mr20_ml10_ev0p07_sO_c50_mr20_ml10_ev0p07_hinsen',
+'dG_mr20_ml5_ev1p0_sO_c50_mr20_ml5_ev1p0_hinsen',
+'dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1_hinsen',
+'dG_mr3_ml20_ev0p1_sO_c50_mr3_ml20_ev0p1_hinsen',
+'dG_mr5_ml20_ev1p0_sO_c50_mr5_ml20_ev1p0_hinsen',
+'dG_mr20_ml10_ev1p0_sO_c50_mr20_ml10_ev1p0_hinsen',
+'dG_mr10_ml3_ev0p05_sO_c50_mr10_ml3_ev0p05_hinsen',
+'dG_mr5_ml3_ev0p01_sO_c50_mr5_ml3_ev0p01_hinsen',
+'dG_mr10_ml20_ev0p01_sO_c50_mr10_ml20_ev0p01_hinsen',
+'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0_hinsen',
+'dG_mr20_ml1_ev1p0_sO_c50_mr20_ml1_ev1p0_hinsen',
+'dG_mr3_ml5_ev0p05_sO_c50_mr3_ml5_ev0p05_hinsen',
+'dG_mr5_ml0_ev0p001_sO_c50_mr5_ml0_ev0p001_hinsen',
+'dG_mr3_ml3_ev0p07_sO_c50_mr3_ml3_ev0p07_hinsen',
+'dG_mr1_ml5_ev1p0_sO_c50_mr1_ml5_ev1p0_hinsen',
+'dG_mr1_ml10_ev1p0_sO_c50_mr1_ml10_ev1p0_hinsen',
+'dG_mr1_ml20_ev1p0_sO_c50_mr1_ml20_ev1p0_hinsen',
+'dG_mr5_ml10_ev0p1_sO_c50_mr5_ml10_ev0p1_hinsen',
+'dG_mr5_ml10_ev0p07_sO_c50_mr5_ml10_ev0p07_hinsen',
+'dG_mr5_ml5_ev0p05_sO_c50_mr5_ml5_ev0p05_hinsen',
+'dG_mr10_ml1_ev0p07_sO_c50_mr10_ml1_ev0p07_hinsen',
+'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0_hinsen',
+'dG_mr10_ml1_ev1p0_sO_c50_mr10_ml1_ev1p0_hinsen',
+'dG_mr1_ml10_ev10p0_sO_c50_mr1_ml10_ev10p0_hinsen',
+'dG_mr10_ml1_ev10p0_sO_c50_mr10_ml1_ev10p0_hinsen',
+'dG_mr1_ml20_ev10p0_sO_c50_mr1_ml20_ev10p0_hinsen',
+'dG_mr3_ml20_ev0p03_sO_c50_mr3_ml20_ev0p03_hinsen',
+'dG_mr1_ml10_ev0p1_sO_c50_mr1_ml10_ev0p1_hinsen',
+'dG_mr3_ml5_ev0p1_sO_c50_mr3_ml5_ev0p1_hinsen',
+'dG_mr5_ml5_ev10p0_sO_c50_mr5_ml5_ev10p0_hinsen',
+'dG_mr3_ml1_ev1p0_sO_c50_mr3_ml1_ev1p0_hinsen',
+'dG_mr1_ml5_ev10p0_sO_c50_mr1_ml5_ev10p0_hinsen',
+'dG_mr10_ml20_ev1p0_sO_c50_mr10_ml20_ev1p0_hinsen',
+'dG_mr20_ml10_ev0p03_sO_c50_mr20_ml10_ev0p03_hinsen',
+'dG_mr3_ml1_ev10p0_sO_c50_mr3_ml1_ev10p0_hinsen',
+'dG_mr10_ml5_ev0p01_sO_c50_mr10_ml5_ev0p01_hinsen',
+'dG_mr1_ml3_ev10p0_sO_c50_mr1_ml3_ev10p0_hinsen',
+'dG_mr1_ml20_ev0p05_sO_c50_mr1_ml20_ev0p05_hinsen',
+'dG_mr1_ml3_ev0p1_sO_c50_mr1_ml3_ev0p1_hinsen',
+'dG_mr1_ml1_ev0p03_sO_c50_mr1_ml1_ev0p03_hinsen',
+'dG_mr5_ml10_ev0p01_sO_c50_mr5_ml10_ev0p01_hinsen',
+'dG_mr3_ml10_ev0p01_sO_c50_mr3_ml10_ev0p01_hinsen',
+'dG_mr1_ml1_ev0p05_sO_c50_mr1_ml1_ev0p05_hinsen',
+'dG_mr1_ml20_ev0p03_sO_c50_mr1_ml20_ev0p03_hinsen',
+'dG_mr1_ml5_ev0p01_sO_c50_mr1_ml5_ev0p01_hinsen',
+'dG_mr10_ml3_ev0p01_sO_c50_mr10_ml3_ev0p01_hinsen',
+'dG_mr3_ml1_ev0p03_sO_c50_mr3_ml1_ev0p03_hinsen',
+'dG_mr1_ml5_ev0p05_sO_c50_mr1_ml5_ev0p05_hinsen',
+'dG_mr20_ml3_ev0p05_sO_c50_mr20_ml3_ev0p05_hinsen',
+'dG_mr10_ml1_ev0p05_sO_c50_mr10_ml1_ev0p05_hinsen',
+'dG_mr1_ml3_ev1p0_sO_c50_mr1_ml3_ev1p0_hinsen',
+'dG_mr5_ml10_ev0p03_sO_c50_mr5_ml10_ev0p03_hinsen',
+'dG_mr3_ml3_ev10p0_sO_c50_mr3_ml3_ev10p0_hinsen',
+'dG_mr1_ml1_ev0p01_sO_c50_mr1_ml1_ev0p01_hinsen',
+'dG_mr3_ml5_ev0p07_sO_c50_mr3_ml5_ev0p07_hinsen',
+'dG_mr1_ml1_ev10p0_sO_c50_mr1_ml1_ev10p0_hinsen',
+'dG_mr3_ml20_ev10p0_sO_c50_mr3_ml20_ev10p0_hinsen',
+'dG_mr10_ml5_ev0p1_sO_c50_mr10_ml5_ev0p1_hinsen',
+'dG_mr1_ml5_ev0p07_sO_c50_mr1_ml5_ev0p07_hinsen',
+'dG_mr20_ml1_ev0p03_sO_c50_mr20_ml1_ev0p03_hinsen',
+'dG_mr3_ml3_ev0p1_sO_c50_mr3_ml3_ev0p1_hinsen',
+'dG_mr10_ml10_ev10p0_sO_c50_mr10_ml10_ev10p0_hinsen',
+'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0_hinsen',
+'dG_mr1_ml20_ev0p07_sO_c50_mr1_ml20_ev0p07_hinsen',
+'dG_mr5_ml1_ev0p1_sO_c50_mr5_ml1_ev0p1_hinsen',
+'dG_mr5_ml10_ev0p05_sO_c50_mr5_ml10_ev0p05_hinsen',
+'dG_mr3_ml10_ev1p0_sO_c50_mr3_ml10_ev1p0_hinsen',
+'dG_mr3_ml3_ev0p05_sO_c50_mr3_ml3_ev0p05_hinsen',
+'dG_mr5_ml0_ev0p002_sO_c50_mr5_ml0_ev0p002_hinsen',
+'dG_mr20_ml3_ev1p0_sO_c50_mr20_ml3_ev1p0_hinsen',
+'dG_mr1_ml0_ev0p002_sO_c50_mr1_ml0_ev0p002_hinsen',
+'dG_mr3_ml1_ev0p1_sO_c50_mr3_ml1_ev0p1_hinsen',
+'dG_mr10_ml10_ev0p07_sO_c50_mr10_ml10_ev0p07_hinsen',
+'dG_mr3_ml10_ev10p0_sO_c50_mr3_ml10_ev10p0_hinsen',
+'dG_mr5_ml20_ev10p0_sO_c50_mr5_ml20_ev10p0_hinsen',
+'dG_mr3_ml5_ev0p03_sO_c50_mr3_ml5_ev0p03_hinsen',
+'dG_mr20_ml20_ev10p0_sO_c50_mr20_ml20_ev10p0_hinsen',
+'dG_mr20_ml5_ev0p01_sO_c50_mr20_ml5_ev0p01_hinsen',
+'dG_mr5_ml10_ev1p0_sO_c50_mr5_ml10_ev1p0_hinsen',
+'dG_mr20_ml5_ev0p03_sO_c50_mr20_ml5_ev0p03_hinsen',
+'dG_mr20_ml20_ev0p01_sO_c50_mr20_ml20_ev0p01_hinsen',
+'dG_mr1_ml10_ev0p01_sO_c50_mr1_ml10_ev0p01_hinsen',
+'dG_mr10_ml20_ev0p07_sO_c50_mr10_ml20_ev0p07_hinsen',
+'dG_mr20_ml5_ev0p1_sO_c50_mr20_ml5_ev0p1_hinsen',
+'dG_mr5_ml1_ev0p05_sO_c50_mr5_ml1_ev0p05_hinsen',
+'dG_mr1_ml3_ev0p03_sO_c50_mr1_ml3_ev0p03_hinsen',
+'dG_mr5_ml20_ev0p03_sO_c50_mr5_ml20_ev0p03_hinsen',
+'dG_mr20_ml3_ev10p0_sO_c50_mr20_ml3_ev10p0_hinsen',
+'dG_mr3_ml20_ev0p01_sO_c50_mr3_ml20_ev0p01_hinsen',
+'dG_mr3_ml3_ev0p01_sO_c50_mr3_ml3_ev0p01_hinsen',
+'dG_mr3_ml20_ev0p07_sO_c50_mr3_ml20_ev0p07_hinsen',
+'dG_mr5_ml20_ev0p1_sO_c50_mr5_ml20_ev0p1_hinsen',
+'dG_mr1_ml10_ev0p05_sO_c50_mr1_ml10_ev0p05_hinsen',
+'dG_mr20_ml1_ev0p07_sO_c50_mr20_ml1_ev0p07_hinsen',
+'dG_mr1_ml5_ev0p1_sO_c50_mr1_ml5_ev0p1_hinsen',
+'dG_mr5_ml10_ev10p0_sO_c50_mr5_ml10_ev10p0_hinsen',
+'dG_mr3_ml3_ev0p03_sO_c50_mr3_ml3_ev0p03_hinsen',
+'dG_mr20_ml5_ev0p07_sO_c50_mr20_ml5_ev0p07_hinsen',
+'dG_mr20_ml1_ev10p0_sO_c50_mr20_ml1_ev10p0_hinsen',
+'dG_mr20_ml3_ev0p07_sO_c50_mr20_ml3_ev0p07_hinsen',
+'dG_mr20_ml20_ev0p1_sO_c50_mr20_ml20_ev0p1_hinsen',
+'dG_mr5_ml3_ev0p07_sO_c50_mr5_ml3_ev0p07_hinsen',
+'dG_mr3_ml1_ev0p01_sO_c50_mr3_ml1_ev0p01_hinsen',
+'dG_mr10_ml1_ev0p1_sO_c50_mr10_ml1_ev0p1_hinsen',
+'dG_mr3_ml10_ev0p1_sO_c50_mr3_ml10_ev0p1_hinsen',
+'dG_mr10_ml3_ev1p0_sO_c50_mr10_ml3_ev1p0_hinsen',
+'dG_mr20_ml3_ev0p03_sO_c50_mr20_ml3_ev0p03_hinsen',
+'dG_mr10_ml10_ev0p05_sO_c50_mr10_ml10_ev0p05_hinsen',
+'dG_mr20_ml1_ev0p05_sO_c50_mr20_ml1_ev0p05_hinsen',
+'dG_mr10_ml20_ev10p0_sO_c50_mr10_ml20_ev10p0_hinsen',
+'dG_mr10_ml20_ev0p05_sO_c50_mr10_ml20_ev0p05_hinsen',
+'dG_mr20_ml20_ev0p07_sO_c50_mr20_ml20_ev0p07_hinsen',
+'dG_mr5_ml3_ev10p0_sO_c50_mr5_ml3_ev10p0_hinsen',
+'dG_mr1_ml0_ev0p005_sO_c50_mr1_ml0_ev0p005_hinsen',
+'dG_mr20_ml1_ev0p01_sO_c50_mr20_ml1_ev0p01_hinsen',
+'dG_mr20_ml3_ev0p01_sO_c50_mr20_ml3_ev0p01_hinsen',
+'dG_mr5_ml1_ev0p01_sO_c50_mr5_ml1_ev0p01_hinsen',
+'dG_mr3_ml5_ev10p0_sO_c50_mr3_ml5_ev10p0_hinsen',
+'dG_mr20_ml5_ev0p05_sO_c50_mr20_ml5_ev0p05_hinsen',
+'dG_mr5_ml3_ev0p05_sO_c50_mr5_ml3_ev0p05_hinsen',
+'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1_hinsen',
+'dG_mr5_ml20_ev0p05_sO_c50_mr5_ml20_ev0p05_hinsen',
+'dG_mr20_ml10_ev0p05_sO_c50_mr20_ml10_ev0p05_hinsen',
+'dG_mr10_ml5_ev0p07_sO_c50_mr10_ml5_ev0p07_hinsen',
+'dG_mr1_ml20_ev0p01_sO_c50_mr1_ml20_ev0p01_hinsen',
+'dG_mr20_ml20_ev0p03_sO_c50_mr20_ml20_ev0p03_hinsen',
+'dG_mr3_ml5_ev0p01_sO_c50_mr3_ml5_ev0p01_hinsen',
+'dG_mr20_ml20_ev1p0_sO_c50_mr20_ml20_ev1p0_hinsen',
+'dG_mr3_ml20_ev1p0_sO_c50_mr3_ml20_ev1p0_hinsen',
+'dG_mr1_ml3_ev0p05_sO_c50_mr1_ml3_ev0p05_hinsen',
+'dG_mr5_ml1_ev10p0_sO_c50_mr5_ml1_ev10p0_hinsen',
+'dG_mr1_ml10_ev0p07_sO_c50_mr1_ml10_ev0p07_hinsen',
+'dG_mr1_ml5_ev0p03_sO_c50_mr1_ml5_ev0p03_hinsen',
+'dG_mr1_ml0_ev0p001_sO_c50_mr1_ml0_ev0p001_hinsen',
+'dG_mr10_ml5_ev10p0_sO_c50_mr10_ml5_ev10p0_hinsen',
+'dG_mr3_ml10_ev0p07_sO_c50_mr3_ml10_ev0p07_hinsen',
+'dG_mr10_ml3_ev0p07_sO_c50_mr10_ml3_ev0p07_hinsen',
+'dG_mr10_ml3_ev0p1_sO_c50_mr10_ml3_ev0p1_hinsen',
+'dG_mr1_ml20_ev0p1_sO_c50_mr1_ml20_ev0p1_hinsen',
+'dG_mr3_ml1_ev0p07_sO_c50_mr3_ml1_ev0p07_hinsen',
+'dG_mr10_ml1_ev0p01_sO_c50_mr10_ml1_ev0p01_hinsen',
+'dG_mr20_ml3_ev0p1_sO_c50_mr20_ml3_ev0p1_hinsen',
+'dG_mr10_ml20_ev0p1_sO_c50_mr10_ml20_ev0p1_hinsen',
+'dG_mr5_ml5_ev0p01_sO_c50_mr5_ml5_ev0p01_hinsen',
+'dG_mr10_ml3_ev0p03_sO_c50_mr10_ml3_ev0p03_hinsen',
+'dG_mr20_ml20_ev0p05_sO_c50_mr20_ml20_ev0p05_hinsen'
+]
+
+#
 for bm in BMLoad:
     a5BM.loadBenchmark(path_folder, bm)
-
+#
 
 
 
 data_dict ={}
 
-path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/newrun"
+path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/worstProteins"
+path_evaluation="/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen"
 #path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
 deleted =['4GXU', '1DE4', '1EXB','3L89','4GAM','4FQI','1EER','1BGX','2HMI']
 for bm in BMLoad:
@@ -138,24 +356,261 @@ for bm in BMLoad:
 
 benchmarks = {}
 for bm in BMLoad:
-    bench = pd.read_csv(os.path.join( path_evaluation, bm), sep = "\t")
+    bench = pd.read_csv(os.path.join( path_evaluation, bm))
     benchmarks[bm] = bench
 
 
 list = []
 for bm in benchmarks:
     dict = {}
-    index_modes = bm.find("mr") + 2
+    index_modesRec = bm.find("mr") + 2
     # index_modes_end = name_singleBench[0][index_modes:].find("_")
-    num_modes = bm[index_modes:index_modes + 4].rsplit('_', 1)[0]
-    dict['numModes']= int(num_modes)
+    num_modesRec = bm[index_modesRec:index_modesRec + 4].rsplit('_', 1)[0]
+    dict['numModesRec']= int(num_modesRec)
+
+    index_modesLig = bm.find("ml") + 2
+    # index_modes_end = name_singleBench[0][index_modes:].find("_")
+    num_modesLig = bm[index_modesLig:index_modesLig + 4].rsplit('_', 1)[0]
+    dict['numModesLig'] = int(num_modesLig)
+
+
     index_scale = bm.find("ev") + 2
     index_scale1 = bm.find("p") + 1
-    scale = float(bm[index_scale]) + float(bm[index_scale1])/10
-    dict['ecScale']= scale
+    index_scale1
+    scale = float(bm[index_scale:index_scale+2].replace("p","")) + float("0."+bm[index_scale1:index_scale1+3].replace("_","").replace("s",""))
+    dict['evScale']= scale
     dict['one_star_50'] =    benchmarks[bm]['one_star_50'].sum()
     dict['two_star_50'] = benchmarks[bm]['two_star_50'].sum()
     dict['three_star_50'] = benchmarks[bm]['three_star_50'].sum()
+    dict['sum_star'] = benchmarks[bm]['three_star_50'].sum()+benchmarks[bm]['one_star_50'].sum()+benchmarks[bm]['two_star_50'].sum()
     list.append(dict)
 frame = pd.DataFrame(list)
-frame.to_csv("/home/glenn/test")
+frame =  frame[['numModesRec','numModesLig','evScale','one_star_50','two_star_50','three_star_50','sum_star']]
+frame.to_csv( "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen/scaleComparison/data.csv")
+
+
+
+path_base = "/home/glenn/Documents/Masterarbeit/analysis/newrun/Plots"
+path_csv = "/home/glenn/Documents/Masterarbeit/analysis/newrun"
+path_csv =  "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen"
+path_base = "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen/Plots"
+#names = a5BM.getSorted('mean_10', 'benchmark_ORIG_scorig_0modes',onlygetName = True)
+names = []
+#file = open('/home/glenn/work/benchmark5_attract/dir.txt')
+
+#for name in file.readlines():
+#    names.append(name.split()[0])
+names=['3MXW']
+
+dict_data = {}
+for bm in BMLoad:
+    frame = pd.read_csv(os.path.join(path_csv, bm))
+    dict_data[bm] = frame
+
+
+for name in names:
+    path_protein = os.path.join(path_base, name)
+    if not os.path.exists(path_protein):
+        os.mkdir(path_protein)
+    bm_mean = {}
+    bm_star = {}
+    bm_num = {}
+    bm_rank = {}
+    try:
+        for bm in BMLoad:
+
+            # plot =  a5BM.plotRmsd( max_indx = None, name_benchmark = bm, name_protein = name, use_energy = True, show = False, clear = False)
+            readframe = pd.read_csv(os.path.join(path_base, name) + "/{}_rmsd.dat".format(bm))
+            plt.clf()
+            plt.scatter(readframe['rmsd'].values, readframe['energy '].values)
+            plt.xlabel('RMSD (A)')
+            plt.ylabel('Energy ')
+            plt.title('{}\t{}'.format(bm, name))
+            plt.ylim(ymax=1)
+            plt.xlim(xmin=1, xmax=90)
+            plt.savefig(os.path.join(path_protein, "fig-{}-{}.svg".format(name, bm)))
+            # data = dict_data[bm]
+            # dat = data.loc[data['name'] == name]
+            # dict = {}
+            # dict_mean = {}
+            # dict_star = {}
+            # dict_num = {}
+            # dict_rank = {}
+            # for column in dat:
+            #     dict_mean['mean_10'] = dat['mean_10'].values[0]
+            #     dict_mean['mean_sort_50'] = dat['mean_sort_50'].values[0]
+            #     dict_mean['mean_sort_10'] = dat['mean_sort_10'].values[0]
+            #     dict_mean['best_energy'] = dat['best_energy'].values[0]
+            #     dict_star['one_star_50'] = dat['one_star_50'].values[0]
+            #     dict_star['two_star_50'] = dat['two_star_50'].values[0]
+            #     dict_star['three_star_50'] = dat['three_star_50'].values[0]
+            #     dict_rank['rank_Till'] = dat['rank_Till'].values[0]
+            #     dict_rank['rank'] = dat['rank'].values[0]
+            #     dict_rank['score'] = dat['score'].values[0]
+            #     dict_num['num_10A'] = dat['num_10A'].values[0]
+            #     dict_num['num_5A'] = dat['num_5A'].values[0]
+            #     dict_num['num_10A_10'] = dat['num_10A_10'].values[0]
+            #     dict_num['num_5A_10'] = dat['num_5A_10'].values[0]
+            #     dict_num['num_10A_100'] = dat['num_10A_100'].values[0]
+            #     dict_num['num_5A_100'] = dat['num_5A_100'].values[0]
+            #     dict_num['num_10A_1000'] = dat['num_10A_1000'].values[0]
+            #     dict_num['num_5A_1000'] = dat['num_5A_1000'].values[0]
+            #     dict_num['num_sorted_10A'] = dat['num_sorted_10A'].values[0]
+            #     dict_num['num_sorted_5A'] = dat['num_sorted_5A'].values[0]
+            # bm_mean[bm] = dict_mean
+            # bm_star[bm] = dict_star
+            # bm_num[bm] = dict_num
+            # bm_rank[bm] = dict_rank
+
+        # plt.clf()
+        # for i, bm in enumerate(BMLoad):
+        #     plt.bar(np.arange(len(bm_mean[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_mean[bm].values()), width=0.2,
+        #             align='center')
+        # plt.xticks(np.arange(len(bm_mean[bm])) * 2 * len(BMLoad) * 0.2, list(bm_mean[bm].keys()), rotation='vertical')
+        # plt.legend()
+        # plt.tight_layout()
+        # plt.savefig(os.path.join(path_protein, "bar-mean-{}-{}.svg".format(name, bm)))
+        #
+        # plt.clf()
+        # for i, bm in enumerate(BMLoad):
+        #     plt.bar(np.arange(len(bm_rank[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_rank[bm].values()), width=0.2,
+        #             align='center')
+        # plt.xticks(np.arange(len(bm_rank[bm])) * 2 * len(BMLoad) * 0.2, list(bm_rank[bm].keys()), rotation='vertical')
+        # plt.legend()
+        # plt.tight_layout()
+        # plt.savefig(os.path.join(path_protein, "bar-rank-{}-{}.svg".format(name, bm)))
+        #
+        # plt.clf()
+        # for i, bm in enumerate(BMLoad):
+        #     plt.bar(np.arange(len(bm_star[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_star[bm].values()), width=0.2,
+        #             align='center')
+        # plt.xticks(np.arange(len(bm_star[bm])) * 2 * len(BMLoad) * 0.2, list(bm_star[bm].keys()), rotation='vertical')
+        # plt.legend()
+        # plt.tight_layout()
+        # plt.savefig(os.path.join(path_protein, "bar-star-{}-{}.svg".format(name, bm)))
+        #
+        # plt.clf()
+        # for i, bm in enumerate(BMLoad):
+        #     plt.bar(np.arange(len(bm_num[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_num[bm].values()), width=0.2,
+        #             align='center')
+        # plt.xticks(np.arange(len(bm_num[bm])) * 2 * len(BMLoad) * 0.2, list(bm_num[bm].keys()), rotation='vertical')
+        # plt.legend()
+        # plt.tight_layout()
+        # plt.savefig(os.path.join(path_protein, "bar-num-{}-{}.svg".format(name, bm)))
+    except:
+        print "failed", name
+
+
+for name in names:
+    for bm in BMLoad:
+        try:
+            path_protein = os.path.join(path_base, name)
+            if not os.path.exists(path_protein):
+                os.mkdir(path_protein)
+            file = open(os.path.join(path_base, name) + "/{}_rmsd.dat".format(bm), 'w+')
+            file.write(",energy,rmsd \n")
+            rmsd = a5BM._dict_dataBenchmark[bm][name][a5BM._dict_index['rmsd']][:]
+            energy = a5BM._dict_dataBenchmark[bm][name][a5BM._dict_index['energy']][:]
+            for i in range(len(a5BM._dict_dataBenchmark[bm][name][a5BM._dict_index['rmsd']])):
+                file.write("{},{},{}\n".format(i, energy[i], rmsd[i]))
+            file.close()
+        except:
+            print "filed", name
+            pass
+
+#plot rmsd vs rmsd
+# plt.clf()
+# xData = np.zeros(len(names))
+# yData = np.zeros(len(names))
+# weight = 0
+# wcount = 0
+# for i,name in enumerate(names):
+#     x = a5BM.getDataProtein( BM0m, name, 'mean_10'  )
+#     y = a5BM.getDataProtein(BM5m, name, 'mean_10')
+#     xData[i] = x
+#     yData[i] = y
+#     if x is not None and x != -10000 and  y is not None and y != -10000 :
+#         wcount += 1
+#         weight += x/y
+# weight /= wcount
+#
+# lin = np.arange(len(names))
+# plt.plot( lin, lin, 'r-')
+# plt.plot( xData,yData, 'bo')
+# plt.xlim(1,60)
+# plt.ylim(1,60)
+# print "ratio 0modes / 5modes", weight
+#
+#
+#
+# dict_data = {}
+# for bm in BMLoad:
+#     frame = pd.read_csv(os.path.join(path_csv, bm))
+#     dict_data[bm] = frame
+#
+#
+# for i, bm in enumerate(BMLoad):
+#     plt.bar(np.arange(len(bm_num[bm])) * 2 * len(BMLoad) * 0.2 + i * 0.2, list(bm_num[bm].values()), width=0.2,
+#     align='center')
+#     plt.xticks(np.arange(len(bm_num[bm])) * 2 * len(BMLoad) * 0.2, list(bm_num[bm].keys()), rotation='vertical')
+#     plt.legend()
+#     plt.tight_layout()
+#     plt.savefig(os.path.join(path_protein, "bar-num-{}-{}.svg".format(name, bm)))
+#
+#
+#
+
+barbm = [
+'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
+'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
+'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
+'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0']
+
+barbm = BMLoad
+barnames = names
+
+for i,name in enumerate(barnames):
+    one = [];
+    two = [];
+    three = []
+    for k,bm in enumerate(barbm):
+        try:
+            plt.gca().set_prop_cycle(None)
+            one.append(dict_data[bm]['one_star_50'].loc[dict_data[bm]['name'] == name].values[0])
+            two.append(dict_data[bm]['two_star_50'].loc[dict_data[bm]['name'] == name].values[0])
+            three.append(dict_data[bm]['three_star_50'].loc[dict_data[bm]['name'] == name].values[0])
+            #print name, bm, dict_data[bm]['one_star_50'].loc[dict_data[bm]['name'] == name].values[0],dict_data[bm]['two_star_50'].loc[dict_data[bm]['name'] == name].values[0],dict_data[bm]['three_star_50'].loc[dict_data[bm]['name'] == name].values[0]
+            width = 1
+            ind = np.arange(len(barbm))
+            modes = [0, 3, 5, 10]
+            p3 = plt.bar(ind +len(barbm)*i , one, width)
+            p3 = plt.bar(ind+len(barbm)*i , two, width, bottom=one)
+            p3 = plt.bar(ind+len(barbm)* i, three, width, bottom=two)
+            plt.xticks(ind+len(barbm)* i, modes)
+        except:
+            pass
+
+
+frame = pd.read_csv( "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen/scaleComparison/data.csv")
+numModesRec = [1,2,3,5,10,20]; numModesLig = [0,1]; maxScale = 10
+sub = frame.loc[ (frame['numModesRec'].isin(numModesRec)) & (frame['numModesLig'].isin(numModesLig)) & (frame['evScale'] < maxScale)].sort_values(by=['evScale','numModesRec','numModesLig'])
+#plt.scatter(sub['evScale'], sub['sum_star'])
+#plt.show()
+plt.clf()
+one = sub['one_star_50'].tolist()
+two = sub['two_star_50'].tolist()
+three = sub['three_star_50'].tolist()
+mrec = sub['numModesRec'].tolist()
+mlig = sub['numModesLig'].tolist()
+scale = sub['evScale'].tolist()
+width = 1
+ind = np.arange(len(one))
+plt.bar(ind, one, width)
+plt.bar(ind, two, width, bottom= one)
+plt.bar(ind, three, width , bottom = two)
+ticks = []
+for a,b,c in zip(scale, mrec, mlig):
+    ticks.append("{}\n{}\n{}".format(a,b,c))
+plt.xticks(ind,ticks)
+plt.show()
+scale

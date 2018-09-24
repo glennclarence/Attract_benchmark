@@ -53,9 +53,10 @@ def read_pdb(f):
       resindex += 1
     res.append(int(resindex))
     resn.append(cresn)
-
-    typ.append(int(l[57:59]))
-    charge.append(l[61:67])
+    typ.append(0)
+    charge.append(0)
+    #typ.append(int(l[57:59]))
+    #charge.append(l[61:67])
   return id_atom, atom, resn, res, x,y,z, typ, charge
 
 def read_modes(filename_modes):
@@ -63,29 +64,33 @@ def read_modes(filename_modes):
         lines = f.readlines()
         d_modes = {}
         mode_idx = 1
-	amplitude = np.zeros(25)
-	numModes = 0
+        amplitude = np.zeros(25)
+        numModes = 0
         for i, line in enumerate(lines):
             if len(line.split()) == 2 and int(line.split()[0]) == mode_idx:
                 x = []
                 y = []
                 z = []
-		numModes += 1
+                numModes += 1
                 d_modes[mode_idx ] = ( float(line.split()[1]), x,y,z )
                 mode_idx += 1
                 #eigenvalues[mode_idx - 2] = float(line.split()[1])
             elif len(line.split()) == 3:
+                if mode_idx == 3:
+                    print  float(line.split()[0]), float(line.split()[1]), float(line.split()[2])
                 d_modes[mode_idx - 1][1].append( float(line.split()[0]) )
                 d_modes[mode_idx - 1][2].append( float(line.split()[1]) )
                 d_modes[mode_idx - 1][3].append( float(line.split()[2]) )
-		amplitude[mode_idx - 1] += float(line.split()[0]) **2 + float(line.split()[1]) **2 + float(line.split()[2]) **2
-	amplitude = np.sqrt(amplitude)
-	for mode in range(numModes):
-		for i in range(len(d_modes[mode + 1][1])):
-			d_modes[mode + 1][1][i] /= amplitude[mode + 1] if  amplitude[mode + 1] > 0 else 1
-			d_modes[mode + 1][2][i] /= amplitude[mode + 1] if  amplitude[mode + 1] > 0 else 1
-			d_modes[mode + 1][3][i] /= amplitude[mode + 1] if  amplitude[mode + 1] > 0 else 1
-	d_modes
+                amplitude[mode_idx - 1] += float(line.split()[0]) **2 + float(line.split()[1]) **2 + float(line.split()[2]) **2
+
+    for mode in range(numModes):
+        amplitude[mode+1] = np.sqrt(amplitude[mode+1])
+        for i in range(len(d_modes[mode + 1][1])):
+
+            d_modes[mode + 1][1][i] /= amplitude[mode + 1] if  amplitude[mode+ 1 ] > 0 else 1
+            d_modes[mode + 1][2][i] /= amplitude[mode + 1] if  amplitude[mode + 1] > 0 else 1
+            d_modes[mode + 1][3][i] /= amplitude[mode+ 1] if  amplitude[mode + 1] > 0 else 1
+    #d_modes
 
     return d_modes, numModes
 
@@ -115,14 +120,27 @@ def createPDB(num_atoms, num_modes, x,y,z, modes, dof_modes):
 def getOverlap(id_mode, num_atoms, delta,modes):
     m = id_mode
     sum = 0
+    # for i in range(num_atoms):
+    #     scalar= delta[0][i]* modes[m][0][i] + delta[1][i]* modes[m][1][i] + delta[2][i]* modes[m][2][i]
+    #     abs = np.linalg.norm(np.asarray((delta[0][i],delta[1][i],delta[2][i]))) * np.linalg.norm(np.asarray((modes[m][0][i],modes[m][1][i],modes[m][2][i])))
+    #     oi = np.fabs( scalar / abs)
+    #     sum += oi**2
+
+    scalar = 0
+    modesSum = 0
+    defSum = 0
+
     for i in range(num_atoms):
-        scalar= delta[0][i]* modes[m][0][i] + delta[1][i]* modes[m][1][i] + delta[2][i]* modes[m][2][i]
-        abs = np.linalg.norm(np.asarray((delta[0][i],delta[1][i],delta[2][i]))) * np.linalg.norm(np.asarray((modes[m][0][i],modes[m][1][i],modes[m][2][i])))
-        oi = np.fabs( scalar / abs)
-        sum += oi**2
-
-    return np.sqrt(sum/num_atoms)
-
+        modesSum += modes[m][0][i] *modes[m][0][i]+modes[m][1][i]*modes[m][1][i]+modes[m][2][i]*modes[m][2][i]
+        defSum += delta[0][i]*delta[0][i]+   delta[1][i]*delta[1][i] + delta[2][i]*delta[2][i]
+    modesSum = np.sqrt(modesSum)
+    defSum = np.sqrt(defSum)
+    for i in range(num_atoms):
+        scalar += delta[0][i] * modes[m][0][i] + delta[1][i] * modes[m][1][i] + delta[2][i] * modes[m][2][i]
+    result = np.fabs(scalar)/(modesSum*defSum)
+    #return np.sqrt(sum/num_atoms)
+    print result
+    return result
 
 def countResidues(num_atoms, name_residues, id_residues):
     assert num_atoms == len(name_residues)

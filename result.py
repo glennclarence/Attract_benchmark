@@ -50,7 +50,7 @@ BMLoad = [
 'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0',
 'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1',
 'dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5',
-'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0',
+#'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0',
 'dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0',
 'dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0',
 'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
@@ -104,33 +104,9 @@ BMLoad = [
 
 
 
-#BM5m_0_5ev = "benchmark_GPU_scorig_50cut_5modes_halfEV"
-
-#a5BM.loadBenchmark( path_folder, BM5m )
-#a5BM.loadBenchmark( path_folder, BM0m)
-#a5BM.loadBenchmark( path_folder, BM3m)
-#a5BM.loadBenchmark( path_folder, BM5_0_5mev)
-#noModes = load_benchmarks( path_folder, name_benchmark_0modes )
-#noModes_result = evaluate(noModes)
-
-
-#n5Modes = load_benchmarks( path_folder, name_benchmark_5modes )
-#n5Modes_result = evaluate(n5Modes)
-#print n5Modes_result['1ACB'][idx_mean_10]
-
-#min_10_ =  a5BM.getSorted('mean_10',BM5m, 0, True )
-#min_sort_10 = a5BM.getSorted('mean_sort_10',BM5m,0, True )
-
-#print "5 modes min 10 ", min_10, "5 modes min_10 sorted", min_sort_10
-
-
-#nomod_min_10_ =  a5BM.getSorted('mean_10',BM0m, 0, True )
 #nomod_min_sonrt_10 = a5BM.getSorted('mean_sort_10',BM0m,0, True )
-#print "0 modes min 10 ", nomo_min_10, "0 modes min_10 sorted", nomod_min_sort_10
-
-a5BM.plotRmsd(1000,BM0m,'1ACB' , use_energy= True)
-a5BM.scoringPerformance( BM0m, '1ACB')
-energies = a5BM.getDataProtein(BM5m, '1ACB', 'energy')
+#a5BM.scoringPerformance( BM0m, '1ACB')
+#energies = a5BM.getDataProtein(BM5m, '1ACB', 'energy')
 
 #plot scoring performance
 plt.clf()
@@ -615,6 +591,8 @@ names = a5BM.getSorted('mean_10', 'benchmark_GPU_scorig_50cut_0modes',onlygetNam
 path_base = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE/evaluation"
 path_csv = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
 names = a5BM.getSorted('mean_10', 'benchmark_ORIG_scorig_0modes',onlygetName = True)
+
+
 dict_data = {}
 for bm in BMLoad:
     frame = pd.read_csv(os.path.join(path_csv, bm), sep='\t')
@@ -755,61 +733,9 @@ for bm in benchmarks:
 counter =  Counter(names)
 path ='/home/glenn/work/benchmark5_attract'
 
-list = ['3MXW',
-'1KXQ',
-'3PC8',
-'1IJK',
-'1AK4',
-'1RV6',
-'1K74',
-'1SYX',
-'1K4C',
-'4G6M',
-'1XQS',
-'1WEJ',
-'1WDW',
-'1QFW',
-'2MTA',
-'2OUL',
-'1GL1',
-'1BVK',
-'2I25',
-'1AY7',
-'2YVJ',
-'1FSK',
-'1M27',
-'1XD3',
-'7CEI',
-'2PCC',
-'3VLB',
-'1BUH',
-'2CFH']
+
 import shutil
 for i in list:
     src = os.path.join(path,i)
     shutil.copytree(src, os.path.join('/home/glenn/work/benchmark5_best',i))
 
-
-[
-'1AK4A-refe.pdb',
-'1K4CB-refe.pdb',
-'1RV6A-refe.pdb',
-'1XQSA-refe.pdb',
-'4G6MA-refe.pdb',
-'1AK4B-refe.pdb',
-'1K74A-refe.pdb',
-'1RV6B-refe2.pdb',
-'3MXWA-refe.pdb',
-'4G6MB-refe.pdb',
-'1IJKA-refe.pdb',
-'1K74B-refe.pdb',
-'1RV6B-refe.pdb',
-'3MXWB-refe.pdb',
-'1IJKB-refe.pdb',
-'1KXQA-refe.pdb',
-'1SYXA-refe.pdb',
-'3PC8A-refe.pdb',
-'1K4CA-refe.pdb',
-'1KXQB-refe.pdb',
-'1SYXB-refe.pdb' ,
-'3PC8B-refe.pdb']

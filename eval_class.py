@@ -2,7 +2,7 @@
 import os
 #from  load_pdbs import ProteinEsemble
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def getEnergyfromFile( filename_scoring):
     energies = list()

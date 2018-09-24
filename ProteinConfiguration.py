@@ -61,10 +61,13 @@ class ProteinConfiguration:
         self.ext_heavy = "-heavy.pdb"
         self.ext_aa = "-allatom.pdb"
         self.ext_modes = "modes.dat"
+        self.ext_hinsen = "hinsen.dat"
         self.ext_modes_aa = "-aa-modes.dat"
         self.ext_modes_heavy = "-heavy-modes.dat"
         self.ext_alphabet = "-grid.alphabet"
+        self.ext_alphabet_allAtom = "-grid-aa.alphabet"
         self.ext_grid = "-grid.grid"
+        self.ext_grid_allAtom= "-grid-aa.grid"
         self.chain = "A"
 
 
@@ -74,7 +77,9 @@ class ProteinConfiguration:
 
         self.filename_reduce    = name_protein + self.ext_reduce
         self.filename_alphabet  = name_protein + self.ext_alphabet
+        self.filename_alphabet_allAtom  = name_protein + self.ext_alphabet_allAtom
         self.filename_grid      = name_protein + self.ext_grid
+        self.filename_grid_allAtom = name_protein + self.ext_grid_allAtom
         self.filename_modes     = name_protein + self.ext_modes
         self.filename_modes_aa = self.name_protein + self.ext_modes_aa
         self.filename_modes_heavy = self.name_protein + self.ext_modes_heavy
@@ -136,6 +141,7 @@ class ProteinConfiguration:
     def set_num_modes( self, num_modes):
         """sets the number of modes and wheter modefiles can be created of not"""
         self.ext_modes = "-"+str(num_modes)+"-modes.dat"
+        self.ext_hinsen = "-" + str(num_modes) + "-hinsen.dat"
         self.ext_modes_aa = "-" + str(num_modes) + "-aa-modes.dat"
         self.ext_modes_heavy = "-" + str(num_modes) + "-heavy-modes.dat"
         self.num_modes = num_modes
@@ -169,15 +175,25 @@ class ProteinConfiguration:
 
     def get_filenamePdbReduced(self):
         return os.path.join( self.path_inputFolder, self.filename_reduce)
+    def get_filenamePdbAllAtom(self):
+        return os.path.join( self.path_inputFolder, self.filename_allAtom)
 
     def get_filenameGrid(self):
         return os.path.join( self.path_inputFolder, self.filename_grid)
+    def get_filenameGridAllAtom(self):
+        return os.path.join( self.path_inputFolder, self.filename_grid_allAtom)
 
     def get_filenameAlphabet(self):
         return os.path.join( self.path_inputFolder, self.filename_alphabet)
 
+    def get_filenameAlphabetAllAtom(self):
+        return os.path.join( self.path_inputFolder, self.filename_alphabet_allAtom)
+
     def get_filenameModes(self):
         return os.path.join( self.path_inputFolder, self.filename_modes )
+
+    def get_filenameModesAllAtom(self):
+        return os.path.join( self.path_inputFolder, self.filename_modes_aa )
 
 
     def createPDB( self, overwrite = False, allatom = False, reference = False, heavy= False):
@@ -282,7 +298,7 @@ class ProteinConfiguration:
         """Sets a partner protein which is later on docked to. This is needed for the creation of the grid."""
         self.filename_pdb_partner = filename_pdb_partner
 
-    def create_grid( self, overwrite = False ):
+    def create_grid( self, overwrite = False , allAtom = False):
         path = completePath(self.path_inputFolder)
 
         bash_command = "awk '{print substr($0,58,2)}'"
@@ -298,6 +314,26 @@ class ProteinConfiguration:
             print bash_command
         if path.isfile(self.filename_grid) is False or (path.isfile(self.filename_grid) and overwrite is True):
             os.system(bash_command)
+
+        if allAtom:
+            bash_command = "awk '{print substr($0,58,2)}'"
+            bash_command += " {} ".format(self.filename_pdb_partner)
+            bash_command += " | sort -nu > {}".format(os.path.join(self.path_inputFolder, self.filename_alphabet_allAtom))
+            if path.isfile(self.filename_alphabet_allAtom) is False or (path.isfile(self.filename_alphabet_allAtom) and overwrite is True):
+                os.system(bash_command)
+            if DEBUG_COMMAND:
+                print bash_command
+            bash_command = "{}/make-grid-omp {} {}/../attract.par".format(self.path_attract,
+                                                                          os.path.join(self.path_inputFolder,
+                                                                                       self.filename_allAtom),
+                                                                          self.path_attract);
+            bash_command += " 10.0 12.0 {} --alphabet {} 2>/dev/null".format(
+                os.path.join(self.path_inputFolder, self.filename_grid_allAtom),
+                os.path.join(self.path_inputFolder, self.filename_alphabet_allAtom));  #
+            if DEBUG_COMMAND:
+                print bash_command
+            if path.isfile(self.filename_grid_allAtom) is False or (path.isfile(self.filename_grid_allAtom) and overwrite is True):
+                os.system(bash_command)
 
         return  path.filename(self.filename_grid),  path.filename(self.filename_alphabet)
 

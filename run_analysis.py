@@ -22,6 +22,7 @@ filename_modesJoined = None,filename_modesJoined_aa = None,filename_modesJoined_
     filename_demode_all = os.path.join(path_analysis, name_analysis + "-top-demode-all.dat")
     filename_pdbFinal =     os.path.join(path_analysis ,name_analysis + "-result.pdb")
     filename_rmsd = os.path.join(path_analysis, name_analysis + "-rmsd.result")
+    filename_rmsdmodes = os.path.join(path_analysis, name_analysis + "-rmsdModes.result")
 
     if not os.path.isfile(filename_filled) or overwrite is True:
         analysis_fillEnergies(path_python, path_attractTools, filename_dockResult, filename_scoreResult, filename_filled )
@@ -46,20 +47,24 @@ filename_modesJoined = None,filename_modesJoined_aa = None,filename_modesJoined_
         if num_modesReceptor > 0 or num_modesLigand > 0:
             analysis_removeModes(path_python, path_attractTools, filename_deredundant, filename_demode_all)
 
-    if not os.path.isfile(filename_pdbFinal) or overwrite is True:
-        if num_modesReceptor > 0 or num_modesLigand > 0:
-            analysis_collect(path_attract, filename_demode, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
-        else:
-            analysis_collect(path_attract, filename_demode,    filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
+    # if not os.path.isfile(filename_pdbFinal) or overwrite is True:
+    #     if num_modesReceptor > 0 or num_modesLigand > 0:
+    #         analysis_collect(path_attract, filename_demode, filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
+    #     else:
+    #         analysis_collect(path_attract, filename_demode,    filename_pdbReceptor, filename_pdbLigand, filename_pdbFinal)
 
     if not os.path.isfile( filename_rmsd) or overwrite is True:
         calculate_rmsd(path_attract, filename_demode_all, filename_pdbLigand_aa, filename_pdbLigandRef_aa, filename_modesJoined_aa,
                        filename_pdbReceptor_aa,  filename_rmsd, 0, 0)
+    if (num_modesLigand >0 or num_modesReceptor > 0):
+        if not os.path.isfile( filename_rmsdmodes) or overwrite is True:
+            calculate_rmsd(path_attract, filename_top, filename_pdbLigand_aa, filename_pdbLigandRef_aa, filename_modesJoined_aa,
+                           filename_pdbReceptor_aa, filename_rmsdmodes,num_modesLigand=num_modesLigand, num_modesReceptor = num_modesReceptor)
 
     if not os.path.isfile(filename_fnat) or overwrite is True:
         calc_fnat(path_attract, filename_demode,filename_pdbReceptor_heavy,filename_pdbReceptorRef_heavy,
                   filename_pdbLigand_heavy,filename_pdbLigandRef_heavy,filename_fnat, 0, filename_modesJoined_heavy)
-    print filename_irmsd, os.path.isfile(filename_irmsd)
+    #print filename_irmsd, os.path.isfile(filename_irmsd)
     if not os.path.isfile(filename_irmsd) or overwrite is True:
         calc_IRmsd(path_attract, filename_demode, filename_pdbReceptor_heavy, filename_pdbReceptorRef_heavy,
                    filename_pdbLigand_heavy, filename_pdbLigandRef_heavy,filename_irmsd,0,filename_modesJoined_heavy)
@@ -105,6 +110,7 @@ def analysis_collect( path_attract, filename_demode, filename_pdbReceptor, filen
     os.system( bash_command )
 
 def join_modefiles( filename_modesReceptor, filename_modesLigand, filename_output):
+    print "join modefiles", filename_modesReceptor
     bash_command = "cat /dev/null > {}".format( filename_output)
     os.system( bash_command )
     bash_command = "cat {}  >> {}".format(filename_modesReceptor, filename_output)

@@ -91,7 +91,7 @@ def configure_protein( path_inputFolder, path_outputFolder, name_protein, filena
 
 
 def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modesRec= 0,num_modesLig = 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
-                   scoring_overwrite=False, analyse_overwrite= False, docking_overwrite = False, analyse_mode = False):
+                   scoring_overwrite=False, analyse_overwrite= False, docking_overwrite = False, analyse_mode = False, useHinsen = False, useAllAtom = False):
     pairs = {}
     finisheditems_scoring = Queue()
     finisheditems_docking = Queue()
@@ -140,9 +140,9 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
         #get the receptor and the ligand via their size and create Proteinconfigurations from it for receptor and ligand
 
         name_receptor = lpdb.get_proteinByindex(proteins,d_config['index_protein'], 'r')
-        print d_config["file_config_receptor_reference"]
-        print name_receptor
-        print os.path.dirname(proteins[name_receptor])
+        #print d_config["file_config_receptor_reference"]
+        #print name_receptor
+        #print os.path.dirname(proteins[name_receptor])
         filename_receptor_reference = os.path.join(os.path.dirname(proteins[name_receptor]), d_config["file_config_receptor_reference"])
         filename_receptor = proteins[ name_receptor]
         receptor = configure_protein(path_inputFolder = path_input,     path_outputFolder = path_output, name_protein = name_receptor,
@@ -174,10 +174,13 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             if create_grid:
                 print "\t\t--Create grids"
                 ligand.set_partner( receptor.get_filenamePdbReduced() )
-                receptor.set_partner(ligand.get_filenamePdbReduced())
+                receptor.set_partner( ligand.get_filenamePdbReduced() )
+                if useAllAtom:
+                    ligand.set_partner(receptor.get_filenamePdbAllAtom())
+                    receptor.set_partner(ligand.get_filenamePdbAllAtom())
                 benchmark.timer_start("Create_grid")
-                receptor.create_grid(overwrite=False)
-                ligand.create_grid(overwrite=False)
+                receptor.create_grid(overwrite=False, allAtom=useAllAtom)
+                ligand.create_grid(overwrite=False, allAtom = useAllAtom)
                 benchmark.timer_appendStop("Create_grid")
 
             if create_modes and num_modes > 0:
@@ -188,9 +191,13 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
 
                     receptor.create_modes(overwrite=False, heavy= True, allAtom=True)
                     ligand.create_modes(overwrite=False, heavy= True, allAtom=True)
-
-
+                    if useHinsen:
+                        receptor.filename_modes = receptor.name_protein + receptor.ext_hinsen
+                        ligand.filename_modes = ligand.name_protein + ligand.ext_hinsen
                     join_modefiles(receptor.get_filenameModes(), ligand.get_filenameModes(), filename_modesJoined)
+
+                    if useAllAtom:
+                        join_modefiles(receptor.get_filenameModesAllAtom(), ligand.get_filenameModesAllAtom(),filename_modesJoined_aa)
                     if heavy:
                         join_modefiles(os.path.join(receptor.get_pathInput(), receptor.filename_modes_heavy) ,os.path.join(receptor.get_pathInput(), ligand.filename_modes_heavy),
                                        filename_modesJoined_heavy)
@@ -235,12 +242,29 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
             filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
             if not os.path.isfile(filename_output) or docking_overwrite:
                 print pair.filename_modesJoined
-                dock.add_ensembleToQueue( id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,    filename_parameter=parameter_dir,
+                if useAllAtom:
+                    dock.add_ensembleToQueue(id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,
+                                             filename_parameter=parameter_dir,
+                                             filename_pdbReceptor=receptor.get_filenamePdbAllAtom(),
+                                             filename_alphabetReceptor=receptor.get_filenameAlphabetAllAtom(),
+                                             filename_gridReceptor=receptor.get_filenameGridAllAtom(),
+                                             filename_modesReceptor=receptor.get_filenameModesAllAtom(),
+                                             num_modesReceptor=num_modesRec,
+                                             filename_pdbLigand=ligand.get_filenamePdbAllAtom(),
+                                             filename_alphabetLigand=ligand.get_filenameAlphabetAllAtom(),
+                                             filename_gridLigand=ligand.get_filenameGridAllAtom(),
+                                             filename_modesLigand=ligand.get_filenameModesAllAtom(),
+                                             num_modesLigand=num_modesLig,
+                                             filename_modesJoined=pair.filename_modesJoined_aa,
+                                             modeForceFac=evfactor,
+                                             logfile=os.path.join(receptor.get_pathOutput(), "logfile_minimization"))
+                else:
+                    dock.add_ensembleToQueue( id=key, filename_dofs=pair.filename_dof, filename_output=filename_output,    filename_parameter=parameter_dir,
                                            filename_pdbReceptor=receptor.get_filenamePdbReduced(),               filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                           filename_gridReceptor=receptor.get_filenameGrid(),                    filename_modesReceptor=receptor.get_filenameModes(),
-                                          num_modesReceptor=num_modes,      filename_pdbLigand=ligand.get_filenamePdbReduced(), filename_alphabetLigand=ligand.get_filenameAlphabet(),
+                                          num_modesReceptor=num_modesRec,      filename_pdbLigand=ligand.get_filenamePdbReduced(), filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                           filename_gridLigand=ligand.get_filenameGrid(), filename_modesLigand=ligand.get_filenameModes(),
-                                          num_modesLigand=num_modes, filename_modesJoined= pair.filename_modesJoined,
+                                          num_modesLigand=num_modesLig, filename_modesJoined= pair.filename_modesJoined,
                                           modeForceFac= evfactor , logfile=os.path.join(receptor.get_pathOutput(), "logfile_minimization"))
             else:
                 print filename_output, " exists already\n"
@@ -272,15 +296,32 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 print "{}/{} ".format( count_scoring, len(pairs)),"\t--put in scoring queue. protein: ", receptor.get_name(), " and ", ligand.get_name()
                 filename_output = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_scoring'])
                 filename_docking = os.path.join(receptor.get_pathOutput(), receptor.get_name() + d_config['file_compute_dock'])
-                print filename_docking
+                #print filename_docking
                 if not os.path.isfile(filename_output) or scoring_overwrite :
                     print "modes joined ",pair.filename_modesJoined
-                    score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
+                    if useAllAtom:
+                        score.add_ensembleToQueue(id=pairId, filename_dofs=filename_docking,
+                                              filename_output=filename_output, filename_parameter=parameter_dir,
+                                              filename_pdbReceptor=receptor.get_filenamePdbAllAtom(),
+                                              filename_alphabetReceptor=receptor.get_filenameAlphabetAllAtom(),
+                                              filename_gridReceptor=receptor.get_filenameGridAllAtom(),
+                                              filename_modesReceptor=receptor.get_filenameModesAllAtom(),
+                                              num_modesReceptor=num_modesRec,
+                                              filename_pdbLigand=ligand.get_filenamePdbAllAtom(),
+                                              filename_alphabetLigand=ligand.get_filenameAlphabetAllAtom(),
+                                              filename_gridLigand=ligand.get_filenameGridAllAtom(),
+                                              filename_modesLigand=ligand.get_filenameModesAllAtom(),
+                                              num_modesLigand=num_modesLig,
+                                              filename_modesJoined=pair.filename_modesJoined_aa, radius_cutoff=rcut,
+                                              modeForceFac=evfactor,
+                                              logfile=os.path.join(receptor.get_pathOutput(), "logfile_scoring"))
+                    else:
+                        score.add_ensembleToQueue(  id = pairId,filename_dofs=filename_docking,filename_output=filename_output,filename_parameter=parameter_dir,
                                               filename_pdbReceptor=receptor.get_filenamePdbReduced(),filename_alphabetReceptor=receptor.get_filenameAlphabet(),
                                               filename_gridReceptor=receptor.get_filenameGrid(),filename_modesReceptor=receptor.get_filenameModes(),
-                                              num_modesReceptor=num_modes,filename_pdbLigand=ligand.get_filenamePdbReduced(),filename_alphabetLigand=ligand.get_filenameAlphabet(),
+                                              num_modesReceptor=num_modesRec,filename_pdbLigand=ligand.get_filenamePdbReduced(),filename_alphabetLigand=ligand.get_filenameAlphabet(),
                                               filename_gridLigand=ligand.get_filenameGrid(),filename_modesLigand=ligand.get_filenameModes(),
-                                              num_modesLigand=num_modes, filename_modesJoined= pair.filename_modesJoined, radius_cutoff=rcut, modeForceFac=evfactor, logfile=os.path.join(receptor.get_pathOutput(), "logfile_scoring") )
+                                              num_modesLigand=num_modesLig, filename_modesJoined= pair.filename_modesJoined, radius_cutoff=rcut, modeForceFac=evfactor, logfile=os.path.join(receptor.get_pathOutput(), "logfile_scoring") )
                 else:
                     print filename_output , " exists already\n"
                     finisheditems_scoring.put(pairId)
@@ -336,15 +377,15 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                                       filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
                                       filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
                                       filename_modesJoined=pair.filename_modesJoined, filename_modesJoined_aa=pair.filename_modesJoined_aa,
-                                      filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modes, num_modesLigand=num_modes,
-                                      path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
+                                      filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modesRec, num_modesLigand=num_modesLig,
+                                      path_attract='/home/glenn/Downloads/attract_fromHP/bin', path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
                 folder_mode = os.path.join(os.path.dirname(pair.output_folder), "mode_eval")
                 if analyse_mode:
 
 
                     os.system("mkdir -p {} ".format(folder_mode))
                     modes_vec = np.linspace(1, num_modes-1, num_modes -2,dtype=int)#
-		    print modes_vec
+		    #print modes_vec
                     #print pair.receptor.get_filenameModes()
                     out_pdbs_rec =[]
                     out_pdbs_lig = []
@@ -518,28 +559,100 @@ path = "/home/glenn/work/benchmark5_attract"
 
 import math
 
-path = "/home/glenn/work/benchmark5_best"
-numModesList = [1,3,5,10,15,20]
-numScales = [0.1,0.5,1.0,2.0,5.0]
-for modes in numModesList:
-    for scale in numScales:
-        frac, whole = math.modf(scale)
+# path = "/home/glenn/work/benchmark5_best"
+# numModesList = [15,20]
+# numScales = [0.3,1.5,3.0,7.0]
+# for modes in numModesList:
+#     for scale in numScales:
+#         frac, whole = math.modf(scale)
+#
+#         run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}".format(modes,modes,int(whole),str(frac)[2], modes,modes,int(whole),str(frac)[2]), create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = modes,num_modesLig = modes, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+#
+#
+# path = "/home/glenn/work/benchmark5_worst"
+# numModesList = [1,3,5,10,15,20]
+# numScales = [0.3,1.5,3.0,7.0]
+# for modes in numModesList:
+#     for scale in numScales:
+#         frac, whole = math.modf(scale)
+#
+#         run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}".format(modes,modes,int(whole),str(frac)[2], modes,modes,int(whole),str(frac)[2]), create_grid = True, create_modes = True, create_dofs = True,
+#                 create_reduce = True, num_modesRec = modes,num_modesLig = modes, orig_docking= False, orig_scoring=True, rcut=50,
+#                 num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
 
-        run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}".format(modes,modes,int(whole),str(frac)[2], modes,modes,int(whole),str(frac)[2]), create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = modes,num_modesLig = modes, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+
+# path = "/home/glenn/Documents/WebNma/best"
+# numModesListRec = [1,5,10]
+# numModesListLig = [1,5,10]
+# numScales = [0.01,0.05,0.1,1]
+#
+# benchmark_useHinsen = True
+# benchmark_allAtom = False
+# extention =""
+# if benchmark_useHinsen:
+#     extention += "_hinsen"
+# if benchmark_allAtom:
+#     extention += "_aa"
+# for modesRec in numModesListRec:
+#     for modesLig in numModesListLig:
+#         for scale in numScales:
+#             if modesLig == modesRec:
+#                 frac, whole = math.modf(scale)
+#                 run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:4], modesRec,modesLig,int(whole),str(frac)[2:4],extention), create_grid = True, create_modes = True, create_dofs = True,
+#                  create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+#                  num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen, useAllAtom=benchmark_allAtom)
+#
 
 
-path = "/home/glenn/work/benchmark5_worst"
-numModesList = [1,3,5,10,15,20]
-numScales = [0.1,0.5,1.0,2.0,5.0]
-for modes in numModesList:
-    for scale in numScales:
-        frac, whole = math.modf(scale)
+pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
+pathList= ["/home/glenn/work/benchmark5_best"]
+numModesListRec = [15,20]
+numModesListLig = [15,20]
 
-        run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}".format(modes,modes,int(whole),str(frac)[2], modes,modes,int(whole),str(frac)[2]), create_grid = True, create_modes = True, create_dofs = True,
-                create_reduce = True, num_modesRec = modes,num_modesLig = modes, orig_docking= False, orig_scoring=True, rcut=50,
-                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False)
+logfile = open('logFile_run180921.log', 'w+')
+benchmark_useHinsen = False
+benchmark_allAtom = False
+modeList = [False]
+for i in modeList:
+    extention =""
+    benchmark_useHinsen = i
+    if benchmark_useHinsen:
+        extention += "_hinsen"
+        numScales = [0.0001, 0.001, 0.01, 0.05, 0.1, 1]
+    else:
+        numScales = [0.3,1.5,3.0,7]
+    if benchmark_allAtom:
+        extention += "_aa"
+    for path in pathList:
+        for modesRec in numModesListRec:
+            for modesLig in numModesListLig:
+                for scale in numScales:
+                    #if modesRec != 0 or modesLig != 0 :
+                    if modesLig == modesRec:
+                        frac, whole = math.modf(scale)
+                        try:
+                            run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
+                            create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+                            num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen, useAllAtom=benchmark_allAtom)
+                        except:
+                            logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+                            pass
+
+
+
+path = "/home/glenn/work/test_independet"
+run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p3_sO_c50_mr10_ml10_ev0p3_new", create_grid = True, create_modes = True, create_dofs = True,
+                            create_reduce = True, num_modesRec =10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+                            num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.3, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=False, useAllAtom=False)
+
+
+
+#path = "/home/glenn/work/test_hinsen"
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}_1".format(5,0,1,0, 5,0,1,0), create_grid = True, create_modes = True, create_dofs = True,
+#                create_reduce = True, num_modesRec = 5,num_modesLig =5, orig_docking= False, orig_scoring=True, rcut=50,
+#                num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 1, do_analyse = True, scoring_overwrite=True, analyse_overwrite=True, docking_overwrite=True,analyse_mode = True, useHinsen=False)
 
 
 #run_benchmark( path, "-for-docking.pdb",name_be# run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1", create_grid = True, create_modes = True, create_dofs = True,
