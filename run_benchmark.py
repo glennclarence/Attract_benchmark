@@ -607,14 +607,14 @@ import math
 
 
 pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
-pathList= ["/home/glenn/work/benchmark5_best"]
-numModesListRec = [15,20]
-numModesListLig = [15,20]
+pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
+numModesListRec = [0,1,3,5,10,15,20]
+numModesListLig = [0,1,3,5,10,15,20]
 
-logfile = open('logFile_run180921.log', 'w+')
+logfile = open('logFile_run180924.log', 'w+')
 benchmark_useHinsen = False
 benchmark_allAtom = False
-modeList = [False]
+modeList = [True, False]
 for i in modeList:
     extention =""
     benchmark_useHinsen = i
@@ -622,15 +622,15 @@ for i in modeList:
         extention += "_hinsen"
         numScales = [0.0001, 0.001, 0.01, 0.05, 0.1, 1]
     else:
-        numScales = [0.3,1.5,3.0,7]
+        numScales = [0.1,0.5,1,2,5]
     if benchmark_allAtom:
         extention += "_aa"
     for path in pathList:
         for modesRec in numModesListRec:
             for modesLig in numModesListLig:
                 for scale in numScales:
-                    #if modesRec != 0 or modesLig != 0 :
-                    if modesLig == modesRec:
+                    if modesRec != 0 or modesLig != 0 :
+                    #if modesLig == modesRec:
                         frac, whole = math.modf(scale)
                         try:
                             run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
@@ -642,10 +642,10 @@ for i in modeList:
 
 
 
-path = "/home/glenn/work/test_independet"
-run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p3_sO_c50_mr10_ml10_ev0p3_new", create_grid = True, create_modes = True, create_dofs = True,
-                            create_reduce = True, num_modesRec =10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
-                            num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.3, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=False, useAllAtom=False)
+#path = "/home/glenn/work/test_independet"
+#run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr10_ml10_ev0p3_sO_c50_mr10_ml10_ev0p3_new", create_grid = True, create_modes = True, create_dofs = True,
+#                            create_reduce = True, num_modesRec =10,num_modesLig = 10, orig_docking= False, orig_scoring=True, rcut=50,
+#                            num_threads = 1, do_minimization=True, do_scoring=True, evfactor = 0.3, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=False, useAllAtom=False)
 
 
 

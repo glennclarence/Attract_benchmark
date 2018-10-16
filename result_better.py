@@ -43,243 +43,22 @@ dict_indices['capri'] = 23
 a5BM = ResultClass( dict_indices )
 
 
-path_folder= "/home/glenn/work/benchmark5_worst"
+path_folder= "/home/glenn/work/benchmark5_best"
+path_evaluation="/home/glenn/Documents/Masterarbeit/analysis/181012_analysis"
+
+path_csv =  "/home/glenn/Documents/Masterarbeit/analysis/181012_analysis"
+path_base = "/home/glenn/Documents/Masterarbeit/analysis/181012_analysis/Plots"
 
 
-BMLoad = [
-'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
+BMLoad = []
 
-'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1',
-'dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5',
-'dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0',
-'dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0',
-'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
-'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1',
-'dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5',
-'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
-'dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0',
-'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0']
 
-BMLoad = [
-'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
-'dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1',
-'dG_mr10_ml10_ev0p5_sO_c50_mr10_ml10_ev0p5',
-'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0',
-'dG_mr10_ml10_ev2p0_sO_c50_mr10_ml10_ev2p0',
-'dG_mr10_ml10_ev5p0_sO_c50_mr10_ml10_ev5p0',
-'dG_mr15_ml15_ev0p1_sO_c50_mr15_ml15_ev0p1',
-'dG_mr15_ml15_ev0p5_sO_c50_mr15_ml15_ev0p5',
-'dG_mr15_ml15_ev1p0_sO_c50_mr15_ml15_ev1p0',
-'dG_mr15_ml15_ev2p0_sO_c50_mr15_ml15_ev2p0',
-'dG_mr15_ml15_ev5p0_sO_c50_mr15_ml15_ev5p0',
-'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1',
-'dG_mr1_ml1_ev0p5_sO_c50_mr1_ml1_ev0p5',
-'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0',
-'dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0',
-'dG_mr1_ml1_ev5p0_sO_c50_mr1_ml1_ev5p0',
-'dG_mr20_ml20_ev0p1_sO_c50_mr20_ml20_ev0p1',
-'dG_mr20_ml20_ev0p5_sO_c50_mr20_ml20_ev0p5',
-'dG_mr20_ml20_ev1p0_sO_c50_mr20_ml20_ev1p0',
-'dG_mr20_ml20_ev2p0_sO_c50_mr20_ml20_ev2p0',
-'dG_mr20_ml20_ev5p0_sO_c50_mr20_ml20_ev5p0',
-'dG_mr3_ml3_ev0p1_sO_c50_mr3_ml3_ev0p1',
-'dG_mr3_ml3_ev0p5_sO_c50_mr3_ml3_ev0p5',
-'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
-'dG_mr3_ml3_ev2p0_sO_c50_mr3_ml3_ev2p0',
-'dG_mr3_ml3_ev5p0_sO_c50_mr3_ml3_ev5p0',
-'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1',
-'dG_mr5_ml5_ev0p5_sO_c50_mr5_ml5_ev0p5',
-'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
-'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1p0',
-'dG_mr5_ml5_ev2p0_sO_c50_mr5_ml5_ev2p0',
-'dG_mr5_ml5_ev5p0_sO_c50_mr5_ml5_ev5p0'
+file = open("/home/glenn/work/benchmarks")
+for line in file.readlines():
+    BMLoad.append(line.split()[0])
 
-]
 
-path_folder = "/home/glenn/Documents/3MXW"
-BMLoad=[
-'dG_mr10_ml20_ev0p03_sO_c50_mr10_ml20_ev0p03_hinsen',
-'dG_mr3_ml5_ev1p0_sO_c50_mr3_ml5_ev1p0_hinsen',
-'dG_mr1_ml3_ev0p01_sO_c50_mr1_ml3_ev0p01_hinsen',
-'dG_mr5_ml3_ev1p0_sO_c50_mr5_ml3_ev1p0_hinsen',
-'dG_mr1_ml3_ev0p07_sO_c50_mr1_ml3_ev0p07_hinsen',
-'dG_mr10_ml3_ev10p0_sO_c50_mr10_ml3_ev10p0_hinsen',
-'dG_mr10_ml5_ev0p05_sO_c50_mr10_ml5_ev0p05_hinsen',
-'dG_mr5_ml5_ev0p03_sO_c50_mr5_ml5_ev0p03_hinsen',
-'dG_mr10_ml10_ev0p01_sO_c50_mr10_ml10_ev0p01_hinsen',
-'dG_mr3_ml1_ev0p05_sO_c50_mr3_ml1_ev0p05_hinsen',
-'dG_mr5_ml1_ev1p0_sO_c50_mr5_ml1_ev1p0_hinsen',
-'dG_mr5_ml0_ev0p005_sO_c50_mr5_ml0_ev0p005_hinsen',
-'dG_mr1_ml10_ev0p03_sO_c50_mr1_ml10_ev0p03_hinsen',
-'dG_mr10_ml10_ev0p03_sO_c50_mr10_ml10_ev0p03_hinsen',
-'dG_mr20_ml10_ev0p1_sO_c50_mr20_ml10_ev0p1_hinsen',
-'dG_mr10_ml5_ev1p0_sO_c50_mr10_ml5_ev1p0_hinsen',
-'dG_mr5_ml3_ev0p03_sO_c50_mr5_ml3_ev0p03_hinsen',
-'dG_mr20_ml10_ev0p01_sO_c50_mr20_ml10_ev0p01_hinsen',
-'dG_mr20_ml1_ev0p1_sO_c50_mr20_ml1_ev0p1_hinsen',
-'dG_mr5_ml1_ev0p03_sO_c50_mr5_ml1_ev0p03_hinsen',
-'dG_mr5_ml20_ev0p07_sO_c50_mr5_ml20_ev0p07_hinsen',
-'dG_mr5_ml1_ev0p07_sO_c50_mr5_ml1_ev0p07_hinsen',
-'dG_mr3_ml10_ev0p05_sO_c50_mr3_ml10_ev0p05_hinsen',
-'dG_mr1_ml1_ev0p07_sO_c50_mr1_ml1_ev0p07_hinsen',
-'dG_mr3_ml10_ev0p03_sO_c50_mr3_ml10_ev0p03_hinsen',
-'dG_mr5_ml20_ev0p01_sO_c50_mr5_ml20_ev0p01_hinsen',
-'dG_mr3_ml20_ev0p05_sO_c50_mr3_ml20_ev0p05_hinsen',
-'dG_mr5_ml5_ev0p07_sO_c50_mr5_ml5_ev0p07_hinsen',
-'dG_mr10_ml5_ev0p03_sO_c50_mr10_ml5_ev0p03_hinsen',
-'dG_mr10_ml1_ev0p03_sO_c50_mr10_ml1_ev0p03_hinsen',
-'dG_mr20_ml10_ev10p0_sO_c50_mr20_ml10_ev10p0_hinsen',
-'dG_mr20_ml5_ev10p0_sO_c50_mr20_ml5_ev10p0_hinsen',
-'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1_hinsen',
-'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1p0_hinsen',
-'dG_mr5_ml3_ev0p1_sO_c50_mr5_ml3_ev0p1_hinsen',
-'dG_mr20_ml10_ev0p07_sO_c50_mr20_ml10_ev0p07_hinsen',
-'dG_mr20_ml5_ev1p0_sO_c50_mr20_ml5_ev1p0_hinsen',
-'dG_mr10_ml10_ev0p1_sO_c50_mr10_ml10_ev0p1_hinsen',
-'dG_mr3_ml20_ev0p1_sO_c50_mr3_ml20_ev0p1_hinsen',
-'dG_mr5_ml20_ev1p0_sO_c50_mr5_ml20_ev1p0_hinsen',
-'dG_mr20_ml10_ev1p0_sO_c50_mr20_ml10_ev1p0_hinsen',
-'dG_mr10_ml3_ev0p05_sO_c50_mr10_ml3_ev0p05_hinsen',
-'dG_mr5_ml3_ev0p01_sO_c50_mr5_ml3_ev0p01_hinsen',
-'dG_mr10_ml20_ev0p01_sO_c50_mr10_ml20_ev0p01_hinsen',
-'dG_mr1_ml1_ev1p0_sO_c50_mr1_ml1_ev1p0_hinsen',
-'dG_mr20_ml1_ev1p0_sO_c50_mr20_ml1_ev1p0_hinsen',
-'dG_mr3_ml5_ev0p05_sO_c50_mr3_ml5_ev0p05_hinsen',
-'dG_mr5_ml0_ev0p001_sO_c50_mr5_ml0_ev0p001_hinsen',
-'dG_mr3_ml3_ev0p07_sO_c50_mr3_ml3_ev0p07_hinsen',
-'dG_mr1_ml5_ev1p0_sO_c50_mr1_ml5_ev1p0_hinsen',
-'dG_mr1_ml10_ev1p0_sO_c50_mr1_ml10_ev1p0_hinsen',
-'dG_mr1_ml20_ev1p0_sO_c50_mr1_ml20_ev1p0_hinsen',
-'dG_mr5_ml10_ev0p1_sO_c50_mr5_ml10_ev0p1_hinsen',
-'dG_mr5_ml10_ev0p07_sO_c50_mr5_ml10_ev0p07_hinsen',
-'dG_mr5_ml5_ev0p05_sO_c50_mr5_ml5_ev0p05_hinsen',
-'dG_mr10_ml1_ev0p07_sO_c50_mr10_ml1_ev0p07_hinsen',
-'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0_hinsen',
-'dG_mr10_ml1_ev1p0_sO_c50_mr10_ml1_ev1p0_hinsen',
-'dG_mr1_ml10_ev10p0_sO_c50_mr1_ml10_ev10p0_hinsen',
-'dG_mr10_ml1_ev10p0_sO_c50_mr10_ml1_ev10p0_hinsen',
-'dG_mr1_ml20_ev10p0_sO_c50_mr1_ml20_ev10p0_hinsen',
-'dG_mr3_ml20_ev0p03_sO_c50_mr3_ml20_ev0p03_hinsen',
-'dG_mr1_ml10_ev0p1_sO_c50_mr1_ml10_ev0p1_hinsen',
-'dG_mr3_ml5_ev0p1_sO_c50_mr3_ml5_ev0p1_hinsen',
-'dG_mr5_ml5_ev10p0_sO_c50_mr5_ml5_ev10p0_hinsen',
-'dG_mr3_ml1_ev1p0_sO_c50_mr3_ml1_ev1p0_hinsen',
-'dG_mr1_ml5_ev10p0_sO_c50_mr1_ml5_ev10p0_hinsen',
-'dG_mr10_ml20_ev1p0_sO_c50_mr10_ml20_ev1p0_hinsen',
-'dG_mr20_ml10_ev0p03_sO_c50_mr20_ml10_ev0p03_hinsen',
-'dG_mr3_ml1_ev10p0_sO_c50_mr3_ml1_ev10p0_hinsen',
-'dG_mr10_ml5_ev0p01_sO_c50_mr10_ml5_ev0p01_hinsen',
-'dG_mr1_ml3_ev10p0_sO_c50_mr1_ml3_ev10p0_hinsen',
-'dG_mr1_ml20_ev0p05_sO_c50_mr1_ml20_ev0p05_hinsen',
-'dG_mr1_ml3_ev0p1_sO_c50_mr1_ml3_ev0p1_hinsen',
-'dG_mr1_ml1_ev0p03_sO_c50_mr1_ml1_ev0p03_hinsen',
-'dG_mr5_ml10_ev0p01_sO_c50_mr5_ml10_ev0p01_hinsen',
-'dG_mr3_ml10_ev0p01_sO_c50_mr3_ml10_ev0p01_hinsen',
-'dG_mr1_ml1_ev0p05_sO_c50_mr1_ml1_ev0p05_hinsen',
-'dG_mr1_ml20_ev0p03_sO_c50_mr1_ml20_ev0p03_hinsen',
-'dG_mr1_ml5_ev0p01_sO_c50_mr1_ml5_ev0p01_hinsen',
-'dG_mr10_ml3_ev0p01_sO_c50_mr10_ml3_ev0p01_hinsen',
-'dG_mr3_ml1_ev0p03_sO_c50_mr3_ml1_ev0p03_hinsen',
-'dG_mr1_ml5_ev0p05_sO_c50_mr1_ml5_ev0p05_hinsen',
-'dG_mr20_ml3_ev0p05_sO_c50_mr20_ml3_ev0p05_hinsen',
-'dG_mr10_ml1_ev0p05_sO_c50_mr10_ml1_ev0p05_hinsen',
-'dG_mr1_ml3_ev1p0_sO_c50_mr1_ml3_ev1p0_hinsen',
-'dG_mr5_ml10_ev0p03_sO_c50_mr5_ml10_ev0p03_hinsen',
-'dG_mr3_ml3_ev10p0_sO_c50_mr3_ml3_ev10p0_hinsen',
-'dG_mr1_ml1_ev0p01_sO_c50_mr1_ml1_ev0p01_hinsen',
-'dG_mr3_ml5_ev0p07_sO_c50_mr3_ml5_ev0p07_hinsen',
-'dG_mr1_ml1_ev10p0_sO_c50_mr1_ml1_ev10p0_hinsen',
-'dG_mr3_ml20_ev10p0_sO_c50_mr3_ml20_ev10p0_hinsen',
-'dG_mr10_ml5_ev0p1_sO_c50_mr10_ml5_ev0p1_hinsen',
-'dG_mr1_ml5_ev0p07_sO_c50_mr1_ml5_ev0p07_hinsen',
-'dG_mr20_ml1_ev0p03_sO_c50_mr20_ml1_ev0p03_hinsen',
-'dG_mr3_ml3_ev0p1_sO_c50_mr3_ml3_ev0p1_hinsen',
-'dG_mr10_ml10_ev10p0_sO_c50_mr10_ml10_ev10p0_hinsen',
-'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0_hinsen',
-'dG_mr1_ml20_ev0p07_sO_c50_mr1_ml20_ev0p07_hinsen',
-'dG_mr5_ml1_ev0p1_sO_c50_mr5_ml1_ev0p1_hinsen',
-'dG_mr5_ml10_ev0p05_sO_c50_mr5_ml10_ev0p05_hinsen',
-'dG_mr3_ml10_ev1p0_sO_c50_mr3_ml10_ev1p0_hinsen',
-'dG_mr3_ml3_ev0p05_sO_c50_mr3_ml3_ev0p05_hinsen',
-'dG_mr5_ml0_ev0p002_sO_c50_mr5_ml0_ev0p002_hinsen',
-'dG_mr20_ml3_ev1p0_sO_c50_mr20_ml3_ev1p0_hinsen',
-'dG_mr1_ml0_ev0p002_sO_c50_mr1_ml0_ev0p002_hinsen',
-'dG_mr3_ml1_ev0p1_sO_c50_mr3_ml1_ev0p1_hinsen',
-'dG_mr10_ml10_ev0p07_sO_c50_mr10_ml10_ev0p07_hinsen',
-'dG_mr3_ml10_ev10p0_sO_c50_mr3_ml10_ev10p0_hinsen',
-'dG_mr5_ml20_ev10p0_sO_c50_mr5_ml20_ev10p0_hinsen',
-'dG_mr3_ml5_ev0p03_sO_c50_mr3_ml5_ev0p03_hinsen',
-'dG_mr20_ml20_ev10p0_sO_c50_mr20_ml20_ev10p0_hinsen',
-'dG_mr20_ml5_ev0p01_sO_c50_mr20_ml5_ev0p01_hinsen',
-'dG_mr5_ml10_ev1p0_sO_c50_mr5_ml10_ev1p0_hinsen',
-'dG_mr20_ml5_ev0p03_sO_c50_mr20_ml5_ev0p03_hinsen',
-'dG_mr20_ml20_ev0p01_sO_c50_mr20_ml20_ev0p01_hinsen',
-'dG_mr1_ml10_ev0p01_sO_c50_mr1_ml10_ev0p01_hinsen',
-'dG_mr10_ml20_ev0p07_sO_c50_mr10_ml20_ev0p07_hinsen',
-'dG_mr20_ml5_ev0p1_sO_c50_mr20_ml5_ev0p1_hinsen',
-'dG_mr5_ml1_ev0p05_sO_c50_mr5_ml1_ev0p05_hinsen',
-'dG_mr1_ml3_ev0p03_sO_c50_mr1_ml3_ev0p03_hinsen',
-'dG_mr5_ml20_ev0p03_sO_c50_mr5_ml20_ev0p03_hinsen',
-'dG_mr20_ml3_ev10p0_sO_c50_mr20_ml3_ev10p0_hinsen',
-'dG_mr3_ml20_ev0p01_sO_c50_mr3_ml20_ev0p01_hinsen',
-'dG_mr3_ml3_ev0p01_sO_c50_mr3_ml3_ev0p01_hinsen',
-'dG_mr3_ml20_ev0p07_sO_c50_mr3_ml20_ev0p07_hinsen',
-'dG_mr5_ml20_ev0p1_sO_c50_mr5_ml20_ev0p1_hinsen',
-'dG_mr1_ml10_ev0p05_sO_c50_mr1_ml10_ev0p05_hinsen',
-'dG_mr20_ml1_ev0p07_sO_c50_mr20_ml1_ev0p07_hinsen',
-'dG_mr1_ml5_ev0p1_sO_c50_mr1_ml5_ev0p1_hinsen',
-'dG_mr5_ml10_ev10p0_sO_c50_mr5_ml10_ev10p0_hinsen',
-'dG_mr3_ml3_ev0p03_sO_c50_mr3_ml3_ev0p03_hinsen',
-'dG_mr20_ml5_ev0p07_sO_c50_mr20_ml5_ev0p07_hinsen',
-'dG_mr20_ml1_ev10p0_sO_c50_mr20_ml1_ev10p0_hinsen',
-'dG_mr20_ml3_ev0p07_sO_c50_mr20_ml3_ev0p07_hinsen',
-'dG_mr20_ml20_ev0p1_sO_c50_mr20_ml20_ev0p1_hinsen',
-'dG_mr5_ml3_ev0p07_sO_c50_mr5_ml3_ev0p07_hinsen',
-'dG_mr3_ml1_ev0p01_sO_c50_mr3_ml1_ev0p01_hinsen',
-'dG_mr10_ml1_ev0p1_sO_c50_mr10_ml1_ev0p1_hinsen',
-'dG_mr3_ml10_ev0p1_sO_c50_mr3_ml10_ev0p1_hinsen',
-'dG_mr10_ml3_ev1p0_sO_c50_mr10_ml3_ev1p0_hinsen',
-'dG_mr20_ml3_ev0p03_sO_c50_mr20_ml3_ev0p03_hinsen',
-'dG_mr10_ml10_ev0p05_sO_c50_mr10_ml10_ev0p05_hinsen',
-'dG_mr20_ml1_ev0p05_sO_c50_mr20_ml1_ev0p05_hinsen',
-'dG_mr10_ml20_ev10p0_sO_c50_mr10_ml20_ev10p0_hinsen',
-'dG_mr10_ml20_ev0p05_sO_c50_mr10_ml20_ev0p05_hinsen',
-'dG_mr20_ml20_ev0p07_sO_c50_mr20_ml20_ev0p07_hinsen',
-'dG_mr5_ml3_ev10p0_sO_c50_mr5_ml3_ev10p0_hinsen',
-'dG_mr1_ml0_ev0p005_sO_c50_mr1_ml0_ev0p005_hinsen',
-'dG_mr20_ml1_ev0p01_sO_c50_mr20_ml1_ev0p01_hinsen',
-'dG_mr20_ml3_ev0p01_sO_c50_mr20_ml3_ev0p01_hinsen',
-'dG_mr5_ml1_ev0p01_sO_c50_mr5_ml1_ev0p01_hinsen',
-'dG_mr3_ml5_ev10p0_sO_c50_mr3_ml5_ev10p0_hinsen',
-'dG_mr20_ml5_ev0p05_sO_c50_mr20_ml5_ev0p05_hinsen',
-'dG_mr5_ml3_ev0p05_sO_c50_mr5_ml3_ev0p05_hinsen',
-'dG_mr5_ml5_ev0p1_sO_c50_mr5_ml5_ev0p1_hinsen',
-'dG_mr5_ml20_ev0p05_sO_c50_mr5_ml20_ev0p05_hinsen',
-'dG_mr20_ml10_ev0p05_sO_c50_mr20_ml10_ev0p05_hinsen',
-'dG_mr10_ml5_ev0p07_sO_c50_mr10_ml5_ev0p07_hinsen',
-'dG_mr1_ml20_ev0p01_sO_c50_mr1_ml20_ev0p01_hinsen',
-'dG_mr20_ml20_ev0p03_sO_c50_mr20_ml20_ev0p03_hinsen',
-'dG_mr3_ml5_ev0p01_sO_c50_mr3_ml5_ev0p01_hinsen',
-'dG_mr20_ml20_ev1p0_sO_c50_mr20_ml20_ev1p0_hinsen',
-'dG_mr3_ml20_ev1p0_sO_c50_mr3_ml20_ev1p0_hinsen',
-'dG_mr1_ml3_ev0p05_sO_c50_mr1_ml3_ev0p05_hinsen',
-'dG_mr5_ml1_ev10p0_sO_c50_mr5_ml1_ev10p0_hinsen',
-'dG_mr1_ml10_ev0p07_sO_c50_mr1_ml10_ev0p07_hinsen',
-'dG_mr1_ml5_ev0p03_sO_c50_mr1_ml5_ev0p03_hinsen',
-'dG_mr1_ml0_ev0p001_sO_c50_mr1_ml0_ev0p001_hinsen',
-'dG_mr10_ml5_ev10p0_sO_c50_mr10_ml5_ev10p0_hinsen',
-'dG_mr3_ml10_ev0p07_sO_c50_mr3_ml10_ev0p07_hinsen',
-'dG_mr10_ml3_ev0p07_sO_c50_mr10_ml3_ev0p07_hinsen',
-'dG_mr10_ml3_ev0p1_sO_c50_mr10_ml3_ev0p1_hinsen',
-'dG_mr1_ml20_ev0p1_sO_c50_mr1_ml20_ev0p1_hinsen',
-'dG_mr3_ml1_ev0p07_sO_c50_mr3_ml1_ev0p07_hinsen',
-'dG_mr10_ml1_ev0p01_sO_c50_mr10_ml1_ev0p01_hinsen',
-'dG_mr20_ml3_ev0p1_sO_c50_mr20_ml3_ev0p1_hinsen',
-'dG_mr10_ml20_ev0p1_sO_c50_mr10_ml20_ev0p1_hinsen',
-'dG_mr5_ml5_ev0p01_sO_c50_mr5_ml5_ev0p01_hinsen',
-'dG_mr10_ml3_ev0p03_sO_c50_mr10_ml3_ev0p03_hinsen',
-'dG_mr20_ml20_ev0p05_sO_c50_mr20_ml20_ev0p05_hinsen'
-]
+
 
 #
 for bm in BMLoad:
@@ -290,10 +69,9 @@ for bm in BMLoad:
 
 data_dict ={}
 
-path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/worstProteins"
-path_evaluation="/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen"
+
 #path_evaluation = "/home/glenn/Documents/Masterarbeit/analysis/Plots/0_5_modes_ORIGDOCK_ORIGSCORE"
-deleted =['4GXU', '1DE4', '1EXB','3L89','4GAM','4FQI','1EER','1BGX','2HMI']
+#deleted =['4GXU', '1DE4', '1EXB','3L89','4GAM','4FQI','1EER','1BGX','2HMI']
 for bm in BMLoad:
     df = pd.DataFrame(columns=['name', 'mean_10', 'mean_sort_50','mean_sort_10','rank_Till', 'rank', 'score', 'stdDev', 'best_energy','num_10A','num_5A','num_sorted_10A','num_sorted_5A', 'num_10A_10', 'num_5A_10', 'num_10A_100', 'num_5A_100', 'num_10A_1000', 'num_5A_1000', 'one_star', 'two_star', 'three_star', 'num_g20A_20',"m_rmsd_impro_rec","m_rmsd_impro_lig", "m_overmax_rec", "m_overmax_lig"])
     #a5BM.loadBenchmark( path_folder, bm)
@@ -386,21 +164,18 @@ for bm in benchmarks:
     list.append(dict)
 frame = pd.DataFrame(list)
 frame =  frame[['numModesRec','numModesLig','evScale','one_star_50','two_star_50','three_star_50','sum_star']]
-frame.to_csv( "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen/scaleComparison/data.csv")
+frame.to_csv( "/home/glenn/Documents/Masterarbeit/analysis/181012_analysis/scaleComparison/data.csv")
 
 
 
-path_base = "/home/glenn/Documents/Masterarbeit/analysis/newrun/Plots"
-path_csv = "/home/glenn/Documents/Masterarbeit/analysis/newrun"
-path_csv =  "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen"
-path_base = "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen/Plots"
+
 #names = a5BM.getSorted('mean_10', 'benchmark_ORIG_scorig_0modes',onlygetName = True)
 names = []
 #file = open('/home/glenn/work/benchmark5_attract/dir.txt')
 
 #for name in file.readlines():
 #    names.append(name.split()[0])
-names=['3MXW']
+names=[]
 
 dict_data = {}
 for bm in BMLoad:
@@ -560,14 +335,19 @@ for name in names:
 #
 #
 
-barbm = [
-'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1',
-'dG_mr3_ml3_ev1p0_sO_c50_mr3_ml3_ev1p0',
-'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
-'dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0']
-
 barbm = BMLoad
-barnames = names
+barnames = ['1AK4',
+'1IJK',
+'1K4C',
+'1K74',
+'1KXQ',
+'1RV6',
+'1SYX',
+'1XQS',
+'3MXW',
+'3PC8',
+'4G6M'
+]
 
 for i,name in enumerate(barnames):
     one = [];
@@ -591,7 +371,7 @@ for i,name in enumerate(barnames):
             pass
 
 
-frame = pd.read_csv( "/home/glenn/Documents/Masterarbeit/analysis/3MXW_hinsen/scaleComparison/data.csv")
+frame = pd.read_csv( "/home/glenn/Documents/Masterarbeit/analysis/181012_analysis/scaleComparison/data.csv")
 numModesRec = [1,2,3,5,10,20]; numModesLig = [0,1]; maxScale = 10
 sub = frame.loc[ (frame['numModesRec'].isin(numModesRec)) & (frame['numModesLig'].isin(numModesLig)) & (frame['evScale'] < maxScale)].sort_values(by=['evScale','numModesRec','numModesLig'])
 #plt.scatter(sub['evScale'], sub['sum_star'])
