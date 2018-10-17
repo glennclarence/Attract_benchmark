@@ -136,7 +136,7 @@ fext = {'rmsd':"-rmsd.result",
     'pdb' : "-receptor-for-docking"}
 
 benchmarkList = ['dG_mr5_ml0_ev1p0_sO_c50_mr5_ml0_ev1p0']
-protList = [
+protList_best = [
 '1AK4',
 '1IJK',
 '1K4C',
@@ -149,7 +149,21 @@ protList = [
 '3PC8',
 '4G6M'
 ]
-basePath ='/home/glenn/work/benchmark5_best'
+
+protList_worst =  [
+'1AVX',
+'1B6C',
+'1BUH',
+'1GCQ',
+'1I9R',
+'1PPE',
+'1ZHI',
+'2FD6',
+'2OUL',
+'2SNI',
+'7CEI'
+]
+basePath ='/home/glenn/work/benchmark5_worst'
 
 def readStringList(filename, colIdx):
     with open(filename) as f:
@@ -159,39 +173,211 @@ def readStringList(filename, colIdx):
             list.append(line.split()[colIdx])
         return  list
 
-benchmarkList = readStringList('/home/glenn/work/benchmarks',0)
+benchmarkList = readStringList('/home/glenn/work/benchmarks_worst',0)
 
 
 def isBrownian(bmname):
     return
 #protList = ['3MXW']
 #benchmarkList = ['dG_mr5_ml0_ev0p05_sO_c50_mr5_ml0_ev0p05_hinsen']
-for protein in protList:
-    for bm in benchmarkList:
-        bmPath = Path(getPath(basePath=basePath, benchmarkName=bm, proteinName= protein))
-        evScale = getModeEVScale(bm)
-        numModesRec = getNumModesFromString(bm, 'r')
-        numModesLig = getNumModesFromString(bm, 'l')
-        baseFile = protein+fext['pdb']
+# dataList=[]
+# for protein in protList:
+#     for bm in benchmarkList:
+#         bmPath = Path(getPath(basePath=basePath, benchmarkName=bm, proteinName= protein))
+#         evScale = getModeEVScale(bm)
+#         numModesRec = getNumModesFromString(bm, 'r')
+#         numModesLig = getNumModesFromString(bm, 'l')
+#         baseFile = protein+fext['pdb']
+#
+#         energyFile = baseFile + fext['energy']
+#         if(bmPath.isfile(energyFile)):
+#             energies = getEnergyfromFile(bmPath.filename(energyFile))
+#         rmsdFile = baseFile + fext['rmsd']
+#         if (bmPath.isfile(rmsdFile)):
+#             rmsd = np.asarray(readRMSD(bmPath.filename(rmsdFile)))
+#         irmsdFile = baseFile + fext['irmsd']
+#         if (bmPath.isfile(irmsdFile)):
+#             irmsd = np.asarray(readRMSD(bmPath.filename(irmsdFile)))
+#         fnatFile = baseFile + fext['fnat']
+#         if (bmPath.isfile(fnatFile)):
+#             fnat = np.asarray(readFnat(bmPath.filename(fnatFile)))
+#         if type(fnat) == int or type(irmsd) == int or type(rmsd) == int :
+#             print "file not available for ", protein
+#             continue
+#         capriList = getCapriList(irmsd, fnat)
+#         one_star, two_star, three_star = capriCount(capriList)
+#         print bm.find('hinsen')
+#         if bm.find('hinsen') != -1:
+#             brownian = 1
+#         else:
+#             brownian = 0
+#         row = {'protein':protein,'numModesRec':numModesRec,'numModesLig':numModesLig,'evScale':evScale, 'one_star_50':one_star,'two_star_50':two_star,'three_star_50':three_star, 'brownian': brownian}
+#         dataList.append(row)
+#         print protein,numModesLig, numModesRec, evScale,one_star, two_star, three_star, brownian
+# frame = pd.DataFrame(dataList)
+# frame.to_csv("worst_csv")
+def getProtein(dataframe, protein):
+    return dataframe.loc[dataframe['protein']== protein]
 
-        energyFile = baseFile + fext['energy']
-        if(bmPath.isfile(energyFile)):
-            energies = getEnergyfromFile(bmPath.filename(energyFile))
-        rmsdFile = baseFile + fext['rmsd']
-        if (bmPath.isfile(rmsdFile)):
-            rmsd = np.asarray(readRMSD(bmPath.filename(rmsdFile)))
-        irmsdFile = baseFile + fext['irmsd']
-        if (bmPath.isfile(irmsdFile)):
-            irmsd = np.asarray(readRMSD(bmPath.filename(irmsdFile)))
-        fnatFile = baseFile + fext['fnat']
-        if (bmPath.isfile(fnatFile)):
-            fnat = np.asarray(readFnat(bmPath.filename(fnatFile)))
-        if type(fnat) == int or type(irmsd) == int or type(rmsd) == int :
-            print "file not available for ", protein
-            continue
-        capriList = getCapriList(irmsd, fnat)
-        one_star, two_star, three_star = capriCount(capriList)
-        row = {'protein':protein,'numModesRec':numModesRec,'numModesLig':numModesLig,'evScale':evScale, 'one_star_50':one_star,'two_star_50':two_star,'three_star_50':three_star}
-        dataList.append(row)
-        print protein,numModesLig, numModesRec, evScale,one_star, two_star, three_star
-frame = pd.DataFrame(dataList)
+def getHinsen(dataframe, brownian):
+    return dataframe.loc[dataframe['brownian']== brownian]
+
+def getEVScale(dataframe, evScale):
+    return dataframe.loc[dataframe['evScale']== evScale]
+
+def getModesRec(dataframe, numModes):
+    return dataframe.loc[dataframe['numModesRec']== numModes]
+
+def getModesLig(dataframe, numModes):
+    return dataframe.loc[dataframe['numModesLig']== numModes]
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+brownian = 0
+scale = 1.0
+frame = pd.read_csv('/home/glenn/Documents/Masterarbeit/analysis/bestProteins/evaluation/data_benchmark_best_hinsen_noHinsen')
+protein = '1AK4'
+plt.clf()
+#plt.gca().set_prop_cycle(None)
+pf = getProtein(frame, protein)
+scales = pf['evScale'].loc[pf['brownian']==brownian].unique()
+print "scales", scales
+xticks= []
+
+for i,scale in enumerate(scales):
+
+    one = pf.loc[(pf['numModesRec'] == pf['numModesLig']) & ( pf['evScale'] == scale) & (pf['brownian']== brownian)]['one_star_50']
+    two = pf.loc[(pf['numModesRec'] == pf['numModesLig']) & ( pf['evScale'] == scale) & (pf['brownian']== brownian)]['two_star_50']
+    three = pf.loc[(pf['numModesRec'] == pf['numModesLig']) & ( pf['evScale'] == scale) & (pf['brownian']== brownian)]['three_star_50']
+
+    segSize = len(one)
+
+    if segSize == 0:
+        continue
+    seg = np.arange(segSize)
+    print scale, i, segSize
+    numModes = pf.loc[(pf['numModesRec'] == pf['numModesLig']) & ( pf['evScale'] == scale) & (pf['brownian']== brownian)]['numModesRec']
+    ticks = ['%s\n%s' % (k,scale) for k in numModes.values.tolist()]
+    xticks = xticks +ticks
+    seg += i*segSize
+
+    plt.bar(seg,three, width = 1,alpha = 0.5,color='red')
+    plt.bar(seg,two, width = 1, bottom = three ,alpha = 0.5,color='blue')
+    plt.bar(seg,one, width = 1, bottom = two,alpha = 0.5,color='magenta')
+plt.xticks(np.arange(len(xticks)),xticks)
+    # color=['red', 'green', 'blue', 'cyan', 'magenta'],
+
+
+protList = protList_best
+filename= '/home/glenn/Documents/Masterarbeit/analysis/bestProteins/evaluation/data_benchmark_best_hinsen_noHinsen'
+frame = pd.read_csv(filename)
+
+list = []
+pf = frame
+
+brownian =[0,1]
+for i in brownian:
+    scales = pf.loc[pf['brownian'] == i]['evScale'].unique()
+
+    modes = pf.loc[(pf['brownian'] == i) ]['numModesRec'].unique() #& (pf['evScale'] == scale)
+    print scales, modes
+    for scale in scales:
+
+        for mode in modes:
+            df = pf.loc[(pf['numModesRec'] == mode) & (pf['numModesLig'] == mode) & (pf['evScale'] == scale) & (
+                    pf['brownian'] == i)]
+            one =df['one_star_50'].sum()
+            two = df['two_star_50'].sum()
+            three = df['three_star_50'].sum()
+
+            row = {'numModes': mode, 'scale': scale, 'brownian': i, 'one': one, 'two': two, 'three': three,
+                   'sum': one + two + three}
+            list.append(row)
+benchmarkComp = pd.DataFrame(list)
+benchmarkComp.loc[benchmarkComp['brownian'] == 0]['scale'].unique()
+
+plt.clf()
+fig, axes = plt.subplots(4,2)
+for i in brownian:
+    scales = pf.loc[pf['brownian'] == i]['evScale'].unique()
+
+    modes = pf.loc[(pf['brownian'] == i)]['numModesRec'].unique()  # & (pf['evScale'] == scale)
+    for scale in scales:
+        sub = benchmarkComp.loc[(benchmarkComp['scale'] == scale) & (benchmarkComp['brownian'] == i)].sort_values('numModes')
+        if brownian == 1:
+            add = 0.5
+        else:
+            add = 0
+        axes[0,i].plot(sub['numModes'], sub['one'], label = "s {} b {} ".format(scale, i))
+        axes[1,i].plot(sub['numModes'], sub['two'], label="s {} b {} ".format(scale, i))
+        axes[2,i].plot(sub['numModes'], sub['three'], label="s {} b {} ".format(scale, i))
+        axes[3, i].plot(sub['numModes'], sub['sum'], label="s {} b {} ".format(scale, i))
+    axes[0,i].legend()
+    axes[1,i].legend()
+    axes[2,i].legend()
+    axes[3,i].legend()
+
+
+
+protList = protList_worst
+filename= '/home/glenn/Documents/Masterarbeit/analysis/worst_csv'
+frame = pd.read_csv(filename)
+
+list = []
+pf = frame
+pf['sum'] = pf['one_star_50']+pf['two_star_50']+pf['three_star_50']
+
+zeroframe = pf.loc[(pf['numModesRec'] == 0) &( pf['numModesLig'] == 0) & (pf['evScale'] ==1) & (pf['brownian'] == 0)]
+
+brownian =[0,1]
+for i in brownian:
+    scales = pf.loc[pf['brownian'] == i]['evScale'].unique()
+
+    modes = pf.loc[(pf['brownian'] == i) ]['numModesRec'].unique() #& (pf['evScale'] == scale)
+    print scales, modes
+    for scale in scales:
+
+        for mode in modes:
+            df = pf.loc[(pf['numModesRec'] == mode) & (pf['numModesLig'] == mode) & (pf['evScale'] == scale) & (
+                    pf['brownian'] == i)]
+            one =df['one_star_50'].sum()
+            two = df['two_star_50'].sum()
+            three = df['three_star_50'].sum()
+
+            row = {'numModes': mode, 'scale': scale, 'brownian': i, 'one': one, 'two': two, 'three': three,
+                   'sum': one + two + three}
+            list.append(row)
+benchmarkComp = pd.DataFrame(list)
+benchmarkComp.loc[benchmarkComp['brownian'] == 0]['scale'].unique()
+
+plt.clf()
+fig, axes = plt.subplots(4,2)
+for i in brownian:
+    scales = pf.loc[pf['brownian'] == i]['evScale'].unique()
+
+    modes = pf.loc[(pf['brownian'] == i)]['numModesRec'].unique()  # & (pf['evScale'] == scale)
+    for scale in scales:
+        sub = benchmarkComp.loc[(benchmarkComp['scale'] == scale) & (benchmarkComp['brownian'] == i)].sort_values('numModes')
+        if brownian == 1:
+            add = 0.5
+        else:
+            add = 0
+        axes[0,i].plot(sub['numModes'], sub['one'], label = "s {} b {} ".format(scale, i))
+        axes[1,i].plot(sub['numModes'], sub['two'], label="s {} b {} ".format(scale, i))
+        axes[2,i].plot(sub['numModes'], sub['three'], label="s {} b {} ".format(scale, i))
+        axes[3, i].plot(sub['numModes'], sub['sum'], label="s {} b {} ".format(scale, i))
+    axes[0,i].legend()
+    axes[1,i].legend()
+    axes[2,i].legend()
+    axes[3,i].legend()
+
+
+
+
+
+sub = pf.sort_values(['three_star_50','two_star_50','one_star_50'], ascending = False)[:10][
+    ['one_star_50','two_star_50','three_star_50']]

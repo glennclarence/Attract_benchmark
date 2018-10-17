@@ -394,3 +394,34 @@ for a,b,c in zip(scale, mrec, mlig):
 plt.xticks(ind,ticks)
 plt.show()
 scale
+
+class Bar:
+    def __init__(self):
+        self.segIdx = 0
+        self.size = 0
+        self.segmentWidth = 0
+        self.plot = plt
+        self.plot.clf()
+        self.plot.gca().set_prop_cycle(None)
+        self.width = 1
+    def setSegment(self, segmentTicks):
+        self.segmentWidth = len(segmentTicks)
+        self.segment = segmentTicks
+        self.segmentIndices = np.arange(self.segmentWidth)
+    def getIndex(self):
+        return  self.segIdx * self.segmentWidth
+    def addEntry(self, idx, data):
+        bottom = 0
+        for dat in data:
+            self.plot.bar( self.segmentIndicesself.getIndex(),dat, self.width, bottom= bottom )
+            bottom = dat
+    def addSegment(self, idx, data):
+        bottom = 0
+        for dat in data:
+            self.plot.bar( self.getIndex()+idx,dat, self.width, bottom= bottom )
+            bottom = dat
+
+bar = Bar()
+bar.setSegment([0,1,3,5])
+bar.getIndex()
+bar.addEntry(1,[3,1,9])
