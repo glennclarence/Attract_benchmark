@@ -43,7 +43,7 @@ dict_indices['capri'] = 23
 a5BM = ResultClass( dict_indices )
 
 
-path_folder= "/home/glenn/work/benchmark5_best"
+path_folder= "/home/glenn/work/benchmark5_bound"
 path_evaluation="/home/glenn/Documents/Masterarbeit/analysis/181012_analysis"
 
 path_csv =  "/home/glenn/Documents/Masterarbeit/analysis/181012_analysis"

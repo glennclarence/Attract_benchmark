@@ -643,35 +643,68 @@ import math
 #                             logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
 #                             pass
 
+#optimal modes docking
+# pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
+# pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
+# pathList= ["/home/glenn/work/benchmark5_attract"]
+# numModesListRec = [1]
+# numModesListLig = [1]
+#
+# logfile = open('logFile_run180924.log', 'w+')
+# benchmark_useHinsen = False
+# benchmark_allAtom = False
+# omodes = True
+# modeList = [False]
+# numScales=[0.5,1,2]
+#
+# extention = "_omodes"
+# for path in pathList:
+#     for modesRec in numModesListRec:
+#         for modesLig in numModesListLig:
+#             for scale in numScales:
+#                 if modesRec != 0 or modesLig != 0 :
+#                 #if modesLig == modesRec:
+#                     frac, whole = math.modf(scale)
+#                     try:
+#                         run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
+#                         create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+#                         num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom)
+#                     except:
+#                         logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+#                         pass
+#
 
+
+#docking with bound structures
 pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
 pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
-pathList= ["/home/glenn/work/benchmark5_attract"]
-numModesListRec = [1]
-numModesListLig = [1]
+pathList= ["/home/glenn/work/benchmark5_bound"]
+numModesListRec = [0]
+numModesListLig = [0]
 
 logfile = open('logFile_run180924.log', 'w+')
 benchmark_useHinsen = False
 benchmark_allAtom = False
 omodes = True
 modeList = [False]
-numScales=[0.5,1,2]
+numScales=[1]
 
-extention = "_omodes"
+extention = "_bound"
 for path in pathList:
     for modesRec in numModesListRec:
         for modesLig in numModesListLig:
             for scale in numScales:
-                if modesRec != 0 or modesLig != 0 :
+
                 #if modesLig == modesRec:
-                    frac, whole = math.modf(scale)
-                    try:
-                        run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
-                        create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
-                        num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom)
-                    except:
-                        logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
-                        pass
+                frac, whole = math.modf(scale)
+                try:
+                    run_benchmark( path, "-refe.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
+                    create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+                    num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=False, useAllAtom=benchmark_allAtom)
+                except:
+                    logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+                    pass
+
 
 
 #path = "/home/glenn/work/test_independet"
