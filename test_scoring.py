@@ -188,8 +188,8 @@ def test_result(use_modes, use_gpu, scoring):
 
         # df.append( dict, ignore_index=True )
     df = pd.DataFrame(row_list)
-    file_name = os.path.join('/home/glenn/Documents/Masterarbeit/analysis/Plots/Scoring_accuracy', "eval'")
-   # df.to_csv(file_name, sep='\t', encoding='utf-8')
+    file_name = os.path.join('/home/glenn/Documents/Masterarbeit/analysis/Plots/Scoring_accuracy', "eval1")
+    df.to_csv(file_name)
         #print column
     #for column in data_ref:
         # print data_debug[column], data_ref[column]

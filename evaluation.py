@@ -534,7 +534,7 @@ for prot in listLargestDiff:
     plt.waitforbuttonpress()
     plt.clf()
     plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1','dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
-    plt.xlim([1,80])
+    #plt.xlim([1,80])
     plt.ylim([-30, 5])
     #plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/{}.png'.format(prot))
     plt.show()
@@ -563,4 +563,13 @@ for prot in listLargestDiff:
 #     sum3 += d3.values[0]
 # print sum1, sum2, sum3
 # df_omodes.nlargest(10,'d_bound')['protein']
-rmsdListHigh=['1HCF','1QFW','1WDW','1PXV','1DFJ','1XD3','4CPA','1EWY','1MAH','2OT3']
+rmsdListHigh=['1HCF','1QFW','1WDW','1PXV','1DFJ','1XD3','4CPA','1EWY','1MAH','2OT3','1KXP','4DN4','1HCF','3H2V']
+for prot in rmsdListHigh:
+    plt.waitforbuttonpress()
+    plt.clf()
+    plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0', 'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
+                            'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
+    # plt.xlim([1,80])
+    plt.ylim([-30, 5])
+    # plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/{}.png'.format(prot))
+    plt.show()
