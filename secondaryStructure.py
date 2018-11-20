@@ -2,7 +2,7 @@ import prody as dy
 import matplotlib.pyplot as plt
 import os
 
-import evaluateinterface
+#import evaluateinterface
 
 
 path = "/home/glenn/Documents/WebNma/best"
@@ -166,6 +166,7 @@ def plotFulctuation( path , protein, numModes, hinsen = False):
     if (hinsen):
         axes[2, 1].legend()
         axes[2, 0].legend()
+
 
 plotFulctuation( path , '1AVX', 5)
 

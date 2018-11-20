@@ -62,7 +62,7 @@ class ProteinConfiguration:
         self.ext_aa = "-allatom.pdb"
         self.ext_modes = "modes.dat"
         self.ext_hinsen = "hinsen.dat"
-        self.ext_oModes = "-omodes.dat"
+        self.ext_oModes = "-omodes_un.dat"
         self.ext_modes_aa = "-aa-modes.dat"
         self.ext_modes_heavy = "-heavy-modes.dat"
         self.ext_alphabet = "-grid.alphabet"

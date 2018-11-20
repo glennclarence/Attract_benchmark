@@ -100,7 +100,7 @@ def writePDB(num_atoms,id_atom, atom, resn, res, x,y,z, typ, charge, filename_pd
 
     file = open(filename_pdb, "w")
     for i in range(num_atoms):
-        file.write("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}  {:3d}  {:5s} 0 1.00\n".format("ATOM", id_atom[i], atom[i], " ",resn[i],   chain,res[i]," ", x[i],  y[i], z[i], typ[i], charge[i]))
+        file.write("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}  {:3d}  {:5s} 0 1.00\n".format("ATOM", id_atom[i], atom[i], " ",resn[i],   chain,int(res[i])," ", x[i],  y[i], z[i], typ[i], str(charge[i])))
     file.close()
 
 
@@ -117,7 +117,7 @@ def createPDB(num_atoms, num_modes, x,y,z, modes, dof_modes):
     return x1, y1, z1
 
 
-def getOverlap(id_mode, num_atoms, delta,modes):
+def getOverlap(id_mode, num_atoms, delta,modes, atom_typ):
     m = id_mode
     sum = 0
     # for i in range(num_atoms):
@@ -129,13 +129,15 @@ def getOverlap(id_mode, num_atoms, delta,modes):
     scalar = 0
     modesSum = 0
     defSum = 0
-
+    cacount = 0
     for i in range(num_atoms):
-        modesSum += modes[m][0][i] *modes[m][0][i]+modes[m][1][i]*modes[m][1][i]+modes[m][2][i]*modes[m][2][i]
-        defSum += delta[0][i]*delta[0][i]+   delta[1][i]*delta[1][i] + delta[2][i]*delta[2][i]
+        if(atom_typ[i] == ' CA '):
+            cacount +=1
+            modesSum += modes[m][0][i] *modes[m][0][i]+modes[m][1][i]*modes[m][1][i]+modes[m][2][i]*modes[m][2][i]
+            defSum += delta[0][i]*delta[0][i]+   delta[1][i]*delta[1][i] + delta[2][i]*delta[2][i]
     modesSum = np.sqrt(modesSum)
     defSum = np.sqrt(defSum)
-    for i in range(num_atoms):
+    for i in range(cacount):
         scalar += delta[0][i] * modes[m][0][i] + delta[1][i] * modes[m][1][i] + delta[2][i] * modes[m][2][i]
     result = np.fabs(scalar)/(modesSum*defSum)
     #return np.sqrt(sum/num_atoms)
@@ -227,6 +229,7 @@ def evaluateModes(num_modes, filename_modes, filename_boundPdb, filename_unbound
     d_modes,num_modes_file = read_modes(filename_modes)
     num_modes_max = max(num_modes)
     overlap = np.zeros(num_modes_max+1)
+    cumoverlap = np.zeros(num_modes_max + 1)
     rmsd= np.zeros(num_modes_max+1)
     dof_modes = np.zeros(num_modes_max + 1)
     moderange= np.arange(0,num_modes_max+1)
@@ -241,7 +244,8 @@ def evaluateModes(num_modes, filename_modes, filename_boundPdb, filename_unbound
 
     delta = getDelta(np.asarray((x_b, y_b, z_b)), np.asarray((x_u, y_u, z_u)), num_atoms)
     for i in range(num_modes_max):
-        overlap[i+1] = getOverlap(i, num_atoms, delta, modes)
+        overlap[i+1] = getOverlap(i, num_atoms, delta, modes,atom_b)
+        cumoverlap[i+1]= overlap[i+1]+cumoverlap[i]
     rmsd[0] = os.popen("python2 $ATTRACTDIR/lrmsd.py {} {} {}".format(filename_dof_in, filename_unboundPdb,
                                                                           filename_boundPdb)).readlines()[0].split()[1]
 
@@ -254,6 +258,7 @@ def evaluateModes(num_modes, filename_modes, filename_boundPdb, filename_unbound
     df = pd.DataFrame()
     df["mode"] = moderange
     df["overlap"] = overlap
+    df["cumoverlap"] = cumoverlap
     df["rmsd"] = rmsd
     df["dof"] = dof_modes
     df["eigenvalue"] = ev

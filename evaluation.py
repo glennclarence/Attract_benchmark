@@ -152,8 +152,11 @@ def readStringList(filename, colIdx):
 
 def evalData(protList, benchmarkList,basePath, fileout):
     dataList=[]
-    for protein in protList:
-        for bm in benchmarkList:
+    for bm in benchmarkList:
+        print bm
+        for protein in protList:
+
+
             bmPath = Path(getPath(basePath=basePath, benchmarkName=bm, proteinName= protein))
             evScale = getModeEVScale(bm)
             numModesRec = getNumModesFromString(bm, 'r')
@@ -182,7 +185,19 @@ def evalData(protList, benchmarkList,basePath, fileout):
                 continue
             if len(fnat) > 1 and len(irmsd) > 1:
                 capriList = getCapriList(irmsd, fnat)
-                one_star, two_star, three_star = capriCount(capriList)
+                one_star, two_star, three_star = capriCount(capriList[:50])
+                one_10, two_10, three_10= capriCount(capriList[:10])
+                one_50, two_50, three_50 = capriCount(capriList[:50])
+                if(len(capriList) >50):
+                    one_100, two_100, three_100 = capriCount(capriList[:100])
+                    one_1000, two_1000, three_1000 = capriCount(capriList[:1000])
+                else:
+                    one_100=0
+                    two_100=0
+                    three_100=0
+                    one_1000 = 0
+                    two_1000 = 0
+                    three_1000 = 0
                 #print bm.find('hinsen')
                 if bm.find('hinsen') != -1:
                     brownian = 1
@@ -196,7 +211,8 @@ def evalData(protList, benchmarkList,basePath, fileout):
                     bound = 1
                 else:
                     bound = 0
-                row = {'protein':protein,'numModesRec':numModesRec,'numModesLig':numModesLig,'evScale':evScale, 'one_star_50':one_star,'two_star_50':two_star,'three_star_50':three_star, 'brownian': brownian,'omodes':omodes, 'bound':bound}
+                row = {'protein':protein,'numModesRec':numModesRec,'numModesLig':numModesLig,'evScale':evScale, 'one_star_50':one_star,'two_star_50':two_star,'three_star_50':three_star, 'brownian': brownian,'omodes':omodes, 'bound':bound,'one_10':one_10, 'two_10':two_10, 'three_10':thee_10
+                    , 'one_50': one_50, 'two_50': two_50, 'three_50': thee_50,'one_100':one_100, 'two_10':two_100, 'three_100':three_100,'one_1000':one_1000, 'two_1000':two_1000, 'three_1000':three_1000}
                 dataList.append(row)
                 #print protein,numModesLig, numModesRec, evScale,one_star, two_star, three_star, brownian
             else:
@@ -332,10 +348,25 @@ def findMinRMSD(protList, benchmarkList,basePath, referencermsd, num, minnum):
 #findMinRMSD(protList, ['dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0_omodes'],"/home/glenn/work/benchmark5_attract", rmsdref, 20, 3)
 
 
-#protList = readStringList("/home/glenn/work/benchmark5_worst/protlist",0                          )
-#benchmarkList = readStringList("/home/glenn/work/benchmark5_worst/benchlist",0                          )
+protList = readStringList("/home/glenn/work/benchmark5_best/protlist",0                          )
+benchmarkList = readStringList("/home/glenn/work/benchmark5_best/benchlist",0                          )
 #saveRmsdEnergy(protList, benchmarkList,"/home/glenn/work/benchmark5_attract","/home/glenn/Documents/Masterarbeit/analysis/largerun/rmsdplot")
-#evalData(protList, benchmarkList,"/home/glenn/work/benchmark5_worst", "/home/glenn/Documents/Masterarbeit/analysis/largerun/benchmark5_worst1")
+print "eval benchmark"
+0.0008,0.0005,0.0015
+
+benchmarkList=[
+'dG_mr1_ml1_ev0p0005_sO_c50_mr1_ml1_ev0p0005_omodes_nn',
+'dG_mr1_ml1_ev0p0007_sO_c50_mr1_ml1_ev0p0007_omodes_nn',
+'dG_mr1_ml1_ev0p0008_sO_c50_mr1_ml1_ev0p0008_omodes_nn',
+'dG_mr1_ml1_ev0p0015_sO_c50_mr1_ml1_ev0p0015_omodes_nn',
+'dG_mr1_ml1_ev0p001_sO_c50_mr1_ml1_ev0p001_omodes_nn',
+'dG_mr1_ml1_ev0p002_sO_c50_mr1_ml1_ev0p002_omodes_nn',
+'dG_mr1_ml1_ev0p005_sO_c50_mr1_ml1_ev0p005_omodes_nn',
+'dG_mr1_ml1_ev0p01_sO_c50_mr1_ml1_ev0p01_omodes_nn',
+'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1_omodes_nn']
+
+
+evalData(protList, benchmarkList,"/home/glenn/work/benchmark5_attract", "/home/glenn/Documents/Masterarbeit/analysis/largerun/benchmark5_omodes_all")
 
 def getProtein(dataframe, protein):
     return dataframe.loc[dataframe['protein']== protein]
@@ -360,11 +391,14 @@ def getModesLig(dataframe, numModes):
 def readDataframe(filename):
     return pd.read_csv(filename)
 
-def createDiffFrame(frame):
+
+zeroframe = pf.loc[(pf['numModesRec'] == 0) &( pf['numModesLig'] == 0) & (pf['evScale'] ==1) & (pf['brownian'] == 0)]
+
+def createDiffFrame(frame, refFrame):
     pf = frame
     #pf['sum'] = pf['one_star_50']+pf['two_star_50']+pf['three_star_50']
     pf['sum'] = pf['one_star_50']+2*pf['two_star_50']+3*pf['three_star_50']
-    zeroframe = pf.loc[(pf['numModesRec'] == 0) &( pf['numModesLig'] == 0) & (pf['evScale'] ==1) & (pf['brownian'] == 0)]
+    zeroframe = refFrame
     pf['diff'] = 0
     pf['diff_one'] = 0
     pf['diff_two']  = 0
@@ -454,16 +488,29 @@ def createSum(df):
 #         plotProteinBins(binned)
 #         brownian = 0
 #         n = 50
-#         print "\n" ,df.nlargest(100,'diff')['brownian'].value_counts()
-#         print "\n" , n, "largest ", " protein  \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['protein'].value_counts()
-#         print "\n" , n, "largest ", " modesrec \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['numModesRec'].value_counts()
-#         print "\n" , n, "largest ", " modeslig \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['numModesLig'].value_counts()
-#         print "\n" , n, "largest ", " scale    \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['evScale'].value_counts()
-#         print "\n" , n, "smallest ", " protein  \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['protein'].value_counts()
-#         print "\n" , n, "smallest ", " modesrec \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['numModesRec'].value_counts()
-#         print "\n" , n, "smallest ", " modeslig \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['numModesLig'].value_counts()
-#         print "\n" , n, "smallest ", " scale    \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['evScale'].value_counts()
+#          print( "\n" ,df.nlargest(100,'diff')['brownian'].value_counts())
+#          print( "\n" , n, "largest ", " protein  \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['protein'].value_counts())
+#          print( "\n" , n, "largest ", " modesrec \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['numModesRec'].value_counts())
+#          print( "\n" , n, "largest ", " modeslig \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['numModesLig'].value_counts())
+#          print( "\n" , n, "largest ", " scale    \n" ,df.loc[df['brownian'] == brownian].nlargest(n,'diff')['evScale'].value_counts())
+#          print( "\n" , n, "smallest ", " protein  \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['protein'].value_counts())
+#          print( "\n" , n, "smallest ", " modesrec \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['numModesRec'].value_counts())
+#          print( "\n" , n, "smallest ", " modeslig \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['numModesLig'].value_counts())
+#          print( "\n" , n, "smallest ", " scale    \n" , df.loc[df['brownian'] == brownian].nsmallest(n,'diff')['evScale'].value_counts())
+#
+# plt.clf()
+# brownian =1
+# col = "evScale"
+# subset = df.loc[df['brownian'] == brownian].nlargest(n,'diff'
+# )[col].value_counts()
+# plt.scatter(subset.index, subset.values)
+# plt.xlabel(col)
+# plt.ylabel("Counts in top 50 of sum")
+# plt.savefig("/home/glenn/Documents/Masterarbeit/analysis/benchhmark5_best/largest_value_counts_brownian_{}_col_{}.png".format(brownian,col))
 
+# subset = df.loc[df['brownian'] == brownian].nlargest(n,'diff')['protein'].value_counts())
+# plt.scatter(subset.index, subset.values)
+# plt.show()
 
 fext['pdb'] = '-receptor-for-docking'
 protList = readStringList("/home/glenn/work/benchmark5_attract/protlist",0)
@@ -522,22 +569,22 @@ listLargestDiff = resF.nsmallest(50,'idff')['protein'].values
 print resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10)
 listCounts = resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10).index.tolist()
 #saveRmsdEnergy(listCounts, ['dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1'],"/home/glenn/work/benchmark5_attract",'/home/glenn/Documents/Masterarbeit/analysis/largerun/rmsdplot/dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1_VS_dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev___MOSTCOUNTS')
-for prot in listCounts:
-    plt.waitforbuttonpress()
-    plt.clf()
-    plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1','dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
-    plt.xlim([1,80])
-    plt.ylim([-30, 5])
-    plt.show()
-
-for prot in listLargestDiff:
-    plt.waitforbuttonpress()
-    plt.clf()
-    plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1','dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
-    #plt.xlim([1,80])
-    plt.ylim([-30, 5])
-    #plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/{}.png'.format(prot))
-    plt.show()
+# for prot in listCounts:
+#     plt.waitforbuttonpress()
+#     plt.clf()
+#     plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1','dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
+#     plt.xlim([1,80])
+#     plt.ylim([-30, 5])
+#     plt.show()
+#
+# for prot in listLargestDiff:
+#     plt.waitforbuttonpress()
+#     plt.clf()
+#     plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1','dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
+#     #plt.xlim([1,80])
+#     plt.ylim([-30, 5])
+#     #plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/{}.png'.format(prot))
+#     plt.show()
 
 #diff bound and omodes
 # df_omodes['d_bound'] = 0
@@ -564,12 +611,16 @@ for prot in listLargestDiff:
 # print sum1, sum2, sum3
 # df_omodes.nlargest(10,'d_bound')['protein']
 rmsdListHigh=['1HCF','1QFW','1WDW','1PXV','1DFJ','1XD3','4CPA','1EWY','1MAH','2OT3','1KXP','4DN4','1HCF','3H2V']
-for prot in rmsdListHigh:
-    plt.waitforbuttonpress()
+goodProt=['1AK4', "3PC8"]
+for prot in goodProt:
+    #plt.waitforbuttonpress()
     plt.clf()
     plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0', 'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
                             'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
     # plt.xlim([1,80])
     plt.ylim([-30, 5])
-    # plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/{}.png'.format(prot))
-    plt.show()
+    plt.ylabel("Energy")
+    plt.title("Protein {}".format(prot))
+    plt.xlabel("RMSD")
+    #plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/best_{}.png'.format(prot))
+    #plt.show()

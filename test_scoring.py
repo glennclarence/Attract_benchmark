@@ -113,7 +113,8 @@ def run_attract( use_orig, filename_dof, folder_input, do_scoring ,num_modes):
         bash_command+=os.path.join(folder_input, rec + ext_grid)
         bash_command+=" --gridlig "
         bash_command+=os.path.join(folder_input, lig + ext_grid)
-        #bash_command += " > " + getDebugFile(num_modes > 0,True ,  do_scoring)
+        bash_command += " -d 0 -d 1  "
+       # bash_command += " > " + getDebugFile(num_modes > 0,True ,  do_scoring)
     else:
         #bash_command += "/home/glenn/Documents/attract/bin/attract "
         bash_command +="/home/glenn/Downloads/attract_fromHP/bin/attract "
@@ -148,6 +149,7 @@ def test_scoring(use_modes, use_gpu):
 def test_result(use_modes, use_gpu, scoring):
     file_debug = getDebugFile(use_modes, use_gpu, True)
     data_debug = loadData( file_debug )#
+    print file_debug
     #ean_debug = getMean(data_debug)
     row_list=[]
     file_ref = getReferenceFile(use_modes, scoring)

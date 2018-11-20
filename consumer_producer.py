@@ -51,6 +51,7 @@ class ConsumerThread(threading.Thread):
 
     def run(self):
         while ( self.signal or not  self.queue.empty() ) and not self.kill:
+            self.computing = False
             if not  self.queue.empty():
                 self.computing = True
                 item =  self.queue.get()
@@ -59,6 +60,7 @@ class ConsumerThread(threading.Thread):
                # logging.debug(self.name + ' is Getting ' + str(item)
                #              + ' : ' + str( self.queue.qsize()) + ' items in queue')
                # time.sleep(random.random())
+        self.computing = False
         return
 
     def kill(self):
@@ -68,5 +70,12 @@ class ConsumerThread(threading.Thread):
         self.signal = False
 
     def is_done(self):
-        return not (self.computing or self.queue.qsize() > 0 or self.signal  )
+        return not ( self.computing or self.queue.qsize() > 0 or self.signal  )
+
+    def is_comp(self):
+        return  (self.computing )
+    def is_notEmpty(self):
+        return  ( self.queue.qsize()> 0   )
+    def is_signal(self):
+        return  (self.signal  )
 

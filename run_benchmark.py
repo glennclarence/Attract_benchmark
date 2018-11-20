@@ -23,7 +23,7 @@ d_config = {'file_compute_dock':'_dock.result',
 
 d_paths={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0",
        "compute_attract_orig": "/home/glenn/Downloads/attract_fromHP/bin"}
-d_binary={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0/AttractServer",
+d_binary={"compute_attract_gpu":"/home/glenn/Documents/Masterarbeit/git/gpuATTRACT_2.0/AttractServer_RELEASE",
        "compute_attract_orig":"/home/glenn/Downloads/attract_fromHP/bin/attract"}
 
 parameter_dir = os.environ['ATTRACTDIR'] + "/../attract.par"
@@ -90,11 +90,12 @@ def configure_protein( path_inputFolder, path_outputFolder, name_protein, filena
 
 
 
-def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modesRec= 0,num_modesLig = 0, orig_docking= False, orig_scoring = False, num_threads = 7, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
+def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = False, create_modes = False, create_dofs = False, create_reduce =False, num_modesRec= 0,num_modesLig = 0, orig_docking= False, orig_scoring = False, num_threads = 7,num_threads_scoring = 1, do_analyse = True, do_scoring = True, do_minimization = True , evfactor = 1.0, rcut = -1, f_dof= None,do_configuration = True,
                    scoring_overwrite=False, analyse_overwrite= False, docking_overwrite = False, analyse_mode = False, useHinsen = False, useAllAtom = False, oModes= False):
     pairs = {}
     finisheditems_scoring = Queue()
     finisheditems_docking = Queue()
+    finisheditems_analysis = Queue()
     num_modes = max(num_modesRec, num_modesLig)
 
     benchmark = benchtime.measure_benchmark()
@@ -105,6 +106,7 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     benchmark.timer_add("Analysis")
     benchmark_minimization = benchtime.measure_benchmark()
     benchmark_scoring = benchtime.measure_benchmark()
+    benchmark_analysis = benchtime.measure_benchmark()
     #create and start the threads for docking
     dock = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_docking else d_binary["compute_attract_gpu"],
                            do_minimization=True,
@@ -112,8 +114,13 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     dock.start_threads()
     # create and start the threads for scoring
     score = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_scoring else d_binary["compute_attract_gpu"],
-                            do_scoring=True, num_threads=num_threads, args=(benchmark_scoring, finisheditems_scoring,),
+                            do_scoring=True, num_threads=num_threads_scoring*2, args=(benchmark_scoring, finisheditems_scoring,),
                             use_OrigAttract=orig_scoring)
+    analysis_threads = compute.Worker(
+        filename_attractBinary=d_binary["compute_attract_orig"] if orig_scoring else d_binary["compute_attract_gpu"],
+        do_scoring=False, num_threads=num_threads_scoring, args=(benchmark_analysis, finisheditems_analysis,),
+        use_OrigAttract=False, analyse = True)
+    analysis_threads.start_threads()
     score.start_threads()
 
 
@@ -281,16 +288,19 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
         for key, pair in pairs.iteritems():
             finisheditems_docking.put(key)
 
-    dock.stop_threads_if_done()
+
 
     if do_scoring:
         # print '**************************************************************'
         # print "Run Scoring"
         # for key, pair in pairs.iteritems():
         count_scoring  = 0
-        while not dock.is_done() or not finisheditems_docking.empty() :
-            if not finisheditems_docking.empty() :
+        #while not dock.is_done() or not finisheditems_docking.empty() :
+        #while ( dock.is_comp() or dock.is_empty()) or not finisheditems_docking.empty():
+        while count_scoring < len(pairs):
 
+            if not finisheditems_docking.empty() :
+                time.sleep(0.2)
                 pairId = finisheditems_docking.get()
                 count_scoring += 1
                 pair = pairs[pairId]
@@ -330,20 +340,25 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                     finisheditems_scoring.put(pairId)
 
 
-    score.stop_threads_if_done()
     if not do_scoring:
         for key, pair in pairs.iteritems():
             finisheditems_scoring.put(key)
+
     if do_analyse or analyse_mode is True:
         #for count, pair in enumerate( pairs ):
         print '**************************************************************'
         print "Run Analysis"
         count_analysis = 0
-        while not score.is_done() or not  finisheditems_scoring.empty():
+        numAnalysed = 0
+        #while not done8 or not  finisheditems_scoring.empty() :
+        #while (score.is_comp() or score.is_empty())  or not finisheditems_scoring.empty():
+        while numAnalysed < len(protein_ensembles):
+            #print score.is_comp(), score.is_empty(),score.is_signal()
             if not finisheditems_scoring.empty():
                 count_analysis += 1
                 #allatom_proteins = protein_ensembles_allatom[count].get_ensemblePDB()
                 pairId = finisheditems_scoring.get()
+                numAnalysed +=1
                 print "Analyse ", pairId
                 pair = pairs[pairId]
                 filename_scoring = os.path.join(pair.output_folder, pair.receptor.get_name() + d_config['file_compute_scoring'])
@@ -372,17 +387,42 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                 #      num_modesReceptor=num_modes, num_modesLigand=num_modes, filename_modesJoined = pair.filename_modesJoined,
                 #      path_attract=os.environ['ATTRACTDIR'], path_attractTools=os.environ['ATTRACTTOOLS'], overwrite= False)
                 if  do_analyse:
-                	analyse.run_analysis(pair.output_folder, pair.receptor.name_protein, filename_docking, filename_scoring,
-                                      filename_pdbReceptor=          fn_rec,         filename_pdbLigand=           fn_lig,
-                                      filename_pdbReceptor_aa=       fn_rec_aa,      filename_pdbLigand_aa=        fn_lig_aa,
-                                      filename_pdbReceptor_heavy=    fn_rec_heavy,   filename_pdbLigand_heavy=     fn_lig_heavy,
-                                      filename_pdbReceptorRef=       fn_rec_ref,     filename_pdbLigandRef=        fn_lig_ref,
-                                      filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
-                                      filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
-                                      filename_modesJoined=pair.filename_modesJoined, filename_modesJoined_aa=pair.filename_modesJoined_aa,
-                                      filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modesRec, num_modesLigand=num_modesLig,
-                                      path_attract='/home/glenn/Downloads/attract_fromHP/bin', path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
+
+
+                    print "put task in ana list0"
+
+                    task1 = {'id': pairId,
+                           'path_analysis': pair.output_folder, 'name_analysis': pair.receptor.name_protein,
+                           'filename_dockResult': filename_docking, 'filename_scoreResult': filename_scoring,
+                           'filename_pdbReceptor': fn_rec, 'filename_pdbLigand': fn_lig,
+                           'filename_pdbReceptor_aa': fn_rec_aa, 'filename_pdbLigand_aa': fn_lig_aa,
+                           'filename_pdbReceptor_heavy': fn_rec_heavy, 'filename_pdbLigand_heavy': fn_lig_heavy,
+                            'filename_pdbReceptorRef': fn_rec_ref, 'filename_pdbLigandRef': fn_lig_ref,
+                            'filename_pdbReceptorRef_aa': fn_rec_ref_aa, 'filename_pdbLigandRef_aa': fn_lig_ref_aa,
+                            'filename_pdbReceptorRef_heavy': fn_rec_ref_heavy,
+                            'filename_pdbLigandRef_heavy': fn_lig_ref_heavy,
+                            'filename_modesJoined': pair.filename_modesJoined,
+                            'filename_modesJoined_aa': pair.filename_modesJoined_aa,
+                            'filename_modesJoined_heavy': pair.filename_modesJoined_heavy,
+                            'num_modesReceptor': num_modesRec, 'num_modesLigand': num_modesLig, 'path_python': '/usr/bin/python2',
+                            'path_attract': '/home/glenn/Downloads/attract_fromHP/bin',
+                            'path_attractTools': os.environ['ATTRACTTOOLS'], 'overwrite': analyse_overwrite
+                           }
+                    #task1 ={'id':pairId}
+                    print "put task in ana list"
+                    analysis_threads.add_analysiseToQueue(task1)
+                	# analyse.run_analysis(pair.output_folder, pair.receptor.name_protein, filename_docking, filename_scoring,
+                     #                  filename_pdbReceptor=          fn_rec,         filename_pdbLigand=           fn_lig,
+                     #                  filename_pdbReceptor_aa=       fn_rec_aa,      filename_pdbLigand_aa=        fn_lig_aa,
+                     #                  filename_pdbReceptor_heavy=    fn_rec_heavy,   filename_pdbLigand_heavy=     fn_lig_heavy,
+                     #                  filename_pdbReceptorRef=       fn_rec_ref,     filename_pdbLigandRef=        fn_lig_ref,
+                     #                  filename_pdbReceptorRef_aa=    fn_rec_ref_aa,  filename_pdbLigandRef_aa=     fn_lig_ref_aa,
+                     #                  filename_pdbReceptorRef_heavy= fn_rec_ref_heavy,   filename_pdbLigandRef_heavy=  fn_lig_ref_heavy,
+                     #                  filename_modesJoined=pair.filename_modesJoined, filename_modesJoined_aa=pair.filename_modesJoined_aa,
+                     #                  filename_modesJoined_heavy=pair.filename_modesJoined_heavy,num_modesReceptor=num_modesRec, num_modesLigand=num_modesLig,
+                     #                  path_attract='/home/glenn/Downloads/attract_fromHP/bin', path_attractTools=os.environ['ATTRACTTOOLS'], overwrite=analyse_overwrite)
                 folder_mode = os.path.join(os.path.dirname(pair.output_folder), "mode_eval")
+
                 if analyse_mode:
 
 
@@ -396,18 +436,30 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
                         out_pdbs_rec.append(os.path.join(folder_mode, "out_rec_{}.pdb".format(mode)))
                         out_pdbs_lig.append(os.path.join(folder_mode, "out_lig_{}.pdb".format(mode)))
 
-		    compModes.evaluateModes(modes_vec,pair.receptor.get_filenameModes(),
+	                compModes.evaluateModes(modes_vec,pair.receptor.get_filenameModes(),
                                         os.path.join(pair.input_folder, pair.receptor.filename_reduce_ref),fn_rec,"dof.dat",  out_pdbs_rec ,os.path.join(folder_mode,"result_rec.dat") )
                     compModes.evaluateModes(modes_vec, pair.ligand.get_filenameModes(),
                                             os.path.join(pair.input_folder, pair.ligand.filename_reduce_ref), fn_lig,
                                             "dof.dat", out_pdbs_lig, os.path.join(folder_mode, "result_lig.dat"))
+
+            else:
+                time.sleep(1)
+
+    dock.stop_threads_if_done()
+    score.stop_threads_if_done()
+    print " finished putting items in queues"
+    analysis_threads.stop_threads_if_done()
+    print "give stop signal to analyse thread"
     dock.wait_until_done()
+    print "stopped docking threads"
     score.wait_until_done()
-
-
+    print "stopped scoring threads"
+    analysis_threads.wait_until_done()
+    print "stopped analyse threads"
 
     benchmark.timer_addTimer( "Minimization",    benchmark_minimization.sumup_and_getTimer() )
     benchmark.timer_addTimer( "Scoring",         benchmark_scoring.sumup_and_getTimer() )
+    benchmark.timer_addTimer("Analysing", benchmark_analysis.sumup_and_getTimer())
     benchmark_minimization.save_benchmark( os.path.join(path_folder, name_benchmark + '-MinimizationTime.dat'))
     benchmark_scoring.save_benchmark(os.path.join(path_folder, name_benchmark + '-ScoringTime.dat'))
     benchmark.save_benchmark( os.path.join(path_folder, name_benchmark + '-time.dat'))
@@ -644,67 +696,69 @@ import math
 #                             pass
 
 #optimal modes docking
+pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
+pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
+pathList= ["/home/glenn/work/benchmark_attract_test"]
+
+numModesListRec = [1,3]
+numModesListLig = [1,3]
+
+logfile = open('logFile_run181107.log', 'w+')
+benchmark_useHinsen = False
+benchmark_allAtom = False
+omodes = False
+modeList = [False]
+numScales=[1.0]
+
+extention = "_omodes_nn"
+for path in pathList:
+    for modesRec in numModesListRec:
+        for modesLig in numModesListLig:
+            for scale in numScales:
+                if modesRec != 0 or modesLig != 0 :
+                    if modesLig == modesRec:
+                        frac, whole = math.modf(scale)
+                        try:
+
+                            run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}_bestconf2".format(modesRec,modesLig,int(whole),str(frac)[2:6], modesRec,modesLig,int(whole),str(frac)[2:6],extention), create_grid = True, create_modes = True, create_dofs = True,
+                            create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+                            num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom,num_threads_scoring = 2)
+                        except:
+                            logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+                            pass
+
+
+
+#docking with bound structures
 # pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
 # pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
-# pathList= ["/home/glenn/work/benchmark5_attract"]
-# numModesListRec = [1]
-# numModesListLig = [1]
+# pathList= ["/home/glenn/work/benchmark5_bound"]
+# numModesListRec = [0]
+# numModesListLig = [0]
 #
 # logfile = open('logFile_run180924.log', 'w+')
 # benchmark_useHinsen = False
 # benchmark_allAtom = False
 # omodes = True
 # modeList = [False]
-# numScales=[0.5,1,2]
+# numScales=[1]
 #
-# extention = "_omodes"
+# extention = "_bound"
 # for path in pathList:
 #     for modesRec in numModesListRec:
 #         for modesLig in numModesListLig:
 #             for scale in numScales:
-#                 if modesRec != 0 or modesLig != 0 :
-#                 #if modesLig == modesRec:
-#                     frac, whole = math.modf(scale)
-#                     try:
-#                         run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
-#                         create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
-#                         num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom)
-#                     except:
-#                         logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
-#                         pass
 #
-
-
-#docking with bound structures
-pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
-pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
-pathList= ["/home/glenn/work/benchmark5_bound"]
-numModesListRec = [0]
-numModesListLig = [0]
-
-logfile = open('logFile_run180924.log', 'w+')
-benchmark_useHinsen = False
-benchmark_allAtom = False
-omodes = True
-modeList = [False]
-numScales=[1]
-
-extention = "_bound"
-for path in pathList:
-    for modesRec in numModesListRec:
-        for modesLig in numModesListLig:
-            for scale in numScales:
-
-                #if modesLig == modesRec:
-                frac, whole = math.modf(scale)
-                try:
-                    run_benchmark( path, "-refe.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
-                    create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
-                    num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=False, useAllAtom=benchmark_allAtom)
-                except:
-                    logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
-                    pass
-
+#                 #if modesLig == modesRec:
+#                 frac, whole = math.modf(scale)
+#                 try:
+#                     run_benchmark( path, "-refe.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),str(frac)[2:5], modesRec,modesLig,int(whole),str(frac)[2:5],extention), create_grid = True, create_modes = True, create_dofs = True,
+#                     create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+#                     num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=False, useAllAtom=benchmark_allAtom)
+#                 except:
+#                     logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+#                     pass
+#
 
 
 #path = "/home/glenn/work/test_independet"

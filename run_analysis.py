@@ -23,7 +23,7 @@ filename_modesJoined = None,filename_modesJoined_aa = None,filename_modesJoined_
     filename_pdbFinal =     os.path.join(path_analysis ,name_analysis + "-result.pdb")
     filename_rmsd = os.path.join(path_analysis, name_analysis + "-rmsd.result")
     filename_rmsdmodes = os.path.join(path_analysis, name_analysis + "-rmsdModes.result")
-
+    print " in analysing ",name_analysis
     if not os.path.isfile(filename_filled) or overwrite is True:
         analysis_fillEnergies(path_python, path_attractTools, filename_dockResult, filename_scoreResult, filename_filled )
     if not os.path.isfile(filename_sorted) or overwrite is True:
@@ -89,7 +89,7 @@ def analysis_removeRedundant( path_attract, filename_sorted, num_modesReceptor, 
     os.system(bash_command)
 
 
-def analysis_getTop( path_attractTools, filename_deredundant, filename_top, number_best = 50):
+def analysis_getTop( path_attractTools, filename_deredundant, filename_top, number_best = 1000):
     bash_command = "{}/top {} {} > {}".format(path_attractTools, filename_deredundant, number_best, filename_top)
     if DEBUG_COMMAND:
         print bash_command

@@ -8,7 +8,7 @@ import random
 from subprocess import PIPE
 
 import consumer_producer as conpro
-
+import run_analysis as analyse
 #only append a filename to a list if it not None and if it exists
 def safeAppend( list, filename):
     if filename is not None and os.path.isfile(filename):
@@ -24,7 +24,7 @@ def filecheck(  filename):
 
 
 class Worker:
-    def __init__(self,  filename_attractBinary = "AttractServer", num_threads = 1, do_minimization = False, do_scoring = False, use_OrigAttract = False, args = None ):
+    def __init__(self,  filename_attractBinary = "AttractServer", num_threads = 1, do_minimization = False, do_scoring = False, use_OrigAttract = False, args = None , analyse = False):
         self.num_threads = num_threads
         self.do_minimization = do_minimization
         self.do_scoring = do_scoring
@@ -32,6 +32,7 @@ class Worker:
         self.filename_attract = filename_attractBinary
         self.consumer = []
         self.use_origAttract = use_OrigAttract
+        self.analyse = analyse
 
         for i in range( num_threads ):
             self.consumer.append( conpro.ConsumerThread(self.queue, name='Thread ' + str(i), target=self.consumer_compute, args= args))
@@ -44,15 +45,21 @@ class Worker:
             #string = "{}  \n".format(threadId)
             #print string
             name_timer = ""
-            if self.do_scoring:
-                name_timer += "Scoring - "
-            elif self.do_minimization:
-                name_timer += "Docking - "
+            if self.analyse:
+                name_timer += "Analyse - "
+            else:
+                if self.do_scoring:
+                    name_timer += "Scoring - "
+                elif self.do_minimization:
+                    name_timer += "Docking - "
             name_timer += str( task_id )
             print  "Started", name_timer
             args[0].timer_add( name_timer, start= True)
             time.sleep(random.random())
-            run_program( self.filename_attract, task, shell=True)
+            if(self.analyse):
+                run_analysisroutine(task)
+            else:
+                run_program( self.filename_attract, task, shell=True)
             args[0].timer_stop( name_timer )
             print "Finished", name_timer, ". Time: " , args[0].get_elapsedTime(name_timer )
             args[1].put(task_id)
@@ -73,20 +80,43 @@ class Worker:
             self.consumer[i].stop_if_done()
 
     def wait_until_done(self):
-        done = False
+        done3 = False
         while not done:
-            done = True
+            done3 = True
             for i in range(self.num_threads):
                 if not self.consumer[i].is_done():
-                    done = False
+                    done3 = False
             time.sleep( 1 )
 
+
     def is_done(self):
-        done = True
+        done1 = True
         for i in range(self.num_threads):
             if not self.consumer[i].is_done():
-                done = False
-        return done
+                done1 = False
+        return done1
+
+    def is_comp(self):
+        done5 = False
+        for i in range(self.num_threads):
+            if self.consumer[i].is_comp():
+                print i , "is comp"
+                done5 = True
+        return done5
+
+    def is_empty(self):
+        done7 = False
+        for i in range(self.num_threads):
+            if self.consumer[i].is_notEmpty():
+                done7 = True
+        return done7
+
+    def is_signal(self):
+        done6 = False
+        for i in range(self.num_threads):
+            if self.consumer[i].is_signal():
+                done6 = True
+        return done6
 
     def add_ensembleToQueue( self, id, filename_dofs, filename_parameter, filename_pdbReceptor, filename_pdbLigand,
                             filename_gridReceptor, filename_alphabetReceptor, filename_output,
@@ -138,6 +168,7 @@ class Worker:
                 args.append( " --evscale  ")
                 args.append( str(modeForceFac))
 
+            args.append(" -d 0 -d 1  ")
             #args.append("--numCPUs ")
             #args.append(" 16 ")
             #args.append(" --output ")
@@ -145,9 +176,14 @@ class Worker:
             args.append( filename_output )
         else:
             safeAppend( args, filename_dofs )
+            args.append(" ")
             safeAppend( args, filename_parameter )
+            args.append(" ")
+
             #print "this is in safe append runcomputatuon filename",filename_pdbReceptor
             safeAppend( args, filename_pdbReceptor )
+            args.append(" ")
+
             safeAppend( args, filename_pdbLigand )
             args.append( " --fix-receptor ")
             if filename_modesJoined is not None and (num_modesLigand > 0 or num_modesReceptor > 0):
@@ -182,6 +218,30 @@ class Worker:
                 f.write(''.join(args))
                 f.close()
         self.producer.add( (id,args) )
+
+    def add_analysiseToQueue( self, taskdict ):
+
+        print "add to ana queue", taskdict['id']
+
+        # if task['logfile'] is not None:
+        #     with open(logfile, 'w') as f:
+        #         f.write(''.join(args))
+        #         for key, value in task.iteritems():
+        #             f.write("{} {}".format(key,value))
+        #         f.close()
+        self.producer.add( (taskdict['id'],taskdict) )
+
+def run_analysisroutine(dict):
+    analyse.run_analysis(dict['path_analysis'], dict['name_analysis'], dict['filename_dockResult'], dict['filename_scoreResult'],
+    filename_pdbReceptor = dict['filename_pdbReceptor'], filename_pdbLigand = dict['filename_pdbLigand'],
+    filename_pdbReceptor_aa = dict['filename_pdbReceptor_aa'], filename_pdbLigand_aa = dict['filename_pdbLigand_aa'],
+    filename_pdbReceptor_heavy = dict['filename_pdbReceptor_heavy'], filename_pdbLigand_heavy = dict['filename_pdbLigand_heavy'],
+    filename_pdbReceptorRef = dict['filename_pdbReceptorRef'], filename_pdbLigandRef = dict['filename_pdbLigandRef'],
+    filename_pdbReceptorRef_aa = dict['filename_pdbReceptorRef_aa'], filename_pdbLigandRef_aa =  dict['filename_pdbLigandRef_aa'],
+    filename_pdbReceptorRef_heavy = dict['filename_pdbReceptorRef_heavy'], filename_pdbLigandRef_heavy = dict['filename_pdbLigandRef_heavy'],
+    filename_modesJoined =dict['filename_modesJoined'], filename_modesJoined_aa = dict['filename_modesJoined_aa'],
+    filename_modesJoined_heavy = dict['filename_modesJoined_heavy'], num_modesReceptor = dict['num_modesReceptor'], num_modesLigand = dict['num_modesLigand'],
+    path_attract = dict['path_attract'], path_attractTools = dict['path_attractTools'], overwrite = dict['overwrite'],path_python=dict['path_python'])
 
 
 def run_program( filename_binary, arguments, shell = False ):
