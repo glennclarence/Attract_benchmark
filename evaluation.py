@@ -61,10 +61,11 @@ def getEnergyfromFile( filename):
                     energies.append( energy)
                     count = 0
         if idx == 1:
-            energies = 0
+            energies = [-100000]
         return np.asarray( energies )
     except:
-        return -1
+        print("execpt get energy")
+        return np.asarray( [-100000] )
 
 #testcase eread
 #fn = '/home/glenn/work/benchmark5_best/1IJK/dG_mr5_ml1_ev0p1_sO_c50_mr5_ml1_ev0p1_hinsen/1IJK-receptor-for-docking-sorted-dr.dat'
@@ -158,7 +159,7 @@ def evalData(protList, benchmarkList,basePath, fileout):
 
 
             bmPath = Path(getPath(basePath=basePath, benchmarkName=bm, proteinName= protein))
-            evScale = getModeEVScale(bm)
+            evScale = "{:2.6f}".format(getModeEVScale(bm))
             numModesRec = getNumModesFromString(bm, 'r')
             numModesLig = getNumModesFromString(bm, 'l')
             baseFile = protein+fext['pdb']
@@ -186,6 +187,7 @@ def evalData(protList, benchmarkList,basePath, fileout):
             if len(fnat) > 1 and len(irmsd) > 1:
                 capriList = getCapriList(irmsd, fnat)
                 one_star, two_star, three_star = capriCount(capriList[:50])
+                one_star10, two_star10, three_star10 = capriCount(capriList[:10])
                 one_10, two_10, three_10= capriCount(capriList[:10])
                 one_50, two_50, three_50 = capriCount(capriList[:50])
                 if(len(capriList) >50):
@@ -211,8 +213,8 @@ def evalData(protList, benchmarkList,basePath, fileout):
                     bound = 1
                 else:
                     bound = 0
-                row = {'protein':protein,'numModesRec':numModesRec,'numModesLig':numModesLig,'evScale':evScale, 'one_star_50':one_star,'two_star_50':two_star,'three_star_50':three_star, 'brownian': brownian,'omodes':omodes, 'bound':bound,'one_10':one_10, 'two_10':two_10, 'three_10':thee_10
-                    , 'one_50': one_50, 'two_50': two_50, 'three_50': thee_50,'one_100':one_100, 'two_10':two_100, 'three_100':three_100,'one_1000':one_1000, 'two_1000':two_1000, 'three_1000':three_1000}
+                row = {'protein':protein,'numModesRec':numModesRec,'numModesLig':numModesLig,'evScale':evScale, 'one_star_50':one_star,'two_star_50':two_star,'three_star_50':three_star,'one_star_10':one_star10,'two_star_10':two_star10,'three_star_10':three_star10, 'brownian': brownian,'omodes':omodes, 'bound':bound,'one_10':one_10>0, 'two_10':two_10>0, 'three_10':three_10>0
+                    , 'one_50': one_50>0, 'two_50': two_50>0, 'three_50': three_50>0,'one_100':one_100>0, 'two_100':two_100>0, 'three_100':three_100>0,'one_1000':one_1000>0, 'two_1000':two_1000>0, 'three_1000':three_1000>0}
                 dataList.append(row)
                 #print protein,numModesLig, numModesRec, evScale,one_star, two_star, three_star, brownian
             else:
@@ -276,12 +278,49 @@ def plotRmsdEnergy(protList, benchmarkList,basePath):
 
 
             if len(rmsd) >1 and len(energies)> 1:
-                plt.scatter(rmsd, energies, alpha= 0.7)
-
+                plt.scatter(rmsd, energies, alpha= 0.4, label = bm)
+                plt.legend()
                 #xy = np.vstack([rmsd, energies])
                 #z = gaussian_kde(xy)(xy)
                 #fig, ax = plt.subplots()
                 #ax.scatter(rmsd, energies, c=z, s=100, edgecolor='', alpha = 0.5)
+
+
+def getEnergyDelta(protList, benchmarkList,basePath,numtop):
+    d = {}
+    for protein in protList:
+        sum = []
+        yep = True
+        for bm in benchmarkList:
+            bmPath = Path(getPath(basePath=basePath, benchmarkName=bm, proteinName=protein))
+            #print getPath(basePath=basePath, benchmarkName=bm, proteinName=protein)
+            evScale = getModeEVScale(bm)
+            numModesRec = getNumModesFromString(bm, 'r')
+            numModesLig = getNumModesFromString(bm, 'l')
+            baseFile = protein + fext['pdb']
+
+            energyFile = baseFile + fext['energy']
+
+            if (bmPath.isfile(energyFile)):
+                energies = []
+                energies = getEnergyfromFile(bmPath.filename(energyFile))
+
+                if len(energies)>= numtop:
+                    energies = energies[:numtop]
+                    sum.append(np.sum(energies))
+                else:
+                    yep = False
+            else:
+                yep = False
+
+
+        if yep is True:
+            delta = sum[0]- sum[1]
+            delta /= numtop
+            d[protein] = delta
+            print(protein , delta)
+    return d
+
 
 def loadRmsd(protList, benchmarkList,basePath):
     dict={}
@@ -348,25 +387,209 @@ def findMinRMSD(protList, benchmarkList,basePath, referencermsd, num, minnum):
 #findMinRMSD(protList, ['dG_mr1_ml1_ev2p0_sO_c50_mr1_ml1_ev2p0_omodes'],"/home/glenn/work/benchmark5_attract", rmsdref, 20, 3)
 
 
-protList = readStringList("/home/glenn/work/benchmark5_best/protlist",0                          )
-benchmarkList = readStringList("/home/glenn/work/benchmark5_best/benchlist",0                          )
+
+path = "/home/glenn/work/test_hinsen/"
+filename  = "/home/glenn/Documents/Masterarbeit/analysis/largerun/benchmark5_3pc8_hinsen"
+protList = readStringList(path + "protlist",0                          )
+#benchmarkList = readStringList("/home/glenn/work/benchmark5_best/benchlist",0                          )
 #saveRmsdEnergy(protList, benchmarkList,"/home/glenn/work/benchmark5_attract","/home/glenn/Documents/Masterarbeit/analysis/largerun/rmsdplot")
 print "eval benchmark"
-0.0008,0.0005,0.0015
+
 
 benchmarkList=[
-'dG_mr1_ml1_ev0p0005_sO_c50_mr1_ml1_ev0p0005_omodes_nn',
-'dG_mr1_ml1_ev0p0007_sO_c50_mr1_ml1_ev0p0007_omodes_nn',
-'dG_mr1_ml1_ev0p0008_sO_c50_mr1_ml1_ev0p0008_omodes_nn',
-'dG_mr1_ml1_ev0p0015_sO_c50_mr1_ml1_ev0p0015_omodes_nn',
-'dG_mr1_ml1_ev0p001_sO_c50_mr1_ml1_ev0p001_omodes_nn',
-'dG_mr1_ml1_ev0p002_sO_c50_mr1_ml1_ev0p002_omodes_nn',
-'dG_mr1_ml1_ev0p005_sO_c50_mr1_ml1_ev0p005_omodes_nn',
-'dG_mr1_ml1_ev0p01_sO_c50_mr1_ml1_ev0p01_omodes_nn',
-'dG_mr1_ml1_ev0p1_sO_c50_mr1_ml1_ev0p1_omodes_nn']
+
+'dG_mr10_ml10_ev0p00030_sO_c50_mr10_ml10_ev0p00030hinsen',
+'dG_mr10_ml10_ev0p00035_sO_c50_mr10_ml10_ev0p00035hinsen',
+'dG_mr10_ml10_ev0p00050_sO_c50_mr10_ml10_ev0p00050hinsen',
+'dG_mr10_ml10_ev0p00080_sO_c50_mr10_ml10_ev0p00080hinsen',
+'dG_mr10_ml10_ev0p70000_sO_c50_mr10_ml10_ev0p70000',
+'dG_mr10_ml10_ev1p00000_sO_c50_mr10_ml10_ev1p00000',
+'dG_mr10_ml10_ev1p30000_sO_c50_mr10_ml10_ev1p30000',
+'dG_mr10_ml10_ev1p70000_sO_c50_mr10_ml10_ev1p70000',
+'dG_mr0_ml10_ev0p00005_sO_c50_mr0_ml10_ev0p00005hinsen'  ,
+'dG_mr10_ml10_ev2p00000_sO_c50_mr10_ml10_ev2p00000',
+'dG_mr0_ml10_ev0p00008_sO_c50_mr0_ml10_ev0p00008hinsen'  ,
+'dG_mr10_ml10_ev2p50000_sO_c50_mr10_ml10_ev2p50000',
+'dG_mr0_ml10_ev0p00010_sO_c50_mr0_ml10_ev0p00010hinsen'  ,
+'dG_mr1_ml0_ev0p00005_sO_c50_mr1_ml0_ev0p00005',
+'dG_mr0_ml10_ev0p00012_sO_c50_mr0_ml10_ev0p00012hinsen'  ,
+'dG_mr1_ml0_ev0p00005_sO_c50_mr1_ml0_ev0p00005_hinsen',
+'dG_mr0_ml10_ev0p00014_sO_c50_mr0_ml10_ev0p00014hinsen'  ,
+'dG_mr1_ml0_ev0p00008_sO_c50_mr1_ml0_ev0p00008',
+'dG_mr0_ml10_ev0p00015_sO_c50_mr0_ml10_ev0p00015hinsen'  ,
+'dG_mr1_ml0_ev0p00008_sO_c50_mr1_ml0_ev0p00008_hinsen',
+'dG_mr0_ml10_ev0p00016_sO_c50_mr0_ml10_ev0p00016hinsen'  ,
+'dG_mr1_ml0_ev0p00010_sO_c50_mr1_ml0_ev0p00010',
+'dG_mr0_ml10_ev0p00017_sO_c50_mr0_ml10_ev0p00017hinsen'  ,
+'dG_mr1_ml0_ev0p00010_sO_c50_mr1_ml0_ev0p00010_hinsen',
+'dG_mr0_ml10_ev0p00018_sO_c50_mr0_ml10_ev0p00018hinsen'  ,
+'dG_mr1_ml0_ev0p00012_sO_c50_mr1_ml0_ev0p00012',
+'dG_mr0_ml10_ev0p00020_sO_c50_mr0_ml10_ev0p00020hinsen'  ,
+'dG_mr1_ml0_ev0p00012_sO_c50_mr1_ml0_ev0p00012_hinsen',
+'dG_mr0_ml10_ev0p00030_sO_c50_mr0_ml10_ev0p00030hinsen'  ,
+'dG_mr1_ml0_ev0p00014_sO_c50_mr1_ml0_ev0p00014',
+'dG_mr0_ml10_ev0p00035_sO_c50_mr0_ml10_ev0p00035hinsen'  ,
+'dG_mr1_ml0_ev0p00014_sO_c50_mr1_ml0_ev0p00014_hinsen',
+'dG_mr0_ml10_ev0p00050_sO_c50_mr0_ml10_ev0p00050hinsen'  ,
+'dG_mr1_ml0_ev0p00015_sO_c50_mr1_ml0_ev0p00015',
+'dG_mr0_ml10_ev0p00080_sO_c50_mr0_ml10_ev0p00080hinsen'  ,
+'dG_mr1_ml0_ev0p00015_sO_c50_mr1_ml0_ev0p00015_hinsen',
+'dG_mr0_ml10_ev0p70000_sO_c50_mr0_ml10_ev0p70000'  ,
+'dG_mr1_ml0_ev0p00016_sO_c50_mr1_ml0_ev0p00016',
+'dG_mr0_ml10_ev1p00000_sO_c50_mr0_ml10_ev1p00000'  ,
+'dG_mr1_ml0_ev0p00016_sO_c50_mr1_ml0_ev0p00016_hinsen',
+'dG_mr0_ml10_ev1p30000_sO_c50_mr0_ml10_ev1p30000'  ,
+'dG_mr1_ml0_ev0p00017_sO_c50_mr1_ml0_ev0p00017',
+'dG_mr0_ml10_ev1p70000_sO_c50_mr0_ml10_ev1p70000'  ,
+'dG_mr1_ml0_ev0p00017_sO_c50_mr1_ml0_ev0p00017_hinsen',
+'dG_mr0_ml10_ev2p00000_sO_c50_mr0_ml10_ev2p00000'  ,
+'dG_mr1_ml0_ev0p00018_sO_c50_mr1_ml0_ev0p00018',
+'dG_mr0_ml10_ev2p50000_sO_c50_mr0_ml10_ev2p50000'  ,
+'dG_mr1_ml0_ev0p00018_sO_c50_mr1_ml0_ev0p00018_hinsen',
+'dG_mr0_ml1_ev0p00005_sO_c50_mr0_ml1_ev0p00005'  ,
+'dG_mr1_ml0_ev0p00020_sO_c50_mr1_ml0_ev0p00020',
+'dG_mr0_ml1_ev0p00005_sO_c50_mr0_ml1_ev0p00005_hinsen'  ,
+'dG_mr1_ml0_ev0p00020_sO_c50_mr1_ml0_ev0p00020_hinsen',
+'dG_mr0_ml1_ev0p00008_sO_c50_mr0_ml1_ev0p00008'  ,
+'dG_mr1_ml0_ev0p00030_sO_c50_mr1_ml0_ev0p00030',
+'dG_mr0_ml1_ev0p00008_sO_c50_mr0_ml1_ev0p00008_hinsen'  ,
+'dG_mr1_ml0_ev0p00030_sO_c50_mr1_ml0_ev0p00030_hinsen',
+'dG_mr0_ml1_ev0p00010_sO_c50_mr0_ml1_ev0p00010'  ,
+'dG_mr1_ml0_ev0p00035_sO_c50_mr1_ml0_ev0p00035',
+'dG_mr0_ml1_ev0p00010_sO_c50_mr0_ml1_ev0p00010_hinsen'  ,
+'dG_mr1_ml0_ev0p00035_sO_c50_mr1_ml0_ev0p00035_hinsen',
+'dG_mr0_ml1_ev0p00012_sO_c50_mr0_ml1_ev0p00012'  ,
+'dG_mr1_ml0_ev0p00050_sO_c50_mr1_ml0_ev0p00050',
+'dG_mr0_ml1_ev0p00012_sO_c50_mr0_ml1_ev0p00012_hinsen'  ,
+'dG_mr1_ml0_ev0p00050_sO_c50_mr1_ml0_ev0p00050_hinsen',
+'dG_mr0_ml1_ev0p00014_sO_c50_mr0_ml1_ev0p00014'  ,
+'dG_mr1_ml0_ev0p00080_sO_c50_mr1_ml0_ev0p00080',
+'dG_mr0_ml1_ev0p00014_sO_c50_mr0_ml1_ev0p00014_hinsen'  ,
+'dG_mr1_ml0_ev0p00080_sO_c50_mr1_ml0_ev0p00080_hinsen',
+'dG_mr0_ml1_ev0p00015_sO_c50_mr0_ml1_ev0p00015'  ,
+'dG_mr1_ml0_ev0p70000_sO_c50_mr1_ml0_ev0p70000',
+'dG_mr0_ml1_ev0p00015_sO_c50_mr0_ml1_ev0p00015_hinsen'  ,
+'dG_mr1_ml0_ev1p00000_sO_c50_mr1_ml0_ev1p00000',
+'dG_mr0_ml1_ev0p00016_sO_c50_mr0_ml1_ev0p00016'  ,
+'dG_mr1_ml0_ev1p30000_sO_c50_mr1_ml0_ev1p30000',
+'dG_mr0_ml1_ev0p00016_sO_c50_mr0_ml1_ev0p00016_hinsen'  ,
+'dG_mr1_ml0_ev1p70000_sO_c50_mr1_ml0_ev1p70000',
+'dG_mr0_ml1_ev0p00017_sO_c50_mr0_ml1_ev0p00017'  ,
+'dG_mr1_ml0_ev2p00000_sO_c50_mr1_ml0_ev2p00000',
+'dG_mr0_ml1_ev0p00017_sO_c50_mr0_ml1_ev0p00017_hinsen'  ,
+'dG_mr1_ml0_ev2p50000_sO_c50_mr1_ml0_ev2p50000',
+'dG_mr0_ml1_ev0p00018_sO_c50_mr0_ml1_ev0p00018'  ,
+'dG_mr1_ml1_ev0p00005_sO_c50_mr1_ml1_ev0p00005',
+'dG_mr0_ml1_ev0p00018_sO_c50_mr0_ml1_ev0p00018_hinsen'  ,
+'dG_mr1_ml1_ev0p00005_sO_c50_mr1_ml1_ev0p00005_hinsen',
+'dG_mr0_ml1_ev0p00020_sO_c50_mr0_ml1_ev0p00020'  ,
+'dG_mr1_ml1_ev0p00008_sO_c50_mr1_ml1_ev0p00008',
+'dG_mr0_ml1_ev0p00020_sO_c50_mr0_ml1_ev0p00020_hinsen'  ,
+'dG_mr1_ml1_ev0p00008_sO_c50_mr1_ml1_ev0p00008_hinsen',
+'dG_mr0_ml1_ev0p00030_sO_c50_mr0_ml1_ev0p00030'  ,
+'dG_mr1_ml1_ev0p00010_sO_c50_mr1_ml1_ev0p00010',
+'dG_mr0_ml1_ev0p00030_sO_c50_mr0_ml1_ev0p00030_hinsen'  ,
+'dG_mr1_ml1_ev0p00010_sO_c50_mr1_ml1_ev0p00010_hinsen',
+'dG_mr0_ml1_ev0p00035_sO_c50_mr0_ml1_ev0p00035'  ,
+'dG_mr1_ml1_ev0p00012_sO_c50_mr1_ml1_ev0p00012',
+'dG_mr0_ml1_ev0p00035_sO_c50_mr0_ml1_ev0p00035_hinsen'  ,
+'dG_mr1_ml1_ev0p00012_sO_c50_mr1_ml1_ev0p00012_hinsen',
+'dG_mr0_ml1_ev0p00050_sO_c50_mr0_ml1_ev0p00050'  ,
+'dG_mr1_ml1_ev0p00014_sO_c50_mr1_ml1_ev0p00014',
+'dG_mr0_ml1_ev0p00050_sO_c50_mr0_ml1_ev0p00050_hinsen'  ,
+'dG_mr1_ml1_ev0p00014_sO_c50_mr1_ml1_ev0p00014_hinsen',
+'dG_mr0_ml1_ev0p00080_sO_c50_mr0_ml1_ev0p00080'  ,
+'dG_mr1_ml1_ev0p00015_sO_c50_mr1_ml1_ev0p00015',
+'dG_mr0_ml1_ev0p00080_sO_c50_mr0_ml1_ev0p00080_hinsen'  ,
+'dG_mr1_ml1_ev0p00015_sO_c50_mr1_ml1_ev0p00015_hinsen',
+'dG_mr0_ml1_ev0p70000_sO_c50_mr0_ml1_ev0p70000'  ,
+'dG_mr1_ml1_ev0p00016_sO_c50_mr1_ml1_ev0p00016',
+'dG_mr0_ml1_ev1p00000_sO_c50_mr0_ml1_ev1p00000'  ,
+'dG_mr1_ml1_ev0p00016_sO_c50_mr1_ml1_ev0p00016_hinsen',
+'dG_mr0_ml1_ev1p30000_sO_c50_mr0_ml1_ev1p30000'  ,
+'dG_mr1_ml1_ev0p00017_sO_c50_mr1_ml1_ev0p00017',
+'dG_mr0_ml1_ev1p70000_sO_c50_mr0_ml1_ev1p70000'  ,
+'dG_mr1_ml1_ev0p00017_sO_c50_mr1_ml1_ev0p00017_hinsen',
+'dG_mr0_ml1_ev2p00000_sO_c50_mr0_ml1_ev2p00000'  ,
+'dG_mr1_ml1_ev0p00018_sO_c50_mr1_ml1_ev0p00018',
+'dG_mr0_ml1_ev2p50000_sO_c50_mr0_ml1_ev2p50000'  ,
+'dG_mr1_ml1_ev0p00018_sO_c50_mr1_ml1_ev0p00018_hinsen',
+'dG_mr0_ml3_ev0p00015_sO_c50_mr0_ml3_ev0p00015hinsen'  ,
+'dG_mr1_ml1_ev0p00020_sO_c50_mr1_ml1_ev0p00020',
+'dG_mr0_ml3_ev0p00016_sO_c50_mr0_ml3_ev0p00016hinsen'  ,
+'dG_mr1_ml1_ev0p00020_sO_c50_mr1_ml1_ev0p00020_hinsen',
+'dG_mr0_ml3_ev0p00017_sO_c50_mr0_ml3_ev0p00017hinsen'  ,
+'dG_mr1_ml1_ev0p00030_sO_c50_mr1_ml1_ev0p00030',
+'dG_mr0_ml3_ev0p00018_sO_c50_mr0_ml3_ev0p00018hinsen'  ,
+'dG_mr1_ml1_ev0p00030_sO_c50_mr1_ml1_ev0p00030_hinsen',
+'dG_mr0_ml3_ev0p00020_sO_c50_mr0_ml3_ev0p00020hinsen'  ,
+'dG_mr1_ml1_ev0p00035_sO_c50_mr1_ml1_ev0p00035',
+'dG_mr10_ml0_ev0p00005_sO_c50_mr10_ml0_ev0p00005hinsen'  ,
+'dG_mr1_ml1_ev0p00035_sO_c50_mr1_ml1_ev0p00035_hinsen',
+'dG_mr10_ml0_ev0p00008_sO_c50_mr10_ml0_ev0p00008hinsen'  ,
+'dG_mr1_ml1_ev0p00050_sO_c50_mr1_ml1_ev0p00050',
+'dG_mr10_ml0_ev0p00010_sO_c50_mr10_ml0_ev0p00010hinsen'  ,
+'dG_mr1_ml1_ev0p00050_sO_c50_mr1_ml1_ev0p00050_hinsen',
+'dG_mr10_ml0_ev0p00012_sO_c50_mr10_ml0_ev0p00012hinsen'  ,
+'dG_mr1_ml1_ev0p00080_sO_c50_mr1_ml1_ev0p00080',
+'dG_mr10_ml0_ev0p00014_sO_c50_mr10_ml0_ev0p00014hinsen'  ,
+'dG_mr1_ml1_ev0p00080_sO_c50_mr1_ml1_ev0p00080_hinsen',
+'dG_mr10_ml0_ev0p00015_sO_c50_mr10_ml0_ev0p00015hinsen'  ,
+'dG_mr1_ml1_ev0p70000_sO_c50_mr1_ml1_ev0p70000',
+'dG_mr10_ml0_ev0p00016_sO_c50_mr10_ml0_ev0p00016hinsen'  ,
+'dG_mr1_ml1_ev1p00000_sO_c50_mr1_ml1_ev1p00000',
+'dG_mr10_ml0_ev0p00017_sO_c50_mr10_ml0_ev0p00017hinsen'  ,
+'dG_mr1_ml1_ev1p30000_sO_c50_mr1_ml1_ev1p30000',
+'dG_mr10_ml0_ev0p00018_sO_c50_mr10_ml0_ev0p00018hinsen'  ,
+'dG_mr1_ml1_ev1p70000_sO_c50_mr1_ml1_ev1p70000',
+'dG_mr10_ml0_ev0p00020_sO_c50_mr10_ml0_ev0p00020hinsen'  ,
+'dG_mr1_ml1_ev2p00000_sO_c50_mr1_ml1_ev2p00000',
+'dG_mr10_ml0_ev0p00030_sO_c50_mr10_ml0_ev0p00030hinsen'  ,
+'dG_mr1_ml1_ev2p50000_sO_c50_mr1_ml1_ev2p50000',
+'dG_mr10_ml0_ev0p00035_sO_c50_mr10_ml0_ev0p00035hinsen'  ,
+'dG_mr3_ml0_ev0p00015_sO_c50_mr3_ml0_ev0p00015hinsen',
+'dG_mr10_ml0_ev0p00050_sO_c50_mr10_ml0_ev0p00050hinsen'  ,
+'dG_mr3_ml0_ev0p00016_sO_c50_mr3_ml0_ev0p00016hinsen',
+'dG_mr10_ml0_ev0p00080_sO_c50_mr10_ml0_ev0p00080hinsen'  ,
+'dG_mr3_ml0_ev0p00017_sO_c50_mr3_ml0_ev0p00017hinsen',
+'dG_mr10_ml0_ev0p70000_sO_c50_mr10_ml0_ev0p70000'  ,
+'dG_mr3_ml0_ev0p00018_sO_c50_mr3_ml0_ev0p00018hinsen',
+'dG_mr10_ml0_ev1p00000_sO_c50_mr10_ml0_ev1p00000'  ,
+'dG_mr3_ml0_ev0p00020_sO_c50_mr3_ml0_ev0p00020hinsen',
+'dG_mr10_ml0_ev1p30000_sO_c50_mr10_ml0_ev1p30000'  ,
+'dG_mr3_ml3_ev0p00015_sO_c50_mr3_ml3_ev0p00015hinsen',
+'dG_mr10_ml0_ev1p70000_sO_c50_mr10_ml0_ev1p70000'  ,
+'dG_mr3_ml3_ev0p00016_sO_c50_mr3_ml3_ev0p00016hinsen',
+'dG_mr10_ml0_ev2p00000_sO_c50_mr10_ml0_ev2p00000'  ,
+'dG_mr3_ml3_ev0p00017_sO_c50_mr3_ml3_ev0p00017hinsen',
+'dG_mr10_ml0_ev2p50000_sO_c50_mr10_ml0_ev2p50000'  ,
+'dG_mr3_ml3_ev0p00018_sO_c50_mr3_ml3_ev0p00018hinsen',
+'dG_mr10_ml10_ev0p00005_sO_c50_mr10_ml10_ev0p00005hinsen'  ,
+'dG_mr3_ml3_ev0p00020_sO_c50_mr3_ml3_ev0p00020hinsen',
+'dG_mr10_ml10_ev0p00008_sO_c50_mr10_ml10_ev0p00008hinsen'  ,
+'dG_mr10_ml10_ev0p00010_sO_c50_mr10_ml10_ev0p00010hinsen'  ,
+'dG_mr10_ml10_ev0p00012_sO_c50_mr10_ml10_ev0p00012hinsen'  ,
+'dG_mr10_ml10_ev0p00014_sO_c50_mr10_ml10_ev0p00014hinsen'  ,
+'dG_mr10_ml10_ev0p00015_sO_c50_mr10_ml10_ev0p00015hinsen'  ,
+'dG_mr10_ml10_ev0p00016_sO_c50_mr10_ml10_ev0p00016hinsen'  ,
+'dG_mr10_ml10_ev0p00017_sO_c50_mr10_ml10_ev0p00017hinsen'  ,
+'dG_mr10_ml10_ev0p00018_sO_c50_mr10_ml10_ev0p00018hinsen'  ,
+'dG_mr10_ml10_ev0p00020_sO_c50_mr10_ml10_ev0p00020hinsen',
+'dG_mr3_ml0_ev0p00021_sO_c50_mr3_ml0_ev0p00021hinsen',
+'dG_mr3_ml0_ev0p00022_sO_c50_mr3_ml0_ev0p00022hinsen',
+'dG_mr3_ml0_ev0p00023_sO_c50_mr3_ml0_ev0p00023hinsen',
+'dG_mr3_ml0_ev0p00024_sO_c50_mr3_ml0_ev0p00024hinsen',
+'dG_mr3_ml0_ev0p00025_sO_c50_mr3_ml0_ev0p00025hinsen',
+'dG_mr5_ml0_ev0p00025_sO_c50_mr5_ml0_ev0p00025hinsen',
+'dG_mr5_ml0_ev0p00027_sO_c50_mr5_ml0_ev0p00027hinsen',
+'dG_mr5_ml0_ev0p00029_sO_c50_mr5_ml0_ev0p00029hinsen',
+'dG_mr5_ml0_ev0p00030_sO_c50_mr5_ml0_ev0p00030hinsen',
+'dG_mr5_ml0_ev0p00035_sO_c50_mr5_ml0_ev0p00035hinsen'
+'dG_mr5_ml0_ev0p00038_sO_c50_mr5_ml0_ev0p00038hinsen'
+]
 
 
-evalData(protList, benchmarkList,"/home/glenn/work/benchmark5_attract", "/home/glenn/Documents/Masterarbeit/analysis/largerun/benchmark5_omodes_all")
+evalData(protList, benchmarkList,path, filename)
 
 def getProtein(dataframe, protein):
     return dataframe.loc[dataframe['protein']== protein]
@@ -514,60 +737,68 @@ def createSum(df):
 
 fext['pdb'] = '-receptor-for-docking'
 protList = readStringList("/home/glenn/work/benchmark5_attract/protlist",0)
-dm = loadRmsd(protList,['dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1'],'/home/glenn/work/benchmark5_attract' )
+dele = ['1QFW','1BJ1', '1FSK', '1IQD', '1K4C', '1KXQ', '1NCA', '1NSN', '1QFW', '2HMI', '2JEL', '9QFW','1DE4','4FQI','4GAM','4GXU','1EXB','4FQI' ,'1EER', '4H03']
+for d in dele:
+    protlist.remove(d)
 
-dm = loadRmsd(protList,['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0'],'/home/glenn/work/benchmark5_attract' )
-d = loadRmsd(protList,['dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'],'/home/glenn/work/benchmark5_attract' )
-proteins= list(set(list(d)) & set(list(dm)))
+# dm = loadRmsd(protList,['dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1'],'/home/glenn/work/benchmark5_attract' )
+#
+# dm = loadRmsd(protList,['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0'],'/home/glenn/work/benchmark5_attract' )
+# d = loadRmsd(protList,['dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'],'/home/glenn/work/benchmark5_attract' )
+# proteins= list(set(list(d)) & set(list(dm)))
+#
+# dtest= dm
+# rmsdref = d
+#
+# def listToDict(list):
+#     return {i: x for i, x in enumerate(list)}
+#
+# def getLargestRMSDIdx(searchlist, topnumber):
+#     return np.argsort(-searchlist)[:topnumber]
+#
+# def getIndicesOfSimilarEntries(list, searchobj):
+#     return np.where(np.isclose(list, searchobj, 1e-03, 1e-03))[0]
+#
+# def getBestMatch(list, indices, referenceobj):
+#     bestmatch = 100
+#     bestidx = 0
+#     for idx in indices:
+#         if abs(list[idx] - referenceobj) < bestmatch:
+#             bestmatch = ref[idx]
+#             bestidx = idx
+#     return bestmatch, bestidx
+#
+#
+# count = 0
+# num = 20
+# minnum = 10
+# resList =[]
+# for protein in proteins:
+#     tlist = dtest[protein][:num]
+#     lagestRmsdIdx = getLargestRMSDIdx(tlist, minnum)
+#     ref = rmsdref[protein][:num]
+#     for index in lagestRmsdIdx:
+#         tobj = tlist[index]
+#         indices = getIndicesOfSimilarEntries(ref, tobj)
+#         if len(indices) > 0:
+#             count += 1
+#             match, matchIndex = getBestMatch(ref, indices, tobj)
+#             #print match , tobj
+#             #if ( index-matchIndex) < 0:
+#             print protein,"best match" ,match ,"val",tobj, "bidx",matchIndex ,"idx ",index, index-matchIndex
+#             result = {"protein":protein,"value": tobj, "valIdx": index, "match": match, "mIdx":matchIndex, "idff":index-matchIndex}
+#             resList.append(result)
+# resF = pd.DataFrame(resList)
+#
+# print count
+# print resF.nsmallest(50,'idff')
+# listLargestDiff = resF.nsmallest(50,'idff')['protein'].values
+# print resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10)
+# listCounts = resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10).index.tolist()
 
-dtest= dm
-rmsdref = d
-
-def listToDict(list):
-    return {i: x for i, x in enumerate(list)}
-
-def getLargestRMSDIdx(searchlist, topnumber):
-    return np.argsort(-searchlist)[:topnumber]
-
-def getIndicesOfSimilarEntries(list, searchobj):
-    return np.where(np.isclose(list, searchobj, 1e-03, 1e-03))[0]
-
-def getBestMatch(list, indices, referenceobj):
-    bestmatch = 100
-    bestidx = 0
-    for idx in indices:
-        if abs(list[idx] - referenceobj) < bestmatch:
-            bestmatch = ref[idx]
-            bestidx = idx
-    return bestmatch, bestidx
 
 
-count = 0
-num = 20
-minnum = 10
-resList =[]
-for protein in proteins:
-    tlist = dtest[protein][:num]
-    lagestRmsdIdx = getLargestRMSDIdx(tlist, minnum)
-    ref = rmsdref[protein][:num]
-    for index in lagestRmsdIdx:
-        tobj = tlist[index]
-        indices = getIndicesOfSimilarEntries(ref, tobj)
-        if len(indices) > 0:
-            count += 1
-            match, matchIndex = getBestMatch(ref, indices, tobj)
-            #print match , tobj
-            #if ( index-matchIndex) < 0:
-            print protein,"best match" ,match ,"val",tobj, "bidx",matchIndex ,"idx ",index, index-matchIndex
-            result = {"protein":protein,"value": tobj, "valIdx": index, "match": match, "mIdx":matchIndex, "idff":index-matchIndex}
-            resList.append(result)
-resF = pd.DataFrame(resList)
 
-print count
-print resF.nsmallest(50,'idff')
-listLargestDiff = resF.nsmallest(50,'idff')['protein'].values
-print resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10)
-listCounts = resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10).index.tolist()
 #saveRmsdEnergy(listCounts, ['dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1','dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1'],"/home/glenn/work/benchmark5_attract",'/home/glenn/Documents/Masterarbeit/analysis/largerun/rmsdplot/dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1_VS_dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev___MOSTCOUNTS')
 # for prot in listCounts:
 #     plt.waitforbuttonpress()
@@ -610,17 +841,31 @@ listCounts = resF.nsmallest(50,'idff')['protein'].value_counts().nlargest(10).in
 #     sum3 += d3.values[0]
 # print sum1, sum2, sum3
 # df_omodes.nlargest(10,'d_bound')['protein']
-rmsdListHigh=['1HCF','1QFW','1WDW','1PXV','1DFJ','1XD3','4CPA','1EWY','1MAH','2OT3','1KXP','4DN4','1HCF','3H2V']
-goodProt=['1AK4', "3PC8"]
-for prot in goodProt:
-    #plt.waitforbuttonpress()
-    plt.clf()
-    plotRmsdEnergy([prot], ['dG_mr10_ml10_ev1p0_sO_c50_mr10_ml10_ev1p0', 'dG_mr5_ml5_ev1p0_sO_c50_mr5_ml5_ev1',
-                            'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1'], "/home/glenn/work/benchmark5_attract")
-    # plt.xlim([1,80])
-    plt.ylim([-30, 5])
-    plt.ylabel("Energy")
-    plt.title("Protein {}".format(prot))
-    plt.xlabel("RMSD")
-    #plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/best_{}.png'.format(prot))
-    #plt.show()
+
+
+#good:
+#1AK4
+#1AZS
+#bad:
+#1AY7
+#1BKD
+# rmsdListHigh=['1HCF','1QFW','1WDW','1PXV','1DFJ','1XD3','4CPA','1EWY','1MAH','2OT3','1KXP','4DN4','1HCF','3H2V']
+# goodProt=['1AK4', "3PC8"]
+# listtest = ['3BX7']
+# for prot in listtest:
+#     #plt.waitforbuttonpress()
+#     plt.clf()
+#
+#     plotRmsdEnergy([prot], ['dG_mr10_ml1_ev1p0_sO_c50_mr10_ml1_ev1p0','dG_mr1_ml0_ev1p0_sO_c50_mr1_ml0_ev1p0',
+#                             'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1p0'], "/home/glenn/work/benchmark5_attract")
+#     plt.xlim([1,100])
+#     plt.ylim([-30, 5])
+#     plt.ylabel("Energy")
+#     plt.title("Protein {}".format(prot))
+#     plt.xlabel("RMSD")
+#     #plt.savefig('/home/glenn/Documents/Masterarbeit/analysis/rmsdworsening/best_{}.png'.format(prot))
+#     #plt.show()
+#
+#
+# di = getEnergyDelta(protList, ['dG_mr10_ml1_ev1p0_sO_c50_mr10_ml1_ev1p0',
+#                             'dG_mr0_ml0_ev1p0_sO_c50_mr0_ml0_ev1p0'], "/home/glenn/work/benchmark5_attract", 100)

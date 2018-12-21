@@ -114,11 +114,11 @@ def run_benchmark( path_folder, filename_scheme, name_benchmark, create_grid = F
     dock.start_threads()
     # create and start the threads for scoring
     score = compute.Worker( filename_attractBinary = d_binary["compute_attract_orig"] if orig_scoring else d_binary["compute_attract_gpu"],
-                            do_scoring=True, num_threads=num_threads_scoring*2, args=(benchmark_scoring, finisheditems_scoring,),
+                            do_scoring=True, num_threads=num_threads_scoring, args=(benchmark_scoring, finisheditems_scoring,),
                             use_OrigAttract=orig_scoring)
     analysis_threads = compute.Worker(
         filename_attractBinary=d_binary["compute_attract_orig"] if orig_scoring else d_binary["compute_attract_gpu"],
-        do_scoring=False, num_threads=num_threads_scoring, args=(benchmark_analysis, finisheditems_analysis,),
+        do_scoring=False, num_threads=num_threads_scoring*2, args=(benchmark_analysis, finisheditems_analysis,),
         use_OrigAttract=False, analyse = True)
     analysis_threads.start_threads()
     score.start_threads()
@@ -698,35 +698,68 @@ import math
 #optimal modes docking
 pathList =[ "/home/glenn/Documents/WebNma/worst","/home/glenn/Documents/WebNma/best"]
 pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
-pathList= ["/home/glenn/work/benchmark_attract_test"]
+pathList= ["/home/glenn/work/benchmark5_attract"]
 
-numModesListRec = [1,3]
-numModesListLig = [1,3]
-
-logfile = open('logFile_run181107.log', 'w+')
-benchmark_useHinsen = False
+numModesListRec = [0,1]
+numModesListLig = [0,1]
+#numModesListLig = [0]
+#numModesListRec = [0]
+logfile = open('logFile_run181126_2.log', 'w+')
+benchmark_useHinsen = True
 benchmark_allAtom = False
 omodes = False
 modeList = [False]
-numScales=[1.0]
-
-extention = "_omodes_nn"
+numScales=[   0.00015,0.00018, 0.0002]#0.00008,0.000080.0002,0.0003,0.0004,0.0005,0.0006,0.001,0.002,0.005,0.01,0.02,0.1,1  #0.0015
+#numScales=[1.0]
+extention = "_hinsen"
 for path in pathList:
     for modesRec in numModesListRec:
         for modesLig in numModesListLig:
             for scale in numScales:
-                if modesRec != 0 or modesLig != 0 :
-                    if modesLig == modesRec:
-                        frac, whole = math.modf(scale)
-                        try:
+                if modesLig == 0 and  modesRec == 0:
+                    continue
+                frac, whole = math.modf(scale)
+                try:
+                    run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),"{:6f}".format(frac)[2:7], modesRec,modesLig,int(whole),"{:6f}".format(frac)[2:7],extention), create_grid = True, create_modes = True, create_dofs = True,
+                    create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+                    num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom,num_threads_scoring = 2)
+                except:
+                    logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+                    pass
 
-                            run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}_bestconf2".format(modesRec,modesLig,int(whole),str(frac)[2:6], modesRec,modesLig,int(whole),str(frac)[2:6],extention), create_grid = True, create_modes = True, create_dofs = True,
-                            create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
-                            num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom,num_threads_scoring = 2)
-                        except:
-                            logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
-                            pass
+numModesListRec = [0,3]
+numModesListLig = [0,3]
+for path in pathList:
+    for modesRec in numModesListRec:
+        for modesLig in numModesListLig:
+            for scale in numScales:
+                if modesLig == 0 and  modesRec == 0:
+                    continue
+                frac, whole = math.modf(scale)
+                try:
+                    run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),"{:6f}".format(frac)[2:7], modesRec,modesLig,int(whole),"{:6f}".format(frac)[2:7],extention), create_grid = True, create_modes = True, create_dofs = True,
+                    create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+                    num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom,num_threads_scoring = 2)
+                except:
+                    logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+                    pass
 
+numModesListRec = [0,10]
+numModesListLig = [0,10]
+for path in pathList:
+    for modesRec in numModesListRec:
+        for modesLig in numModesListLig:
+            for scale in numScales:
+                if modesLig == 0 and  modesRec == 0:
+                    continue
+                frac, whole = math.modf(scale)
+                try:
+                    run_benchmark( path, "-for-docking.pdb",name_benchmark = "dG_mr{}_ml{}_ev{}p{}_sO_c50_mr{}_ml{}_ev{}p{}{}".format(modesRec,modesLig,int(whole),"{:6f}".format(frac)[2:7], modesRec,modesLig,int(whole),"{:6f}".format(frac)[2:7],extention), create_grid = True, create_modes = True, create_dofs = True,
+                    create_reduce = True, num_modesRec = modesRec,num_modesLig = modesLig, orig_docking= False, orig_scoring=True, rcut=50,
+                    num_threads = 1, do_minimization=True, do_scoring=True, evfactor = scale, do_analyse = True, scoring_overwrite=False, analyse_overwrite=False, docking_overwrite=False,analyse_mode = False, useHinsen=benchmark_useHinsen,oModes=omodes, useAllAtom=benchmark_allAtom,num_threads_scoring = 2)
+                except:
+                    logfile.write("failed at  mr {} ml {} scale {} hinsen {}  path {}\n".format( modesRec , modesLig, scale, benchmark_useHinsen, path))
+                    pass
 
 
 #docking with bound structures
@@ -734,6 +767,7 @@ for path in pathList:
 # pathList= ["/home/glenn/work/benchmark5_best","/home/glenn/work/benchmark5_worst"]
 # pathList= ["/home/glenn/work/benchmark5_bound"]
 # numModesListRec = [0]
+
 # numModesListLig = [0]
 #
 # logfile = open('logFile_run180924.log', 'w+')

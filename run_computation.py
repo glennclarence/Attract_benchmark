@@ -147,7 +147,7 @@ class Worker:
             safeAppend(args, filename_pdbReceptor)
             args.append(" -l ")
             safeAppend(args, filename_pdbLigand)
-            if (num_modesReceptor > 0 ) and filecheck(filename_modesReceptor):
+            if ((num_modesReceptor > 0 ) or num_modesLigand > 0) and filecheck(filename_modesReceptor):
                # args.append(" --numModesRec ")
                 args.append(" --numModesRec ")
                 args.append(str(num_modesReceptor))
@@ -155,7 +155,7 @@ class Worker:
                 args.append(str(num_modesLigand))
                 args.append(" --modesr ")
                 safeAppend(args, filename_modesReceptor)
-            if num_modesLigand > 0 and filecheck(filename_modesLigand):
+            if ((num_modesReceptor > 0 ) or num_modesLigand > 0) and filecheck(filename_modesLigand):
                 #args.append(" --numModesLig ")
 
                 #args.append(str(num_modesLigand))
